@@ -1,4 +1,4 @@
-from setup.vueprojectsetup import create_project
+from setup.vueprojectsetup import setup_project, create_project, remove_boilerview, remove_boilercomponents, updateAppVue
 
 
 router = """import { createRouter, createWebHistory } from 'vue-router'
@@ -33,5 +33,4 @@ export default {
 
 </style>
 """
-
-create_project("test1")
+setup_project("test1")
