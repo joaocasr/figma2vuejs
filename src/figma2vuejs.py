@@ -1,6 +1,6 @@
 from setup.vueprojectsetup import setup_project, create_project, remove_boilerview, remove_boilercomponents, updateAppVue
-
-
+from engine.stylegenerator import overwrite_styling
+from engine.routergenerator import tmp_routerindex
 router = """import { createRouter, createWebHistory } from 'vue-router'
 __IMPORT_PAGE_PLACEHOLDER__
 
@@ -33,4 +33,9 @@ export default {
 
 </style>
 """
-setup_project("test1")
+try:
+  setup_project("test1")
+  overwrite_styling("test1")
+  tmp_routerindex("test1")
+except Exception as e:
+  print(e)
