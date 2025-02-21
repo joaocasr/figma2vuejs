@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-import String
+
 import TableElement
 import ContainerStyle
 

@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-import String
 import ImageElement
 
 class ImageStyle(object):

@@ -1,21 +1,42 @@
 import os
+import json
+import re
 
-def tmp_routerindex(name):
+def generate_routes(name,pages):
     print("Updating routes...")
-    router = """import { createRouter, createWebHistory } from 'vue-router'
-import ErrorPageView from '@/views/ErrorPageView.vue'
+    element_routes = []
+    for pagina in pages:
+        element = {
+                "component": {
+                    'path': pagina.getPagepath(),
+                    'name': pagina.getPagename(),
+                    'component': pagina.getPagename()+'View',
+                },
+                "import": "import "+pagina.getPagename()+'View'+" from '@/views/"+pagina.getPagename()+'View'+".vue';\n"
 
+        }
+        element_routes.append(element)
+    element_routes.append({
+        "component":{
+            'path': '/:catchAll(.*)',
+            'name': 'error',
+            'component': 'ErrorPageView'
+        },
+       "import": "import ErrorPageView from '@/views/ErrorPageView.vue'"
+    })
+    allRoutes = ""
+    allImports = ""
+    for e in element_routes:  
+        allRoutes += json.dumps(e["component"], indent=4)+",\n"
+        allImports += e["import"]
+    allRoutes = re.sub(r'component": "(.*)"',r'component": \1' , allRoutes)
+    router = """import { createRouter, createWebHistory } from 'vue-router';"""+allImports+"""
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   scrollBehavior(to, from, savedPosition) {
     return { top: 0 }
   },
-  routes: [
-  {
-    path: '/:catchAll(.*)',
-    name: 'error',
-    component: ErrorPageView,
-  }
+  routes: ["""+allRoutes+"""
   ]
 })
 export default router
@@ -38,7 +59,7 @@ export default {
 """
     filerouter = "../output/"+name+"/src/router/index.js"
     if os.path.isfile(filerouter):
-        f= open(filerouter,"w")
+        f = open(filerouter,"w")
         f.write(router)
         f.close()
     else:

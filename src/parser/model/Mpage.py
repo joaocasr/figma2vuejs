@@ -1,11 +1,19 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-import String
-import Melement
-import Mcomponent
-import Entity
+#import Melement
+#import Mcomponent
+#import Entity
 
 class Mpage(object):
+
+	def __init__(self,name,path,id):
+		self.pagename = name
+		self.pagepath = path
+		self.idpage = id
+		self.elements = []
+		self.components = []
+		self.data = []
+
 	def getPagename(self):
 		"""@ReturnType String"""
 		return self.pagename
@@ -33,26 +41,8 @@ class Mpage(object):
 		@ReturnType void"""
 		self.idpage = idpage
 
-	def __init__(self):
-		self.pagename = None
-		"""@AttributeType String"""
-		self.pagepath = None
-		"""@AttributeType String"""
-		self.idpage = None
-		"""@AttributeType String"""
-		self.elements = []
-		"""@AttributeType Melement*
-		# @AssociationType Melement[]
-		# @AssociationMultiplicity 0..*
-		# @AssociationKind Aggregation"""
-		self.components = []
-		"""@AttributeType Mcomponent*
-		# @AssociationType Mcomponent[]
-		# @AssociationMultiplicity 0..*
-		# @AssociationKind Aggregation"""
-		self.data = []
-		"""@AttributeType Entity*
-		# @AssociationType Entity[]
-		# @AssociationMultiplicity 0..*
-		# @AssociationKind Aggregation"""
-
+	def __str__(self):
+		allelements=""
+		for e in self.elements:
+			allelements += str(e) + ";"
+		return self.pagename + ", elements: [" + allelements + "]"
