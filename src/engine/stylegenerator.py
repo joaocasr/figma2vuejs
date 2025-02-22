@@ -3,23 +3,14 @@ import os
 def overwrite_styling(name):
     print("Updating global css properties...")
     maincss="""@import './base.css';
-.background-container {
-  max-width: 100%; 
-  width: 100%; 
-  margin: 0 auto;
-}
+
 
 @media (min-width: 1024px) {
   #app {
       padding: 0;
   }
 }
-#app {
-  max-width: 3000px;
-  max-height: auto;
-  font-weight: normal;
-  background-color: white;
-}"""
+"""
     filemain = "../output/"+name+"/src/assets/main.css"
     if os.path.isfile(filemain):
         f= open(filemain,"w")
@@ -86,31 +77,9 @@ def overwrite_styling(name):
 }
 
 body {
-  min-height: 100vh;
-  transition:
-    color 0.5s,
-    background-color 0.5s;
-  line-height: 1.6;
-  font-family:
-    Inter,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    Oxygen,
-    Ubuntu,
-    Cantarell,
-    'Fira Sans',
-    'Droid Sans',
-    'Helvetica Neue',
-    sans-serif;
-  font-size: 15px;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color-scheme: only light;
-  background-color: white;
-}"""
+  margin:0px;
+}
+"""
     else:
         raise Exception("main.css file not found!")
     filebase = "../output/"+name+"/src/assets/base.css"
@@ -120,3 +89,34 @@ body {
         f.close()
     else:
         raise Exception("base.css file not found!")
+
+
+def generatePageStyle(name,page):
+  width = page.containerstyle.width
+  height = page.containerstyle.height
+  css = """.grid-container {
+    display:"""+ page.containerstyle.display+ """;
+    grid-template-columns:"""+ page.containerstyle.gridtemplatecolumns+""";
+    grid-template-rows:"""+ page.containerstyle.gridtemplaterows + """;
+    background-color:"""+ page.containerstyle.backgroundColor + """;
+    width: 100%;
+    min-height: 100vh;
+    max-height: auto;
+    margin:"""+ page.containerstyle.margin + """;
+    padding:"""+ page.containerstyle.padding + """;
+  }
+  
+  .grid-item {
+    display:flex;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    grid-column: calc(var(--posx) * 16 / """+ str(width)+"""); 
+    grid-row: calc(var(--posy) * 16 / """+ str(height)+ """);
+}
+  """
+  with open("../output/"+name+"/src/assets/"+page.getPagename().lower()+".css","w") as f:
+    f.write(css)
+

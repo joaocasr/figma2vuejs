@@ -8,11 +8,11 @@ def generate_routes(name,pages):
     for pagina in pages:
         element = {
                 "component": {
-                    'path': pagina.getPagepath(),
-                    'name': pagina.getPagename(),
-                    'component': pagina.getPagename()+'View',
+                    'path': pages[pagina].getPagepath(),
+                    'name': pages[pagina].getPagename(),
+                    'component': pages[pagina].getPagename()+'View',
                 },
-                "import": "import "+pagina.getPagename()+'View'+" from '@/views/"+pagina.getPagename()+'View'+".vue';\n"
+                "import": "import "+pages[pagina].getPagename()+'View'+" from '@/views/"+pages[pagina].getPagename()+'View'+".vue';\n"
 
         }
         element_routes.append(element)
@@ -36,7 +36,8 @@ const router = createRouter({
   scrollBehavior(to, from, savedPosition) {
     return { top: 0 }
   },
-  routes: ["""+allRoutes+"""
+  routes: [
+  """+allRoutes[:-1]+"""
   ]
 })
 export default router

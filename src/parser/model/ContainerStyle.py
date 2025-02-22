@@ -1,8 +1,28 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-import ContainerElement
-
 class ContainerStyle(object):
+
+	def __init__(self,width,height,backgroundcolor,display, margin, padding, gridtemplatecolumns=None,gridtemplaterows=None):
+		self.width = width
+		self.height = height
+		self.backgroundColor = backgroundcolor
+		self.backgroundImage = None
+		self.display = display
+		self.gridtemplatecolumns = gridtemplatecolumns
+		self.gridtemplaterows = gridtemplaterows
+		self.margin = margin
+		self.padding = padding
+		self.border = None
+		self.borderColor = None
+		self.borderWidth = None
+		self.borderStyle = None
+		self.borderRadius = None
+		self.gridcolumnStart = None
+		self.gridcolumnEnd = None
+		self.gridrowStart = None
+		self.gridrowEnd = None
+		self.boxShadow = None
+		
 	def getWidth(self):
 		"""@ReturnType int"""
 		return self.width
@@ -156,42 +176,20 @@ class ContainerStyle(object):
 		@ReturnType void"""
 		self.boxShadow = boxShadow
 
-	def __init__(self):
-		self.width = None
-		"""@AttributeType int"""
-		self.height = None
-		"""@AttributeType int"""
-		self.backgroundColor = None
-		"""@AttributeType String"""
-		self.backgroundImage = None
-		"""@AttributeType String"""
-		self.display = None
-		"""@AttributeType String"""
-		self.margin = None
-		"""@AttributeType String"""
-		self.padding = None
-		"""@AttributeType String"""
-		self.border = None
-		"""@AttributeType String"""
-		self.borderColor = None
-		"""@AttributeType String"""
-		self.borderWidth = None
-		"""@AttributeType String"""
-		self.borderStyle = None
-		"""@AttributeType String"""
-		self.borderRadius = None
-		"""@AttributeType String"""
-		self.gridcolumnStart = None
-		"""@AttributeType String"""
-		self.gridcolumnEnd = None
-		"""@AttributeType String"""
-		self.gridrowStart = None
-		"""@AttributeType String"""
-		self.gridrowEnd = None
-		"""@AttributeType String"""
-		self.boxShadow = None
-		"""@AttributeType String"""
-		self.unnamed_ContainerElement_ = None
-		"""@AttributeType ContainerElement
-		# @AssociationType ContainerElement"""
+	def getGridTemplateColumns(self):
+		return self.gridtemplatecolumns
+
+	def setGridTemplateColumns(self, gridtemplatecolumns):
+		self.gridtemplatecolumns = gridtemplatecolumns
+
+	def getGridTemplateRows(self):
+		return self.gridtemplaterows
+
+	def setGridTemplateRows(self, gridtemplaterows):
+		self.gridtemplaterows = gridtemplaterows
+
+	def __str__(self):
+		return "width:" + str(self.width) +",\n"+"height:" + str(self.height) +",\n"+ "backgroundColor:" + self.backgroundColor +",\n"+ "display:" + self.display +",\n"+ "gridtemplatecolumns:" + self.gridtemplatecolumns +",\n"+ "gridtemplaterows:" + self.gridtemplaterows +",\n"+ "margin:" + str(self.margin) +",\n"+ "margin:" + str(self.margin) +",\n"+ "padding:" + str(self.padding)
+
+
 

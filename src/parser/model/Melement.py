@@ -1,10 +1,6 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 
-#import Mpage
-#import InteractionElement
-#import Mcomponent
-
 class Melement(object):
 
 	def __init__(self,id,tag):
