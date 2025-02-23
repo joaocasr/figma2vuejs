@@ -101,10 +101,12 @@ def generatePageStyle(name,page):
   width = page.containerstyle.width
   height = page.containerstyle.height
 
+  row_height = height / 48
+
   css = """\n.grid-container {
   display:"""+ page.containerstyle.display+ """;
   grid-template-columns:"""+ page.containerstyle.gridtemplatecolumns+""";
-  grid-template-rows:"""+ page.containerstyle.gridtemplaterows + """;
+  grid-template-rows: repeat(48,minmax("""+ str(row_height) +"""px,1fr));
   background-color:"""+ page.containerstyle.backgroundColor + """;
   width: 100%;
   min-height: 100vh;
@@ -162,10 +164,15 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
   if isinstance(elem,ContainerElement): 
 
     if elem.containerStyle.backgroundColor != None: csskeyvalues+=f"background-color: {elem.containerStyle.backgroundColor};{newline}"
+    if elem.containerStyle.borderRadius != None: csskeyvalues+=f"border-radius: {elem.containerStyle.borderRadius}px;{newline}"
     if elem.containerStyle.gridcolumnStart != None: csskeyvalues+=f"grid-column-start: {str(elem.containerStyle.gridcolumnStart)};{newline}"
     if elem.containerStyle.gridcolumnEnd != None: csskeyvalues+=f"grid-column-end: {str(elem.containerStyle.gridcolumnEnd)};{newline}"
     if elem.containerStyle.gridrowStart != None: csskeyvalues+=f"grid-row-start: {str(elem.containerStyle.gridrowStart)};{newline}"
     if elem.containerStyle.gridrowEnd != None: csskeyvalues+=f"grid-row-end: {str(elem.containerStyle.gridrowEnd)};{newline}"
+
+    if elem.containerStyle.display != None: csskeyvalues+=f"display: {str(elem.containerStyle.display)};{newline}"
+    if elem.containerStyle.gridtemplatecolumns != None: csskeyvalues+=f"grid-template-columns: {str(elem.containerStyle.gridtemplatecolumns)};{newline}"
+    if elem.containerStyle.gridtemplaterows != None: csskeyvalues+=f"grid-template-rows: {str(elem.containerStyle.gridtemplaterows)};{newline}"
 
     css = "\n."+cssclass+" {\n\t"+ csskeyvalues[:-1] +"}\n\n"
 

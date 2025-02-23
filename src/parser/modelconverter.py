@@ -13,7 +13,7 @@ from parser.model.TextStyle import TextStyle
 allpages = {}
 
 def getFigmaData():
-    prototype1 = "../tests/prototype4.json"
+    prototype1 = "../tests/prototype6.json"
     figmadata = {}
     with open(prototype1,"r") as file1:
         data = json.load(file1)
@@ -47,25 +47,37 @@ def iterate_nestedElements(data):
         setPageStyle(page["name"],page)
 
 
-def processElement(name,data,page_width,page_height):
+def processElement(name,data,page_width,page_height,parent_data=None):
 
     children = []
-    
+
     elementwidth = data["absoluteRenderBounds"]["width"]
     elementheight = data["absoluteRenderBounds"]["height"]
     
+
     xielem = data["absoluteRenderBounds"]["x"]
     yielem = data["absoluteRenderBounds"]["y"]
-    xfelem = data["absoluteRenderBounds"]["x"]+elementwidth
-    yfelem = data["absoluteRenderBounds"]["y"]+elementheight
 
-    nr_columnstart = round((xielem / page_width) * 16 ) + 1
-    nr_columnend = round((xfelem / page_width) * 16) + 1
-    #width = 0
-    #if(xfelem % 16>0): width = ((xielem / 16) -  (xielem / 16)) * 100
+    nrrows = 16
 
-    nr_rowstart = round((yielem / page_height) * 16 ) + 1
-    nr_rowend = round((yfelem / page_height) * 16) + 1
+    if(parent_data!=None):
+        xielem -= parent_data["absoluteRenderBounds"]["x"]
+        yielem -= parent_data["absoluteRenderBounds"]["y"]
+    else:
+        nrrows = 48 #if first level element then position it in the grid of 48 rows
+
+    nr_columnstart = max(round((xielem / page_width) * 16 ) + 1,1)
+    nr_columnend = min(round((elementwidth / page_width) * 16) + 1 + nr_columnstart,16)
+
+    nr_rowstart = round((yielem / page_height) * nrrows ) + 1
+    nr_rowend = min(round((elementheight / page_height) * nrrows) + nr_rowstart,nrrows+1)
+
+    if(parent_data==None and nr_columnend==16):
+        nrcolumn = nr_columnend
+        nr_columnend = " span "+ str(nrcolumn)
+    if(parent_data==None and nr_rowend==49):
+        nrrow = nr_rowend
+        nr_rowend = " span "+ str(nrrow)
 
     melement = None
     if(data["type"]=="TEXT"):
@@ -98,12 +110,19 @@ def processElement(name,data,page_width,page_height):
         style.setGridrowStart(nr_rowstart)
         style.setGridrowEnd(nr_rowend)
 
+        if("cornerRadius" in data):
+            style.setBorderRadius(data["cornerRadius"])
         mcontainerelement = ContainerElement(data["id"],"",style)
         melement = mcontainerelement
 
+    myparent_data = data
     if("children" in data):
         for element in data["children"]:
-            nestedelem = processElement(element["name"],element,page_width,page_height)
+            if(element["type"]=="FRAME"):
+                style.setDisplay("grid")
+                style.setGridTemplateColumns("repeat(16,1fr)")
+                style.setGridTemplateRows("repeat(16,1fr)")
+            nestedelem = processElement(element["name"],element,data["absoluteRenderBounds"]["width"],data["absoluteRenderBounds"]["height"],myparent_data)
             children.append(nestedelem)
 
     melement.setChildren(children)
@@ -122,6 +141,5 @@ def setPageStyle(pagename,pagedata):
     style.setMargin("0")
     style.setPadding("0")
     style.setGridTemplateColumns("repeat(16,1fr)")
-    style.setGridTemplateRows("repeat(16,1fr)")
     
     allpages[pagename].setPageStyle(style)

@@ -10,9 +10,9 @@ def buildpage(name,page):
     #print(page)
     output = ""  
     for element in page.elements:
-        output += processChildren(element,name,page.pagename)+ "\n"
+        output += processChildren(element,name,page.pagename)
         #pretty_print_xml_elementtree(getHtml(element))
-    #print(output)
+    #print(getIndentedXML(output))
     writeVue(name,page,output)
 
 def processChildren(data,projectname,pagename):
@@ -20,13 +20,13 @@ def processChildren(data,projectname,pagename):
         content=""
         output, endtag = applytransformation(data,projectname,pagename)
         for element in data.children:
-            content += output + processChildren(element,projectname,pagename) + endtag
+            content += processChildren(element,projectname,pagename)
 
-        return content
+        return output + content + endtag
 
     else:
         output, endtag = applytransformation(data,projectname,pagename)
-        output += endtag
+        output += endtag    
         return output
 
 # Do a better handling of the tags
@@ -44,8 +44,8 @@ def applytransformation(elem,projectname,pagename):
 #still without elements
 def writeVue(name,page,content):
     cssimport = "@import '../assets/"+page.getPagename().lower()+".css';"
-    vuepage = """<template>
-\t<div class="grid-container">\n\t\t"""+ getIndentedXML(content) +"""\n\t</div>
+    template = '<div class="grid-container">'+ content + '</div>'
+    vuepage = """<template>\n\t\t""" + getIndentedXML(template) + """
 </template>
 
 <script>
@@ -66,7 +66,7 @@ export default {
     generatePageStyle(name,page)
 
 
-def indent(elem, level=4):
+def indent(elem, level=1):
    indent_size = "  "
    i = "\n" + level * indent_size
    if len(elem):
@@ -87,6 +87,6 @@ def getIndentedXML(xml_string):
    root = ET.fromstring(xml_string)
    indent(root)
 
-   indented_xml = ET.tostring(root, encoding="unicode")
+   indented_xml = ET.tostring(root, encoding="unicode",short_empty_elements=False)
    return indented_xml
 

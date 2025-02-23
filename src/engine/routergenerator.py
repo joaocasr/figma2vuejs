@@ -8,7 +8,7 @@ def generate_routes(name,pages):
     for pagina in pages:
         element = {
                 "component": {
-                    'path': pages[pagina].getPagepath(),
+                    'path': pages[pagina].getPagepath().lower(),
                     'name': pages[pagina].getPagename(),
                     'component': pages[pagina].getPagename()+'View',
                 },

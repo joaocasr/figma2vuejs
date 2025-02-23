@@ -13,6 +13,9 @@ def setup_project(name):
 def create_project(name):
     destination = '../output/'+name
     if os.path.isdir(destination):
+        cssdirectory = destination+"/src/assets/"
+
+        subprocess.run(["find "+ cssdirectory +" -type f -not \( -name 'main.css' -or -name 'base.css' -or -name 'logo.svg' \) -delete"],shell=True)
         raise Exception("The Vue Project "+name+" already exists.")
     else:
         print("Creating Vue project named: "+name+" ...")

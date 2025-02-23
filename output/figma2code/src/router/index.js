@@ -7,7 +7,7 @@ const router = createRouter({
   },
   routes: [
   {
-    "path": "/GenericPage",
+    "path": "/genericpage",
     "name": "GenericPage",
     "component": GenericPageView
 },

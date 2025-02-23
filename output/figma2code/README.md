@@ -1,4 +1,4 @@
-# figma2code_rascunho
+# figma2code
 
 This template should help get you started developing with Vue 3 in Vite.
 
