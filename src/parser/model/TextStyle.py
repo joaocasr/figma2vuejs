@@ -1,9 +1,26 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-
-import TextElement
-
 class TextStyle(object):
+	def __init__(self,font,weight,size,family,color,gridcolumnStart,gridcolumnEnd,gridrowStart,gridrowEnd):
+		self.textAlign = None
+		self.textDecoration = None
+		self.textIndent = None
+		self.textTransform = None
+		self.fontStyle = font
+		self.fontWeight = weight
+		self.fontSize = size
+		self.fontFamily = family
+		self.lineHeight = None
+		self.color = color
+		self.letterSpacing = None
+		self.cursor = None
+		self.transition = None
+		self.opacity = None
+		self.gridcolumnStart = gridcolumnStart
+		self.gridcolumnEnd = gridcolumnEnd
+		self.gridrowStart = gridrowStart
+		self.gridrowEnd = gridrowEnd
+
 	def getTextAlign(self):
 		"""@ReturnType String"""
 		return self.textAlign
@@ -166,44 +183,5 @@ class TextStyle(object):
 		@ReturnType void"""
 		self.gridrowEnd = gridrowEnd
 
-	def __init__(self):
-		self.textAlign = None
-		"""@AttributeType String"""
-		self.textDecoration = None
-		"""@AttributeType String"""
-		self.textIndent = None
-		"""@AttributeType String"""
-		self.textTransform = None
-		"""@AttributeType String"""
-		self.fontStyle = None
-		"""@AttributeType String"""
-		self.fontWeight = None
-		"""@AttributeType String"""
-		self.fontSize = None
-		"""@AttributeType String"""
-		self.fontFamily = None
-		"""@AttributeType String"""
-		self.lineHeight = None
-		"""@AttributeType String"""
-		self.color = None
-		"""@AttributeType String"""
-		self.letterSpacing = None
-		"""@AttributeType String"""
-		self.cursor = None
-		"""@AttributeType String"""
-		self.transition = None
-		"""@AttributeType String"""
-		self.opacity = None
-		"""@AttributeType String"""
-		self.gridcolumnStart = None
-		"""@AttributeType String"""
-		self.gridcolumnEnd = None
-		"""@AttributeType String"""
-		self.gridrowStart = None
-		"""@AttributeType String"""
-		self.gridrowEnd = None
-		"""@AttributeType String"""
-		self.unnamed_TextElement_ = None
-		"""@AttributeType TextElement
-		# @AssociationType TextElement"""
-
+	def __str__(self):
+		return "fontStyle:" + str(self.fontStyle) +",\n"+"fontWeight:" + str(self.fontWeight) +",\n"+ "fontSize:" + self.fontSize +",\n"+ "fontFamily:" + self.fontFamily +",\n"+ "color:" + self.color +",\n"+ "gridcolumnStart:" + self.gridcolumnStart +",\n"+ "gridcolumnEnd:" + str(self.gridcolumnEnd) +",\n"+ "gridrowStart:" + str(self.gridrowStart) +",\n"+ "gridrowEnd:" + str(self.gridrowEnd)

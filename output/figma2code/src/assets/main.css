@@ -1,0 +1,8 @@
+@import './base.css';
+
+
+@media (min-width: 1024px) {
+  #app {
+      padding: 0;
+  }
+}

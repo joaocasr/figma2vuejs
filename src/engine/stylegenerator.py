@@ -1,4 +1,10 @@
+from parser.model.ContainerElement import ContainerElement
+from parser.model.TextElement import TextElement
+
 import os
+
+# key: page_name; value: list_of_font_imports -> list(string)
+font_imports = {}
 
 def overwrite_styling(name):
     print("Updating global css properties...")
@@ -94,29 +100,78 @@ body {
 def generatePageStyle(name,page):
   width = page.containerstyle.width
   height = page.containerstyle.height
-  css = """.grid-container {
-    display:"""+ page.containerstyle.display+ """;
-    grid-template-columns:"""+ page.containerstyle.gridtemplatecolumns+""";
-    grid-template-rows:"""+ page.containerstyle.gridtemplaterows + """;
-    background-color:"""+ page.containerstyle.backgroundColor + """;
-    width: 100%;
-    min-height: 100vh;
-    max-height: auto;
-    margin:"""+ page.containerstyle.margin + """;
-    padding:"""+ page.containerstyle.padding + """;
-  }
+
+  css = """\n.grid-container {
+  display:"""+ page.containerstyle.display+ """;
+  grid-template-columns:"""+ page.containerstyle.gridtemplatecolumns+""";
+  grid-template-rows:"""+ page.containerstyle.gridtemplaterows + """;
+  background-color:"""+ page.containerstyle.backgroundColor + """;
+  width: 100%;
+  min-height: 100vh;
+  max-height: auto;
+  margin:"""+ page.containerstyle.margin + """;
+  padding:"""+ page.containerstyle.padding + """;
+}
   
-  .grid-item {
-    display:flex;
-    text-align: center;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    grid-column: calc(var(--posx) * 16 / """+ str(width)+"""); 
-    grid-row: calc(var(--posy) * 16 / """+ str(height)+ """);
+.grid-item {
+  display:flex;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
   """
-  with open("../output/"+name+"/src/assets/"+page.getPagename().lower()+".css","w") as f:
-    f.write(css)
 
+  newcsscontent=""
+  if page.pagename in font_imports:
+    for font in font_imports[page.pagename]:
+      newcsscontent += '@import url(' + '"' + font + '");\n'
+  newcsscontent += css
+
+  with open("../output/"+name+"/src/assets/"+page.getPagename().lower()+".css","r+") as f:
+    lines = f.readlines()  
+    lines.insert(0, newcsscontent)
+    f.seek(0)   
+    f.writelines(lines)
+
+
+def generateElemCssProperties(projectname,pagename,cssclass,elem):
+  csskeyvalues = ""
+  css = ""
+  newline = '\n\t'
+  if isinstance(elem,TextElement) : 
+    if elem.textStyle.fontStyle != None: csskeyvalues+=f"font-style: {elem.textStyle.fontStyle};{newline}"
+    if elem.textStyle.fontWeight != None: csskeyvalues+=f"font-weight: {elem.textStyle.fontWeight};{newline}"
+    if elem.textStyle.fontSize != None: csskeyvalues+=f"font-size:{elem.textStyle.fontSize};{newline}"
+    if elem.textStyle.fontFamily != None: csskeyvalues+=f"font-family: {elem.textStyle.fontFamily};{newline}"
+    if elem.textStyle.color != None: csskeyvalues+=f"color: {elem.textStyle.color};{newline}"
+    if elem.textStyle.gridcolumnStart != None: csskeyvalues+=f"grid-column-start: {str(elem.textStyle.gridcolumnStart)};{newline}"
+    if elem.textStyle.gridcolumnEnd != None: csskeyvalues+=f"grid-column-end: {str(elem.textStyle.gridcolumnEnd)};{newline}"
+    if elem.textStyle.gridrowStart != None: csskeyvalues+=f"grid-row-start: {str(elem.textStyle.gridrowStart)};{newline}"
+    if elem.textStyle.gridrowEnd != None: csskeyvalues+=f"grid-row-end: {str(elem.textStyle.gridrowEnd)};{newline}"
+    csskeyvalues+=f"white-space: nowrap;{newline}"
+
+    if(pagename in font_imports):
+      font_imports[pagename].append("//fonts.googleapis.com/css2?family="+elem.textStyle.fontFamily+":wght@"+ str(elem.textStyle.fontWeight) +"&display=swap")
+    else:
+      font_imports[pagename] = ["//fonts.googleapis.com/css2?family="+elem.textStyle.fontFamily+":wght@"+ str(elem.textStyle.fontWeight) +"&display=swap"]
+
+    css = "\n."+cssclass+" {\n\t"+ csskeyvalues[:-1] +"}\n\n"
+
+  if isinstance(elem,ContainerElement): 
+
+    if elem.containerStyle.backgroundColor != None: csskeyvalues+=f"background-color: {elem.containerStyle.backgroundColor};{newline}"
+    if elem.containerStyle.gridcolumnStart != None: csskeyvalues+=f"grid-column-start: {str(elem.containerStyle.gridcolumnStart)};{newline}"
+    if elem.containerStyle.gridcolumnEnd != None: csskeyvalues+=f"grid-column-end: {str(elem.containerStyle.gridcolumnEnd)};{newline}"
+    if elem.containerStyle.gridrowStart != None: csskeyvalues+=f"grid-row-start: {str(elem.containerStyle.gridrowStart)};{newline}"
+    if elem.containerStyle.gridrowEnd != None: csskeyvalues+=f"grid-row-end: {str(elem.containerStyle.gridrowEnd)};{newline}"
+
+    css = "\n."+cssclass+" {\n\t"+ csskeyvalues[:-1] +"}\n\n"
+
+  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  mode = "w"
+  if os.path.isfile(cssfile):
+    mode = "a"
+  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+    f.write(css)

@@ -1,34 +1,51 @@
-from engine.stylegenerator import generatePageStyle
+from engine.stylegenerator import generatePageStyle, generateElemCssProperties
+from parser.model.TextElement import TextElement
+from parser.model.ContainerElement import ContainerElement
+import xml.etree.ElementTree as ET
 
 def buildpage(name,page):
     #build page root layout
+    #writeVue(name,page)
+    # build elements from the page  
     #print(page)
-    writeVue(name,page)
-    #build elements from the page    
-    #for element in page.elements:
-        #processChildren(element.getIdElement(),element)
+    output = ""  
+    for element in page.elements:
+        output += processChildren(element,name,page.pagename)+ "\n"
         #pretty_print_xml_elementtree(getHtml(element))
+    #print(output)
+    writeVue(name,page,output)
 
-def processChildren(name,data):
-
+def processChildren(data,projectname,pagename):
     if(len(data.children)>0):
+        content=""
+        output, endtag = applytransformation(data,projectname,pagename)
         for element in data.children:
+            content += output + processChildren(element,projectname,pagename) + endtag
 
-            elem = processChildren(element.getIdElement(),element)
-            #getHtml(elem)
-            pretty_print_xml_elementtree(getHtml(elem))
+        return content
 
-#def getHtml(elem):
-#    print(">>>>")
-#    print(elem)
+    else:
+        output, endtag = applytransformation(data,projectname,pagename)
+        output += endtag
+        return output
+
+# Do a better handling of the tags
+def applytransformation(elem,projectname,pagename):
+    cssclass = elem.idElement.replace(":","")
+    if isinstance(elem, TextElement):
+        if elem.tag=="" or elem.tag == None:
+            generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
+            return ("<p class="+'"grid-item text'+ cssclass +'">'+elem.text, "</p>")
+    if isinstance(elem, ContainerElement):
+        if elem.tag=="" or elem.tag == None:
+            generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
+            return ("<div class="+'"grid-item container'+ cssclass +'">', "</div>")
 
 #still without elements
-def writeVue(name,page):
+def writeVue(name,page,content):
     cssimport = "@import '../assets/"+page.getPagename().lower()+".css';"
     vuepage = """<template>
-    <div class="grid-container">
-    
-    </div>
+\t<div class="grid-container">\n\t\t"""+ getIndentedXML(content) +"""\n\t</div>
 </template>
 
 <script>
@@ -49,7 +66,7 @@ export default {
     generatePageStyle(name,page)
 
 
-def indent(elem, level=0):
+def indent(elem, level=4):
    indent_size = "  "
    i = "\n" + level * indent_size
    if len(elem):
@@ -65,11 +82,11 @@ def indent(elem, level=0):
       if level and (not elem.tail or not elem.tail.strip()):
          elem.tail = i
 
-def pretty_print_xml_elementtree(xml_string):
+def getIndentedXML(xml_string):
 
    root = ET.fromstring(xml_string)
    indent(root)
 
-   pretty_xml = ET.tostring(root, encoding="unicode")
-   print(pretty_xml)
+   indented_xml = ET.tostring(root, encoding="unicode")
+   return indented_xml
 

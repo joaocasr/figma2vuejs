@@ -25,5 +25,5 @@ class Melement(object):
 		self.children = nchildren
 
 	def __str__(self):
-		return str(self.idElement) + "" + str(self.tag)
+		return "id: " + str(self.idElement) + "; tag: " + str(self.tag) + "; children : ["+ ''.join(str(c) for c in self.children) + "]\n"
 

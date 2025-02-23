@@ -2,16 +2,16 @@
 # -*- coding: UTF-8 -*-
 class ContainerStyle(object):
 
-	def __init__(self,width,height,backgroundcolor,display, margin, padding, gridtemplatecolumns=None,gridtemplaterows=None):
-		self.width = width
-		self.height = height
-		self.backgroundColor = backgroundcolor
+	def __init__(self):
+		self.width = None
+		self.height = None
+		self.backgroundColor = None
 		self.backgroundImage = None
-		self.display = display
-		self.gridtemplatecolumns = gridtemplatecolumns
-		self.gridtemplaterows = gridtemplaterows
-		self.margin = margin
-		self.padding = padding
+		self.display = None
+		self.gridtemplatecolumns = None
+		self.gridtemplaterows = None
+		self.margin = None
+		self.padding = None
 		self.border = None
 		self.borderColor = None
 		self.borderWidth = None

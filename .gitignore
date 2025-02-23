@@ -1,4 +1,2 @@
-output/*
-tests/*
-!output/.gitkeep 
+tests/prototype* 
 !tests/.gitkeep 
