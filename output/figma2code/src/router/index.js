@@ -1,4 +1,5 @@
-import { createRouter, createWebHistory } from 'vue-router';import GenericPageView from '@/views/GenericPageView.vue';
+import { createRouter, createWebHistory } from 'vue-router';import PrincipalPageView from '@/views/PrincipalPageView.vue';
+import SecondaryPageView from '@/views/SecondaryPageView.vue';
 import ErrorPageView from '@/views/ErrorPageView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -7,9 +8,14 @@ const router = createRouter({
   },
   routes: [
   {
-    "path": "/genericpage",
-    "name": "GenericPage",
-    "component": GenericPageView
+    "path": "/principalpage",
+    "name": "PrincipalPage",
+    "component": PrincipalPageView
+},
+{
+    "path": "/secondarypage",
+    "name": "SecondaryPage",
+    "component": SecondaryPageView
 },
 {
     "path": "/:catchAll(.*)",

@@ -15,7 +15,11 @@ def create_project(name):
     if os.path.isdir(destination):
         cssdirectory = destination+"/src/assets/"
 
+        print("The Vue Project "+name+" already exists.")
+        print("Removing the css files from previous execution...")
         subprocess.run(["find "+ cssdirectory +" -type f -not \( -name 'main.css' -or -name 'base.css' -or -name 'logo.svg' \) -delete"],shell=True)
+        print("Removing the view files from previous execution...")
+        remove_boilerview(name)
         raise Exception("The Vue Project "+name+" already exists.")
     else:
         print("Creating Vue project named: "+name+" ...")

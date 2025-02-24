@@ -12,7 +12,7 @@ try:
   setup_project(project_name)
   overwrite_styling(project_name)
 except Exception as e:
-  print(e)
+  pass
 
 # generate routes to the vue pages
 generate_routes(project_name,pages)
