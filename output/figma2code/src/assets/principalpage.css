@@ -1,11 +1,9 @@
 @import url("//fonts.googleapis.com/css2?family=Inter:wght@400&display=swap");
-@import url("//fonts.googleapis.com/css2?family=Inter:wght@400&display=swap");
-@import url("//fonts.googleapis.com/css2?family=Inter:wght@400&display=swap");
 
 .grid-container {
   display:grid;
-  grid-template-columns:repeat(16,1fr);
-  grid-template-rows: repeat(48,minmax(49.8125px,1fr));
+  grid-template-columns:repeat(64,1fr);
+  grid-template-rows: repeat(128,minmax(18.6796875px,1fr));
   background-color:rgba(234.29998755455017,234.29998755455017,234.29998755455017,255.0);
   width: 100%;
   min-height: 100vh;
@@ -29,21 +27,25 @@
 	font-size:53px;
 	font-family: Inter;
 	color: rgba(0.0,0.0,0.0,255.0);
-	grid-column-start: 6;
-	grid-column-end: 14;
-	grid-row-start: 14;
-	grid-row-end: 15;
+	grid-column-start: 19;
+	grid-column-end: 46;
+	grid-row-start: 36;
+	grid-row-end: 39;
 	white-space: nowrap;
 }
 
 
 .container20534 {
 	background-color: rgba(158.48957151174545,158.48957151174545,158.48957151174545,255.0);
+	border: 1.0px solid rgba(0.0,0.0,0.0,1.0);
 	border-radius: 22.0px;
-	grid-column-start: 8;
-	grid-column-end: 12;
-	grid-row-start: 22;
-	grid-row-end: 25;
+	grid-column-start: 27;
+	grid-column-end: 39;
+	grid-row-start: 57;
+	grid-row-end: 64;
+	display: grid;
+	grid-template-columns: repeat(64,1fr);
+	grid-template-rows: repeat(64,1fr);
 }
 
 
@@ -53,10 +55,10 @@
 	font-size:40px;
 	font-family: Inter;
 	color: rgba(255.0,255.0,255.0,255.0);
-	grid-column-start: 5;
-	grid-column-end: 14;
-	grid-row-start: 6;
-	grid-row-end: 11;
+	grid-column-start: 17;
+	grid-column-end: 49;
+	grid-row-start: 22;
+	grid-row-end: 41;
 	white-space: nowrap;
 }
 
@@ -64,10 +66,13 @@
 .container20536 {
 	background-color: rgba(0.0,0.0,0.0,255.0);
 	border-radius: 20.0px;
-	grid-column-start: 9;
-	grid-column-end: 11;
-	grid-row-start: 27;
-	grid-row-end: 29;
+	grid-column-start: 31;
+	grid-column-end: 34;
+	grid-row-start: 69;
+	grid-row-end: 74;
+	display: grid;
+	grid-template-columns: repeat(64,1fr);
+	grid-template-rows: repeat(64,1fr);
 }
 
 
@@ -77,10 +82,10 @@
 	font-size:53px;
 	font-family: Inter;
 	color: rgba(255.0,255.0,255.0,255.0);
-	grid-column-start: 8;
-	grid-column-end: 11;
-	grid-row-start: 4;
-	grid-row-end: 14;
+	grid-column-start: 29;
+	grid-column-end: 36;
+	grid-row-start: 12;
+	grid-row-end: 50;
 	white-space: nowrap;
 }
 

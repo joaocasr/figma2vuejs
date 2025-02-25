@@ -2,6 +2,7 @@
 os ficheiros na pasta teste irão simular por enquanto os dados obtidos da api
 para nesta fase de development e debug nao atingir o limite da chamadas com o token obtido do figma
 """
+import math
 import json
 from parser.model.Mpage import Mpage
 from parser.model.Melement import Melement
@@ -13,8 +14,8 @@ from parser.model.InteractionElement import InteractionElement
 
 allpages = {}
 
-def getFigmaData():
-    prototype1 = "../tests/prototype7.json"
+def getFigmaData(prototype):
+    prototype1 = "../tests/prototype"+str(prototype)+".json"
     figmadata = {}
     with open(prototype1,"r") as file1:
         data = json.load(file1)
@@ -64,33 +65,35 @@ def processElement(name,data,page_width,page_height,pageX,pageY,parent_data=None
     xielem = data["absoluteRenderBounds"]["x"]
     yielem = data["absoluteRenderBounds"]["y"]
 
-    nrrows = 16
+    nrrows = 64
 
     # normalize the coordinates referencial
-    if(pageX>0):
-        xielem -= pageX
-    if(pageY>0):
-        yielem -= pageY
 
 
-    if(parent_data!=None): #verifcar istooo
+    if(parent_data!=None):
         xielem -= parent_data["absoluteRenderBounds"]["x"]
         yielem -= parent_data["absoluteRenderBounds"]["y"]
 
     else:
+        if(pageX>0):
+            xielem -= pageX
+        if(pageY>0):
+            yielem -= pageY
               
-        nrrows = 48 #if it is first level element, then position it in the grid of 48 rows
+        nrrows = 128 #if it is first level element, then position it in the grid of 48 rows
 
-    nr_columnstart = max(round((xielem / page_width) * 16 ) + 1,1)
-    nr_columnend = min(round((elementwidth / page_width) * 16) + 1 + nr_columnstart,16)
+    #translateX(calc(-100% / 64)); -> this translates one column to the left
 
-    nr_rowstart = round((yielem / page_height) * nrrows ) + 1
-    nr_rowend = min(round((elementheight / page_height) * nrrows) + nr_rowstart,nrrows)
+    nr_columnstart = max(math.floor((xielem / page_width) * 64 ) + 1,1)
+    nr_columnend = min(math.floor((elementwidth / page_width) * 64) + 1 + nr_columnstart,64)
 
-    if(parent_data==None and nr_columnend==16):
+    nr_rowstart = math.floor((yielem / page_height) * nrrows ) + 1
+    nr_rowend = min(math.floor((elementheight / page_height) * nrrows) + nr_rowstart,nrrows)
+
+    if(parent_data==None and nr_columnend==64):
         nrcolumn = nr_columnend
         nr_columnend = " span "+ str(nrcolumn)
-    if(parent_data==None and nr_rowend==48):
+    if(parent_data==None and nr_rowend==128):
         nrrow = nr_rowend
         nr_rowend = " span "+ str(nrrow)
 
@@ -126,7 +129,26 @@ def processElement(name,data,page_width,page_height,pageX,pageY,parent_data=None
         style.setGridrowEnd(nr_rowend)
 
         if("cornerRadius" in data):
-            style.setBorderRadius(data["cornerRadius"])            
+            style.setBorderRadius(data["cornerRadius"])
+
+        for effect in data["effects"]:
+            #print(effect)
+            if effect["type"] == "DROP_SHADOW":
+                rgba_shadow = (effect["color"]["r"], effect["color"]["g"], effect["color"]["b"], effect["color"]["a"])
+                shadowX , shadowY = (str(round(effect["offset"]["x"])), str(round(effect["offset"]["y"])))
+                shadowRadius = str(round(effect["radius"]))+"px "
+                spread = str(round(effect["spread"]))+"px "
+
+                boxshadow = shadowX+"px " + shadowY+"px " + shadowRadius + spread + "rgba("+','.join(str(val) for val in rgba_shadow)+")"
+                style.setBoxShadow(boxshadow)
+
+        for stroke in data["strokes"]:
+            rgba_stroke = (stroke["color"]["r"], stroke["color"]["g"], stroke["color"]["b"], stroke["color"]["a"])
+            stroketype = str(stroke["type"]).lower()
+            strokeWeight = str(data["strokeWeight"])+"px "
+
+            borderstyle = strokeWeight + stroketype + " rgba("+','.join(str(val) for val in rgba_stroke)+")"
+            style.setBorderStyle(borderstyle)
 
         mcontainerelement = ContainerElement(data["id"],"",style)
 
@@ -141,11 +163,11 @@ def processElement(name,data,page_width,page_height,pageX,pageY,parent_data=None
 
     myparent_data = data
     if("children" in data):
+        if(data["type"]=="FRAME"):
+            style.setDisplay("grid")
+            style.setGridTemplateColumns("repeat(64,1fr)")
+            style.setGridTemplateRows("repeat(64,1fr)")
         for element in data["children"]:
-            if(element["type"]=="FRAME"):
-                style.setDisplay("grid")
-                style.setGridTemplateColumns("repeat(16,1fr)")
-                style.setGridTemplateRows("repeat(16,1fr)")
             nestedelem = processElement(element["name"],element,data["absoluteRenderBounds"]["width"],data["absoluteRenderBounds"]["height"],pageX,pageY,myparent_data)
             children.append(nestedelem)
 
@@ -171,6 +193,6 @@ def setPageStyle(pagename,pagedata):
     style.setDisplay("grid")
     style.setMargin("0")
     style.setPadding("0")
-    style.setGridTemplateColumns("repeat(16,1fr)")
+    style.setGridTemplateColumns("repeat(64,1fr)")
     
     allpages[pagename].setPageStyle(style)

@@ -101,12 +101,12 @@ def generatePageStyle(name,page):
   width = page.containerstyle.width
   height = page.containerstyle.height
 
-  row_height = height / 48
+  row_height = height / 128
 
   css = """\n.grid-container {
   display:"""+ page.containerstyle.display+ """;
   grid-template-columns:"""+ page.containerstyle.gridtemplatecolumns+""";
-  grid-template-rows: repeat(48,minmax("""+ str(row_height) +"""px,1fr));
+  grid-template-rows: repeat(128,minmax("""+ str(row_height) +"""px,1fr));
   background-color:"""+ page.containerstyle.backgroundColor + """;
   width: 100%;
   min-height: 100vh;
@@ -154,16 +154,19 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     if elem.textStyle.gridrowEnd != None: csskeyvalues+=f"grid-row-end: {str(elem.textStyle.gridrowEnd)};{newline}"
     csskeyvalues+=f"white-space: nowrap;{newline}"
 
-    if(pagename in font_imports):
-      font_imports[pagename].append("//fonts.googleapis.com/css2?family="+elem.textStyle.fontFamily+":wght@"+ str(elem.textStyle.fontWeight) +"&display=swap")
-    else:
-      font_imports[pagename] = ["//fonts.googleapis.com/css2?family="+elem.textStyle.fontFamily+":wght@"+ str(elem.textStyle.fontWeight) +"&display=swap"]
+    font = "//fonts.googleapis.com/css2?family="+elem.textStyle.fontFamily+":wght@"+ str(elem.textStyle.fontWeight) +"&display=swap"
+    if((pagename in font_imports) and (font not in font_imports[pagename])):
+      font_imports[pagename].append(font)
+    if((pagename not in font_imports)):
+      font_imports[pagename] = [font]
 
     css = "\n."+cssclass+" {\n\t"+ csskeyvalues[:-1] +"}\n\n"
 
   if isinstance(elem,ContainerElement): 
 
     if elem.containerStyle.backgroundColor != None: csskeyvalues+=f"background-color: {elem.containerStyle.backgroundColor};{newline}"
+    if elem.containerStyle.boxShadow != None: csskeyvalues+=f"box-shadow: {elem.containerStyle.boxShadow};{newline}"
+    if elem.containerStyle.borderStyle != None: csskeyvalues+=f"border: {elem.containerStyle.borderStyle};{newline}"
     if elem.containerStyle.borderRadius != None: csskeyvalues+=f"border-radius: {elem.containerStyle.borderRadius}px;{newline}"
     if elem.containerStyle.gridcolumnStart != None: csskeyvalues+=f"grid-column-start: {str(elem.containerStyle.gridcolumnStart)};{newline}"
     if elem.containerStyle.gridcolumnEnd != None: csskeyvalues+=f"grid-column-end: {str(elem.containerStyle.gridcolumnEnd)};{newline}"
