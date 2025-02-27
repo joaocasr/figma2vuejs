@@ -2,6 +2,7 @@ from parser.model.ContainerElement import ContainerElement
 from parser.model.TextElement import TextElement
 
 import os
+import math
 
 # key: page_name; value: list_of_font_imports -> list(string)
 font_imports = {}
@@ -98,17 +99,22 @@ body {
 
 
 def generatePageStyle(name,page):
+  global font_imports
   width = page.containerstyle.width
   height = page.containerstyle.height
 
   row_height = height / 128
 
+  background = "background-color:white;"
+  if(page.containerstyle.backgroundColor!=None):
+    background = """\n  background-color:"""+ page.containerstyle.backgroundColor+";\n"
+  if(page.containerstyle.background!=None):
+    background = """\n  background:"""+ page.containerstyle.background+";\n"
+    
   css = """\n.grid-container {
   display:"""+ page.containerstyle.display+ """;
   grid-template-columns:"""+ page.containerstyle.gridtemplatecolumns+""";
-  grid-template-rows: repeat(128,minmax("""+ str(row_height) +"""px,1fr));
-  background-color:"""+ page.containerstyle.backgroundColor + """;
-  width: 100%;
+  grid-template-rows: repeat(128,minmax("""+ str(row_height) +"""px,1fr));""" + background + """  width: 100%;
   min-height: 100vh;
   max-height: auto;
   margin:"""+ page.containerstyle.margin + """;
@@ -139,6 +145,7 @@ def generatePageStyle(name,page):
 
 
 def generateElemCssProperties(projectname,pagename,cssclass,elem):
+  global font_imports
   csskeyvalues = ""
   css = ""
   newline = '\n\t'
@@ -165,6 +172,7 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
   if isinstance(elem,ContainerElement): 
 
     if elem.containerStyle.backgroundColor != None: csskeyvalues+=f"background-color: {elem.containerStyle.backgroundColor};{newline}"
+    if elem.containerStyle.background != None: csskeyvalues+=f"background: {elem.containerStyle.background};{newline}"
     if elem.containerStyle.boxShadow != None: csskeyvalues+=f"box-shadow: {elem.containerStyle.boxShadow};{newline}"
     if elem.containerStyle.borderStyle != None: csskeyvalues+=f"border: {elem.containerStyle.borderStyle};{newline}"
     if elem.containerStyle.borderRadius != None: csskeyvalues+=f"border-radius: {elem.containerStyle.borderRadius}px;{newline}"
@@ -185,3 +193,22 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     mode = "a"
   with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
     f.write(css)
+
+
+def calculate_gradientDegree(startPoint,endPoint,color1,color2):
+    a = (0,0.5)
+    b = (endPoint["x"]-startPoint["x"], endPoint["y"]-startPoint["y"])
+
+    norm_a = math.sqrt(a[0]**2 + a[1]**2) 
+    norm_b = math.sqrt(b[0]**2 + b[1]**2) 
+
+    cosalpha = (a[0]*b[0] + a[1]*b[1]) / (norm_a * norm_b)
+
+    x = math.acos(cosalpha)
+    degree = x  * (180.0 / math.pi)
+    
+    rgba1 = (color1["color"]["r"]*255, color1["color"]["g"]*255, color1["color"]["b"]*255, color1["color"]["a"]*255)
+    rgba2 = (color2["color"]["r"]*255, color2["color"]["g"]*255, color2["color"]["b"]*255, color2["color"]["a"]*255)
+
+    lineargradient = "linear-gradient("+str(degree)+"deg, " + "rgba("+','.join(str(val) for val in rgba1)+"), " + "rgba("+','.join(str(val) for val in rgba2)+"))" 
+    return lineargradient

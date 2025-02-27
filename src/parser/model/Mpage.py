@@ -49,4 +49,4 @@ class Mpage(object):
 		allelements=""
 		for e in self.elements:
 			allelements += str(e) + ";"
-		return "name:" + self.pagename + ", "+ "path:" + self.pagepath + ", elements: [" + allelements + "] , style: "+ str(self.containerstyle)
+		return "name:" + str(self.pagename) + ", "+ "path:" + str(self.pagepath) + ", elements: [" + allelements + "] , style: "+ str(self.containerstyle)

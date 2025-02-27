@@ -24,12 +24,12 @@ class Melement(object):
 	def setChildren(self, nchildren):
 		self.children = nchildren
 
-	def getInteractions(self, interactions):
-		self.interactions = interactions
+	def getInteractions(self):
+		return self.interactions
 
 	def setInteractions(self, interactions):
 		self.interactions = interactions
 
 	def __str__(self):
-		return "id: " + str(self.idElement) + "; tag: " + str(self.tag) + "; children : ["+ ''.join(str(c) for c in self.children) + "]\n"
+		return "(id: " + str(self.idElement) + "; tag: " + str(self.tag) + "; children : ["+ ''.join(str(c) for c in self.children) + "])" + "; interactions : ["+ ''.join(str(c) for c in self.interactions) + "])"
 

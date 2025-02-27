@@ -27,10 +27,10 @@
 	font-size:53px;
 	font-family: Inter;
 	color: rgba(0.0,0.0,0.0,255.0);
-	grid-column-start: 18;
-	grid-column-end: 47;
-	grid-row-start: 34;
-	grid-row-end: 37;
+	grid-column-start: 19;
+	grid-column-end: 49;
+	grid-row-start: 35;
+	grid-row-end: 38;
 	white-space: nowrap;
 }
 
@@ -38,10 +38,10 @@
 .container205315 {
 	background-color: rgba(158.48957151174545,158.48957151174545,158.48957151174545,255.0);
 	border-radius: 22.0px;
-	grid-column-start: 26;
-	grid-column-end: 38;
-	grid-row-start: 56;
-	grid-row-end: 63;
+	grid-column-start: 27;
+	grid-column-end: 40;
+	grid-row-start: 57;
+	grid-row-end: 65;
 	display: grid;
 	grid-template-columns: repeat(64,1fr);
 	grid-template-rows: repeat(64,1fr);
@@ -54,10 +54,10 @@
 	font-size:40px;
 	font-family: Inter;
 	color: rgba(255.0,255.0,255.0,255.0);
-	grid-column-start: 17;
-	grid-column-end: 48;
+	grid-column-start: 18;
+	grid-column-end: 50;
 	grid-row-start: 23;
-	grid-row-end: 42;
+	grid-row-end: 43;
 	white-space: nowrap;
 }
 

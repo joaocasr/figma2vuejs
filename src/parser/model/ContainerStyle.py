@@ -6,6 +6,7 @@ class ContainerStyle(object):
 		self.width = None
 		self.height = None
 		self.backgroundColor = None
+		self.background = None
 		self.backgroundImage = None
 		self.display = None
 		self.gridtemplatecolumns = None
@@ -58,6 +59,16 @@ class ContainerStyle(object):
 		"""@ParamType backgroundImage String
 		@ReturnType void"""
 		self.backgroundImage = backgroundImage
+
+	def getBackground(self):
+		"""@ReturnType String"""
+		return self.background
+
+	def setBackground(self, background):
+		"""@ParamType background String
+		@ReturnType void"""
+		self.background = background
+
 
 	def getDisplay(self):
 		"""@ReturnType String"""
@@ -189,7 +200,7 @@ class ContainerStyle(object):
 		self.gridtemplaterows = gridtemplaterows
 
 	def __str__(self):
-		return "width:" + str(self.width) +",\n"+"height:" + str(self.height) +",\n"+ "backgroundColor:" + self.backgroundColor +",\n"+ "display:" + self.display +",\n"+ "gridtemplatecolumns:" + self.gridtemplatecolumns +",\n"+ "gridtemplaterows:" + self.gridtemplaterows +",\n"+ "margin:" + str(self.margin) +",\n"+ "margin:" + str(self.margin) +",\n"+ "padding:" + str(self.padding)
+		return "width:" + str(self.width) +",\n"+"height:" + str(self.height) +",\n"+ "backgroundColor:" + str(self.backgroundColor) +",\n"+ "display:" + str(self.display) +",\n"+ "gridtemplatecolumns:" + str(self.gridtemplatecolumns) +",\n"+ "gridtemplaterows:" + str(self.gridtemplaterows) +",\n"+ "margin:" + str(self.margin) +",\n"+ "margin:" + str(self.margin) +",\n"+ "padding:" + str(self.padding)
 
 
 

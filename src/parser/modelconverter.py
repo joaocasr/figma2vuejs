@@ -11,10 +11,13 @@ from parser.model.TextElement import TextElement
 from parser.model.ContainerStyle import ContainerStyle
 from parser.model.TextStyle import TextStyle
 from parser.model.InteractionElement import InteractionElement
+from parser.model.NavigationAction import NavigationAction
+from engine.stylegenerator import calculate_gradientDegree
 
 allpages = {}
 
 def getFigmaData(prototype):
+    global allpages
     prototype1 = "../tests/prototype"+str(prototype)+".json"
     figmadata = {}
     with open(prototype1,"r") as file1:
@@ -22,10 +25,10 @@ def getFigmaData(prototype):
         figmadata = data
     project_name = figmadata["name"]
     pages = parsePageEntities(figmadata)
-    return (project_name,
-            pages)
+    return (project_name, pages, allpages)
 
 def parsePageEntities(data):
+    global allpages
     pages = []
     for page in data["document"]["children"][0]["children"]:
         if(page["type"]=="FRAME"):
@@ -38,6 +41,7 @@ def parsePageEntities(data):
     return allpages
 
 def iterate_nestedElements(data):    
+    global allpages
     for page in data["document"]["children"][0]["children"]:
         if(page["type"]=="FRAME" and "children" in page):
             for element in page["children"]:
@@ -84,11 +88,11 @@ def processElement(name,data,page_width,page_height,pageX,pageY,parent_data=None
 
     #translateX(calc(-100% / 64)); -> this translates one column to the left
 
-    nr_columnstart = max(math.floor((xielem / page_width) * 64 ) + 1,1)
-    nr_columnend = min(math.floor((elementwidth / page_width) * 64) + 1 + nr_columnstart,64)
+    nr_columnstart = max(round((xielem / page_width) * 64 ) + 1,1)
+    nr_columnend = min(round((elementwidth / page_width) * 64) + 1 + nr_columnstart,64)
 
-    nr_rowstart = math.floor((yielem / page_height) * nrrows ) + 1
-    nr_rowend = min(math.floor((elementheight / page_height) * nrrows) + nr_rowstart,nrrows)
+    nr_rowstart = round((yielem / page_height) * nrrows ) + 1
+    nr_rowend = min(round((elementheight / page_height) * nrrows) + nr_rowstart, nrrows)
 
     if(parent_data==None and nr_columnend==64):
         nrcolumn = nr_columnend
@@ -115,13 +119,24 @@ def processElement(name,data,page_width,page_height,pageX,pageY,parent_data=None
         melement = mtextelement
     if(data["type"]=="FRAME"):
 
-        color = data["fills"][0]["color"]
-        rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"] * 255)
+
+        lineargradient = None
+        rgba = None
+        for background in data["background"]:
+
+            if("color" in background):
+                color = data["background"][0]["color"]
+                rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"] * 255)
+            elif(background["type"] == "GRADIENT_LINEAR"):
+                lineargradient = calculate_gradientDegree(background["gradientHandlePositions"][0],
+                                                background["gradientHandlePositions"][1],
+                                                background["gradientStops"][0],
+                                                background["gradientStops"][1])
+        
         style = ContainerStyle()
         
-        #style.setWidth(data["absoluteRenderBounds"]["width"])
-        #style.setHeight(data["absoluteRenderBounds"]["height"])
-        style.setBackgroundColor("rgba("+','.join(str(val) for val in rgba)+")")
+        if(rgba!=None): style.setBackgroundColor("rgba("+','.join(str(val) for val in rgba)+")")
+        if(lineargradient!=None): style.setBackground(lineargradient)
 
         style.setGridcolumnStart(nr_columnstart)
         style.setGridcolumnEnd(nr_columnend)
@@ -132,7 +147,6 @@ def processElement(name,data,page_width,page_height,pageX,pageY,parent_data=None
             style.setBorderRadius(data["cornerRadius"])
 
         for effect in data["effects"]:
-            #print(effect)
             if effect["type"] == "DROP_SHADOW":
                 rgba_shadow = (effect["color"]["r"], effect["color"]["g"], effect["color"]["b"], effect["color"]["a"])
                 shadowX , shadowY = (str(round(effect["offset"]["x"])), str(round(effect["offset"]["y"])))
@@ -155,8 +169,16 @@ def processElement(name,data,page_width,page_height,pageX,pageY,parent_data=None
         element_interactions = []
         for interaction in data["interactions"]:
             type = interaction["trigger"]["type"]
-            interaction = InteractionElement(type)
-            element_interactions.append(interaction)
+            if(type == "ON_CLICK"):
+                interactionelement = InteractionElement()
+                interactionelement.setInteractionType(InteractionElement.Interaction.ONCLICK)
+
+            for action in interaction["actions"]:
+                if(action["type"]=="NODE" and action["navigation"]=="NAVIGATE"):
+                    navigateAction = NavigationAction(action["destinationId"])
+                    interactionelement.addAction(navigateAction)
+
+            element_interactions.append(interactionelement)
         mcontainerelement.setInteractions(element_interactions)
 
         melement = mcontainerelement
@@ -176,20 +198,26 @@ def processElement(name,data,page_width,page_height,pageX,pageY,parent_data=None
 
 
 def setPageStyle(pagename,pagedata):
-    color = {
-        "r": 0,
-        "g": 0,
-        "b": 0,
-        "a": 0.1
-        }
-    if("color" in pagedata["background"][0]):
-        color = pagedata["background"][0]["color"] #retificar porque pode haver mais do que uma cor e diferentes tonalidades
-    rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"] * 255)
-    #still dummy
+    global allpages
+
+    lineargradient = None
+    rgba = None
+    for background in pagedata["background"]:
+
+        if("color" in background):
+            color = pagedata["background"][0]["color"]
+            rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"] * 255)
+        elif(background["type"] == "GRADIENT_LINEAR"):
+            lineargradient = calculate_gradientDegree(background["gradientHandlePositions"][0],
+                                            background["gradientHandlePositions"][1],
+                                            background["gradientStops"][0],
+                                            background["gradientStops"][1])
+
     style = ContainerStyle()
     style.setWidth(pagedata["absoluteRenderBounds"]["width"])
     style.setHeight(pagedata["absoluteRenderBounds"]["height"])
-    style.setBackgroundColor("rgba("+','.join(str(val) for val in rgba)+")")
+    if(rgba!=None): style.setBackgroundColor("rgba("+','.join(str(val) for val in rgba)+")")
+    if(lineargradient!=None): style.setBackground(lineargradient)
     style.setDisplay("grid")
     style.setMargin("0")
     style.setPadding("0")

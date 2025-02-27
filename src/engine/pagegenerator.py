@@ -1,18 +1,27 @@
 from engine.stylegenerator import generatePageStyle, generateElemCssProperties
+from engine.logicgenerator import handleBehaviour
 from parser.model.TextElement import TextElement
 from parser.model.ContainerElement import ContainerElement
 import xml.etree.ElementTree as ET
+from lxml import etree, html
 
-def buildpage(name,page):
-    #build page root layout
-    #writeVue(name,page)
+allhooks = dict()
+imports = dict()
+components = dict()
+allPagesInfo = dict()
+
+def buildpage(name,page,pagesInfo):
+    global allhooks,imports,components,allPagesInfo
+    #setup a page
+    allhooks[page.pagename] = {}
+    imports[page.pagename] = []
+    components[page.pagename] = []
+    allPagesInfo = pagesInfo
     # build elements from the page  
-    #print(page)
     output = ""  
     for element in page.elements:
         output += processChildren(element,name,page.pagename)
-        #pretty_print_xml_elementtree(getHtml(element))
-    #print(getIndentedXML(output))
+
     writeVue(name,page,output)
 
 def processChildren(data,projectname,pagename):
@@ -31,21 +40,39 @@ def processChildren(data,projectname,pagename):
 
 # Do a better handling of the tags
 def applytransformation(elem,projectname,pagename):
+    global allPagesInfo, allhooks
     cssclass = elem.idElement.replace(":","")
     if isinstance(elem, TextElement):
         if elem.tag=="" or elem.tag == None:
             generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
+            #iterate the list of interactions (logicgenerator.py)
             return ("<p class="+'"grid-item text'+ cssclass +'">'+elem.text, "</p>")
     if isinstance(elem, ContainerElement):
         if elem.tag=="" or elem.tag == None:
             generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
-            return ("<div class="+'"grid-item container'+ cssclass +'">', "</div>")
+            #iterate the list of interactions (logicgenerator.py)
+            directives, hooks = handleBehaviour(elem,cssclass,allPagesInfo)
+            if(hooks!=None): 
+                for hook in hooks:
+                    allhooks[pagename].setdefault(hook, []).extend(hooks[hook])
+            html = "<div class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) +">"
+            return (html, "</div>")
 
 #still without elements
 def writeVue(name,page,content):
+    global allhooks
     cssimport = "@import '../assets/"+page.getPagename().lower()+".css';"
     template = '<div class="grid-container">'+ content + '</div>'
-    vuepage = """<template>\n\t\t""" + getIndentedXML(template) + """
+
+#',\n\t\t'.join(str(allhooks[page.getPagename()][hook]) for hook in allhooks[page.getPagename()]) + """
+    pagehooks=""
+    for hook in allhooks[page.getPagename()]:
+        pagehooks = hook + ":{\n"
+        for content in allhooks[page.getPagename()][hook]:
+            pagehooks += content + ",\n"
+        pagehooks = pagehooks[:-2]
+        pagehooks +="\n\t}"
+    vuepage = """<template>\n""" + getIndentedHTML(template) + """
 </template>
 
 <script>
@@ -54,8 +81,7 @@ export default {
         return {
         }
     },
-    methods:{
-    }
+    """ + pagehooks + """
 }
 </script>
 <style lang="css" scoped>
@@ -66,27 +92,8 @@ export default {
     generatePageStyle(name,page)
 
 
-def indent(elem, level=1):
-   indent_size = "  "
-   i = "\n" + level * indent_size
-   if len(elem):
-      if not elem.text or not elem.text.strip():
-         elem.text = i + indent_size
-      if not elem.tail or not elem.tail.strip():
-         elem.tail = i
-      for elem in elem:
-         indent(elem, level + 1)
-      if not elem.tail or not elem.tail.strip():
-         elem.tail = i
-   else:
-      if level and (not elem.tail or not elem.tail.strip()):
-         elem.tail = i
-
-def getIndentedXML(xml_string):
-
-   root = ET.fromstring(xml_string)
-   indent(root)
-
-   indented_xml = ET.tostring(root, encoding="unicode",short_empty_elements=False)
-   return indented_xml
+def getIndentedHTML(html_string):
+    myhtml = html.fromstring(html_string)
+    etree.indent(myhtml, space="    ")
+    return etree.tostring(myhtml, encoding='unicode', pretty_print=True)
 
