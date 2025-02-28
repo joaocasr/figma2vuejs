@@ -42,7 +42,7 @@ class Mpage(object):
 		@ReturnType void"""
 		self.idpage = idpage
 
-	def setPageStyle(self, style):
+	def assignPageStyle(self, style):
 		self.containerstyle = style
 
 	def __str__(self):

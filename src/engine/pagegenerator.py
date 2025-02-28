@@ -64,7 +64,6 @@ def writeVue(name,page,content):
     cssimport = "@import '../assets/"+page.getPagename().lower()+".css';"
     template = '<div class="grid-container">'+ content + '</div>'
 
-#',\n\t\t'.join(str(allhooks[page.getPagename()][hook]) for hook in allhooks[page.getPagename()]) + """
     pagehooks=""
     for hook in allhooks[page.getPagename()]:
         pagehooks = hook + ":{\n"

@@ -1,8 +1,8 @@
 <template>
 <div class="grid-container">
-    <p class="grid-item text205314">THIS IS THE SECONDARY PAGE</p>
-    <div class="grid-item container205315" v-on:click="gotoPrincipalPage()">
-        <p class="grid-item text205316">Go Back</p>
+    <p class="grid-item text433701">THIS IS THE SECONDARY PAGE</p>
+    <div class="grid-item container4338808" v-on:click="gotoPrincipalPage()">
+        <p class="grid-item text4338809">Go Back</p>
     </div>
 </div>
 

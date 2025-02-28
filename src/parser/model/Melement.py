@@ -31,5 +31,5 @@ class Melement(object):
 		self.interactions = interactions
 
 	def __str__(self):
-		return "(id: " + str(self.idElement) + "; tag: " + str(self.tag) + "; children : ["+ ''.join(str(c) for c in self.children) + "])" + "; interactions : ["+ ''.join(str(c) for c in self.interactions) + "])"
+		return "(id: " + str(self.idElement) + "; tag: " + str(self.tag) + "; children : ["+ ''.join(str(c) for c in self.children) + "]" + "; interactions : ["+ ''.join(str(c) for c in self.interactions) + "])"
 
