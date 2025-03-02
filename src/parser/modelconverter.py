@@ -30,14 +30,22 @@ def getFigmaData(prototype):
         data = json.load(file1)
         figmadata = data
     project_name = figmadata["name"]
-    pages = parsePageEntities(figmadata)
-    
+    parsePageEntities(figmadata)
+
+    """
+    #update overlay components coordinates
+    for p in pageComponents:
+        for c in pageComponents[p]:
+            if(c.getTypeComponent()=="OVERLAY"):
+                updateOverlayPosition(c,c.style.getOverlayVector()[0],c.style.getOverlayVector()[1],allpages[p].style.getWidth(),allpages[p].style.getHeight())
+                allpages[p].addElement(c)
+    """
     # assign the components for each page
     for p in pageComponents:
         if(p in allpages):
             allpages[p].components = pageComponents[p]
-
-    return (project_name, pages, allpages)
+    print(allpages['PrincipalPage'].elements)
+    return (project_name, allpages)
 
 def parsePageEntities(data):
     global allpages
@@ -85,7 +93,7 @@ def iterate_nestedElements(data):
 
 
 def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_data=None):
-    global allcomponents,pageComponents
+    global allcomponents,pageComponents,allpages
     children = []
 
     elementwidth = data["absoluteRenderBounds"]["width"]
@@ -125,7 +133,11 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
 
         color = data["fills"][0]["color"]
         rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"] * 255)
-        style = TextStyle(data["style"]["fontStyle"],
+        style = TextStyle(data["absoluteRenderBounds"]["x"],
+                        data["absoluteRenderBounds"]["y"],
+                        elementwidth,
+                        elementheight,
+                        data["style"]["fontStyle"],
                         data["style"]["fontWeight"],
                         str(round(data["style"]["fontSize"]/1.5))+"px",
                         data["style"]["fontFamily"],
@@ -170,6 +182,10 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
         if(rgba!=None): style.setBackgroundColor("rgba("+','.join(str(val) for val in rgba)+")")
         if(lineargradient!=None): style.setBackground(lineargradient)
 
+        style.setX(data["absoluteRenderBounds"]["x"])
+        style.setY(data["absoluteRenderBounds"]["y"])
+        style.setHeight(data["absoluteRenderBounds"]["height"])
+        style.setWidth(data["absoluteRenderBounds"]["width"])
         style.setGridcolumnStart(nr_columnstart)
         style.setGridcolumnEnd(nr_columnend)
         style.setGridrowStart(nr_rowstart)
@@ -210,9 +226,17 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
                 navigateAction = NavigationAction(action["destinationId"])
                 interactionelement.addAction(navigateAction)
             if(action["type"]=="NODE" and action["navigation"]=="OVERLAY"):
-                if(action["destinationId"] in allcomponents):
+                if(action["destinationId"] in allcomponents): 
+                    # neste caso estamos apenas a criar o elemento com overlay position se for apenas um componente já que considero que os frames no primeiro nivel correspondem a paginas
+                    # caso queira extender é essencial acrescentar um 'type' no Melement para ajustar as coordenadas no final
                     #  update the position of the component relatively to the node which will open the component overlay
                     compstyle = allcomponents[data["transitionNodeID"]].getComponentStyle()
+                    (xe,ye) = (xielem,yielem)
+                    (rx,ry) = (action["overlayRelativePosition"]["x"],action["overlayRelativePosition"]["y"])
+                    #(px,py) = (rx-xe,ry-ye)
+                    #(vx,vy) = (px-compstyle.getX(),py-compstyle.getY())
+                    compstyle.setOverlayVector(rx,ry)
+                    """
                     (columnstart,columnend,rowstart,rowend)= getPosition(xielem+action["overlayRelativePosition"]["x"],
                                                                                             yielem+action["overlayRelativePosition"]["y"],
                                                                                             compstyle.getWidth(),
@@ -224,9 +248,11 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
                     compstyle.setGridcolumnEnd(columnend)
                     compstyle.setGridrowStart(rowstart)
                     compstyle.setGridrowEnd(rowend)
+                    """
                     allcomponents[data["transitionNodeID"]].setComponentStyle(compstyle)
                     allcomponents[data["transitionNodeID"]].setTypeComponent("OVERLAY")
                     pageComponents.setdefault(pagename, []).append(allcomponents[data["transitionNodeID"]])
+                    #allpages[pagename].addElement(allcomponents[data["transitionNodeID"]])
 
         element_interactions.append(interactionelement)
     if(melement!=None): melement.setInteractions(element_interactions)
@@ -287,7 +313,6 @@ def setPageStyle(pagename,pagedata):
 
 def setComponentStyle(component):
     global allcomponents
-
     lineargradient = None
     rgba = None
     for background in component["background"]:
@@ -304,6 +329,8 @@ def setComponentStyle(component):
     id = component["id"]
 
     componentStyle = ComponentStyle()
+    componentStyle.setX(component["absoluteRenderBounds"]["x"])
+    componentStyle.setY(component["absoluteRenderBounds"]["y"])
     componentStyle.setWidth(component["absoluteRenderBounds"]["width"])
     componentStyle.setHeight(component["absoluteRenderBounds"]["height"])
     if(rgba!=None): componentStyle.setBackgroundColor("rgba("+','.join(str(val) for val in rgba)+")")
@@ -324,7 +351,7 @@ def setComponentStyle(component):
             spread = "0px"
             if("spread" in effect): spread = str(round(effect["spread"]))+"px "
 
-            boxshadow = shadowX+"px " + shadowY+"px " + shadowRadius + spread + "rgba("+','.join(str(val) for val in rgba_shadow)+")"
+            boxshadow = shadowX+"px " + shadowY+"px " + shadowRadius + spread + " rgba("+','.join(str(val) for val in rgba_shadow)+")"
             componentStyle.setBoxShadow(boxshadow)
 
     for stroke in component["strokes"]:
@@ -338,3 +365,25 @@ def setComponentStyle(component):
     if(id in allcomponents): allcomponents[id].setComponentStyle(componentStyle)
 
     return componentStyle
+
+
+def updateOverlayPosition(component, vx, vy, page_width, page_height):
+    if isinstance(component, (Mcomponent, TextElement, ContainerElement)):
+        nrrows = 128 if isinstance(component, Mcomponent) else 64
+        (columnstart, columnend, rowstart, rowend) = getPosition(
+            component.style.getX() + vx,
+            component.style.getY() + vy,
+            component.style.getWidth(),
+            component.style.getHeight(),
+            page_width,
+            page_height,
+            nrrows
+        )
+        component.style.setGridcolumnStart(columnstart)
+        component.style.setGridcolumnEnd(columnend)
+        component.style.setGridrowStart(rowstart)
+        component.style.setGridrowEnd(rowend)
+
+    if(component!=None and component.children):
+        for element in component.children:
+            updateOverlayPosition(element, vx, vy, page_width, page_height)

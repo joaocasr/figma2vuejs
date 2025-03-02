@@ -1,11 +1,11 @@
 <template>
 <div class="grid-container">
-    <p class="grid-item text433697">THIS IS THE PRINCIPAL PAGE</p>
-    <div class="grid-item container433698" v-on:click="gotoSecondaryPage()">
-        <p class="grid-item text433699">Click Me</p>
+    <p class="grid-item text20533">THIS IS THE PRINCIPAL PAGE</p>
+    <div class="grid-item container20534" v-on:click="gotoSecondaryPage()">
+        <p class="grid-item text20535">Click Me</p>
     </div>
-    <div class="grid-item container4338820">
-        <p class="grid-item text4338822">i</p>
+    <div class="grid-item container20536">
+        <p class="grid-item text20537">i</p>
     </div>
 </div>
 

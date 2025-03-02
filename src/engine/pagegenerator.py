@@ -20,15 +20,14 @@ def buildpage(name,page,pagesInfo):
     imports[page.pagename] = []
     components[page.pagename] = []
     allPagesInfo = pagesInfo
-    # build elements from the page  
     output = ""  
     for element in page.elements:
         output += processChildren(element,name,page.pagename)
 
-    # iterate through OVERLAY components and append the resulting code in first level template
     writeVue(name,page,output)
 
 def processChildren(data,projectname,pagename):
+    if(data==None): return ""
     if(len(data.children)>0):
         content=""
         output, endtag = applytransformation(data,projectname,pagename)
@@ -52,19 +51,23 @@ def applytransformation(elem,projectname,pagename):
     if isinstance(elem, TextElement):
         if elem.tag=="" or elem.tag == None:
             generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
-            #iterate the list of interactions (logicgenerator.py)
-            return ("<p class="+'"grid-item text'+ cssclass +'">'+elem.text, "</p>")
-    if isinstance(elem, ContainerElement):
-        if elem.tag=="" or elem.tag == None:
-            generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
-            #iterate the list of interactions (logicgenerator.py)
-            #print(elem)
+
+            # insert directives and functions if there is some behaviour
             directives, hooks = handleBehaviour(elem,allPagesInfo)
             if(hooks!=None): 
                 for hook in hooks:
                     allhooks[pagename].setdefault(hook, []).extend(hooks[hook])
-            html = "<div class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) +">"
-            return (html, "</div>")
+            return ("<p class="+'"grid-item text'+ cssclass  + '" '+ ' '.join(d for d in directives) +">"+elem.text, "</p>")
+    if isinstance(elem, ContainerElement):
+        if elem.tag=="" or elem.tag == None:
+            generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
+
+            # insert directives and functions if there is some behaviour
+            directives, hooks = handleBehaviour(elem,allPagesInfo)
+            if(hooks!=None): 
+                for hook in hooks:
+                    allhooks[pagename].setdefault(hook, []).extend(hooks[hook])
+            return ("<div class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) +">", "</div>")
     if isinstance(elem, Mcomponent):
         componentName = elem.componentName.capitalize()
         components.setdefault(pagename, []).append(elem.componentName)
@@ -83,7 +86,7 @@ def writeVue(name,page,content):
     for hook in allhooks[page.getPagename()]:
         pagehooks = hook + ":{\n"
         for content in allhooks[page.getPagename()][hook]:
-            pagehooks += content + ",\n"
+            pagehooks += content[1] + ",\n"
         pagehooks = pagehooks[:-2]
         pagehooks +="\n\t}"
     vuepage = """<template>\n""" + processTemplate(template,page.getPagename()) + """
@@ -115,7 +118,7 @@ def processTemplate(html_string,page):
     finalHtml = etree.tostring(myhtml, encoding='unicode', pretty_print=True)
     for p in components:
         for c in components[p]:
-            pattern = "<"+c+">"+r"\n[\s]*.*\n[\s]*"+r"<\/"+c+">"
+            pattern = "<"+c+">"+r"(\n[\s]*.*)*\n[\s]*"+r"<\/"+c+">"
             processedTemplate = re.sub(pattern,"<"+c.capitalize()+">"+"</"+c.capitalize()+">",finalHtml)
             finalHtml = processedTemplate
     return finalHtml

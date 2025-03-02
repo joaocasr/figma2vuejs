@@ -1,6 +1,8 @@
-import { createRouter, createWebHistory } from 'vue-router';import PrincipalPageView from '@/views/PrincipalPageView.vue';
+import { createRouter, createWebHistory } from 'vue-router';
+import PrincipalPageView from '@/views/PrincipalPageView.vue';
 import SecondaryPageView from '@/views/SecondaryPageView.vue';
-import ErrorPageView from '@/views/ErrorPageView.vue'
+import ErrorPageView from '@/views/ErrorPageView.vue';
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   scrollBehavior(to, from, savedPosition) {

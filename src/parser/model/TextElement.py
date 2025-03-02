@@ -8,4 +8,4 @@ class TextElement(Melement):
 		super().__init__(id,tag) 
 
 		self.text = text
-		self.textStyle = textstyle
+		self.style = textstyle

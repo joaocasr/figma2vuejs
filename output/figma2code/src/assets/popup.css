@@ -1,15 +1,15 @@
 @import url("//fonts.googleapis.com/css2?family=Inter:wght@400&display=swap");
 
-.component4338803 {
+.component20538 {
   display:grid;
   grid-template-columns:repeat(64,1fr);
   grid-template-rows:repeat(64,1fr);
-  grid-column-start:10;
-  background:linear-gradient(90.0deg, rgba(204.76146697998047,212.29725301265717,255.0,255.0), rgba(122.8568771481514,127.37835332751274,153.00000607967377,255.0));
-  grid-column-end:56;
-  grid-row-start:23;box-shadow: 0px 4px 4px 0pxrgba(0.0,0.0,0.0,0.25);
-
-  grid-row-end:55;
+  grid-column-start:None;
+  background:linear-gradient(45.00000000000001deg, rgba(204.76146697998047,212.29725301265717,255.0,255.0), rgba(122.8568771481514,127.37835332751274,153.00000607967377,255.0));
+  grid-column-end:None;
+  grid-row-start:None;
+  box-shadow: 0px 4px 4px 0px rgba(0.0,0.0,0.0,0.25);
+  grid-row-end:None;
   border-radius:15.0px;
   margin:0;
   padding:0;
@@ -24,7 +24,7 @@
   height: 100%;
 }
   
-.text433707 {
+.text20539 {
 	font-style: Regular;
 	font-weight: 400;
 	font-size:50px;
@@ -38,7 +38,7 @@
 }
 
 
-.container433728 {
+.container205310 {
 	background-color: rgba(255.0,255.0,255.0,255.0);
 	border-radius: 20.0px;
 	grid-column-start: 61;

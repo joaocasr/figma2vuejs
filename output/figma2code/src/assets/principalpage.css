@@ -21,7 +21,7 @@
   height: 100%;
 }
   
-.text433697 {
+.text20533 {
 	font-style: Regular;
 	font-weight: 400;
 	font-size:53px;
@@ -35,35 +35,36 @@
 }
 
 
-.container433698 {
+.container20534 {
 	background-color: rgba(158.48957151174545,158.48957151174545,158.48957151174545,255.0);
+	box-shadow: 8px 22px 15px 12px rgba(0.0,0.0,0.0,0.25);
 	border: 1.0px solid rgba(0.0,0.0,0.0,1.0);
 	border-radius: 22.0px;
 	grid-column-start: 27;
-	grid-column-end: 40;
+	grid-column-end: 41;
 	grid-row-start: 57;
-	grid-row-end: 65;
+	grid-row-end: 68;
 	display: grid;
 	grid-template-columns: repeat(64,1fr);
 	grid-template-rows: repeat(64,1fr);
 }
 
 
-.text433699 {
+.text20535 {
 	font-style: Regular;
 	font-weight: 400;
 	font-size:40px;
 	font-family: Inter;
 	color: rgba(255.0,255.0,255.0,255.0);
-	grid-column-start: 17;
-	grid-column-end: 49;
-	grid-row-start: 23;
-	grid-row-end: 43;
+	grid-column-start: 18;
+	grid-column-end: 47;
+	grid-row-start: 19;
+	grid-row-end: 34;
 	white-space: nowrap;
 }
 
 
-.container4338820 {
+.container20536 {
 	background-color: rgba(0.0,0.0,0.0,255.0);
 	border-radius: 20.0px;
 	grid-column-start: 32;
@@ -76,7 +77,7 @@
 }
 
 
-.text4338822 {
+.text20537 {
 	font-style: Regular;
 	font-weight: 400;
 	font-size:53px;

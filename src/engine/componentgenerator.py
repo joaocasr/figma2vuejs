@@ -71,7 +71,7 @@ def writeVueComponent(name,project_name,content,component,pagesInfo):
     for hook in allhooks[name]:
         pagehooks = hook + ":{\n"
         for chook in allhooks[name][hook]:
-            pagehooks += chook + ",\n"
+            pagehooks += chook[1] + ",\n"
         pagehooks = pagehooks[:-2]
         pagehooks +="\n\t}"
 

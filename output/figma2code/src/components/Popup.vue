@@ -1,7 +1,7 @@
 <template>
-<div class="component4338803">
-    <p class="grid-item text433707">This page was created by João Castro.</p>
-    <div class="grid-item container433728"/>
+<div class="component20538">
+    <p class="grid-item text20539">This page was created by João Castro.</p>
+    <div class="grid-item container205310"/>
 </div>
 
 </template>

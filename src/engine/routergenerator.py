@@ -22,7 +22,7 @@ def generate_routes(name,pages):
             'name': 'error',
             'component': 'ErrorPageView'
         },
-       "import": "import ErrorPageView from '@/views/ErrorPageView.vue'"
+       "import": "import ErrorPageView from '@/views/ErrorPageView.vue';\n"
     })
     allRoutes = ""
     allImports = ""
@@ -30,7 +30,8 @@ def generate_routes(name,pages):
         allRoutes += json.dumps(e["component"], indent=4)+",\n"
         allImports += e["import"]
     allRoutes = re.sub(r'component": "(.*)"',r'component": \1' , allRoutes)
-    router = """import { createRouter, createWebHistory } from 'vue-router';"""+allImports+"""
+    router = """import { createRouter, createWebHistory } from 'vue-router';
+"""+allImports+"""
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   scrollBehavior(to, from, savedPosition) {

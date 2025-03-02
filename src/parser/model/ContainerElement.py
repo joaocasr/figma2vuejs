@@ -7,7 +7,7 @@ class ContainerElement(Melement):
 
 		super().__init__(id,tag) 
 
-		self.containerStyle = containerstyle
+		self.style = containerstyle
 
 	def setInteractions(self, interactions):
 		super().setInteractions(interactions)

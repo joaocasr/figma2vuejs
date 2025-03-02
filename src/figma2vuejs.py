@@ -12,7 +12,7 @@ if(len(sys.argv)!=2):
 else:
   prototype = sys.argv[1]
   # extract figma data and build intern model
-  project_name, pages, allpages = getFigmaData(prototype)
+  project_name, allpages = getFigmaData(prototype)
 
   # project setup
   try:
@@ -22,7 +22,7 @@ else:
     pass
 
   # generate routes to the vue pages
-  generate_routes(project_name,pages)
+  generate_routes(project_name,allpages)
 
   # pages_info will be a dictionary of the path and components ids of each page
   pagesInfo = dict()
@@ -40,5 +40,5 @@ else:
     buildcomponent(component,project_name,pagesInfo)
   
   # build each page (elements within, styling and components)
-  for page in pages:
-    buildpage(project_name,pages[page],pagesInfo)
+  for page in allpages:
+    buildpage(project_name,allpages[page],pagesInfo)

@@ -1,19 +1,16 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-#import Melement
-#import Mcomponent
-#import Entity
 
 class Mpage(object):
 
-	def __init__(self,name,path,id,pagestyle=None):
+	def __init__(self,name,path,id,style=None):
 		self.pagename = name
 		self.pagepath = path
 		self.idpage = id
 		self.elements = []
 		self.components = []
 		self.data = []
-		self.containerstyle = pagestyle
+		self.style = style
 
 	def getPagename(self):
 		"""@ReturnType String"""
@@ -43,7 +40,10 @@ class Mpage(object):
 		self.idpage = idpage
 
 	def assignPageStyle(self, style):
-		self.containerstyle = style
+		self.style = style
+
+	def addElement(self,element):
+		self.elements.append(element)
 
 	def __str__(self):
 		allelements=""
@@ -52,4 +52,4 @@ class Mpage(object):
 			allelements += str(e) + ","
 		for c in self.components:
 			allcomponents += str(c) + ","
-		return "name:" + str(self.pagename) + ", "+ "path:" + str(self.pagepath) + ", elements: [" + allelements + "]"+ ", components: [" + allcomponents + "], style: "+ str(self.containerstyle)
+		return "name:" + str(self.pagename) + ", "+ "path:" + str(self.pagepath) + ", elements: [" + allelements + "]"+ ", components: [" + allcomponents + "], style: "+ str(self.style)

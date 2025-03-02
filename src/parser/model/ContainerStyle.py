@@ -3,6 +3,8 @@
 class ContainerStyle(object):
 
 	def __init__(self):
+		self.x = None
+		self.y = None
 		self.width = None
 		self.height = None
 		self.backgroundColor = None
@@ -23,7 +25,25 @@ class ContainerStyle(object):
 		self.gridrowStart = None
 		self.gridrowEnd = None
 		self.boxShadow = None
-		
+
+	def getX(self):
+		"""@ReturnType int"""
+		return self.x
+
+	def setX(self, x):
+		"""@ParamType width int
+		@ReturnType void"""
+		self.x = x
+
+	def getY(self):
+		"""@ReturnType int"""
+		return self.y
+
+	def setY(self, y):
+		"""@ParamType width int
+		@ReturnType void"""
+		self.y = y
+	
 	def getWidth(self):
 		"""@ReturnType int"""
 		return self.width

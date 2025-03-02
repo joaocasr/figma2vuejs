@@ -1,7 +1,11 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 class TextStyle(object):
-	def __init__(self,font,weight,size,family,color,gridcolumnStart,gridcolumnEnd,gridrowStart,gridrowEnd):
+	def __init__(self,x,y,width,height,font,weight,size,family,color,gridcolumnStart,gridcolumnEnd,gridrowStart,gridrowEnd):
+		self.x = x
+		self.y = y
+		self.width = width
+		self.height = height
 		self.textAlign = None
 		self.textDecoration = None
 		self.textIndent = None
@@ -20,6 +24,42 @@ class TextStyle(object):
 		self.gridcolumnEnd = gridcolumnEnd
 		self.gridrowStart = gridrowStart
 		self.gridrowEnd = gridrowEnd
+
+	def getX(self):
+		"""@ReturnType int"""
+		return self.x
+
+	def setX(self, x):
+		"""@ParamType width int
+		@ReturnType void"""
+		self.x = x
+
+	def getY(self):
+		"""@ReturnType int"""
+		return self.y
+
+	def setY(self, y):
+		"""@ParamType width int
+		@ReturnType void"""
+		self.y = y
+
+	def getWidth(self):
+		"""@ReturnType int"""
+		return self.width
+
+	def setWidth(self, width):
+		"""@ParamType width int
+		@ReturnType void"""
+		self.width = width
+
+	def getHeight(self):
+		"""@ReturnType int"""
+		return self.height
+
+	def setHeight(self, height):
+		"""@ParamType height int
+		@ReturnType void"""
+		self.height = height
 
 	def getTextAlign(self):
 		"""@ReturnType String"""

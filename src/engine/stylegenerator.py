@@ -103,25 +103,25 @@ body {
 
 def generatePageStyle(name,page):
   global font_imports
-  width = page.containerstyle.width
-  height = page.containerstyle.height
+  width = page.style.width
+  height = page.style.height
 
-  row_height = height / 128
+  row_height = max(height / 128, 8)
 
   background = "background-color:white;"
-  if(page.containerstyle.backgroundColor!=None):
-    background = """\n  background-color:"""+ page.containerstyle.backgroundColor+";\n"
-  if(page.containerstyle.background!=None):
-    background = """\n  background:"""+ page.containerstyle.background+";\n"
+  if(page.style.backgroundColor!=None):
+    background = """\n  background-color:"""+ page.style.backgroundColor+";\n"
+  if(page.style.background!=None):
+    background = """\n  background:"""+ page.style.background+";\n"
     
   css = """\n.grid-container {
-  display:"""+ page.containerstyle.display+ """;
-  grid-template-columns:"""+ page.containerstyle.gridtemplatecolumns+""";
+  display:"""+ page.style.display+ """;
+  grid-template-columns:"""+ page.style.gridtemplatecolumns+""";
   grid-template-rows: repeat(128,minmax("""+ str(row_height) +"""px,1fr));""" + background + """  width: 100%;
   min-height: 100vh;
   max-height: auto;
-  margin:"""+ page.containerstyle.margin + """;
-  padding:"""+ page.containerstyle.padding + """;
+  margin:"""+ page.style.margin + """;
+  padding:"""+ page.style.padding + """;
 }
   
 .grid-item {
@@ -160,8 +160,8 @@ def generateComponentStyle(name,component):
   border = ""
   if(component.style.backgroundColor!=None): background = """\n  background-color:"""+ component.style.backgroundColor+";"
   if(component.style.background!=None): background = """\n  background:"""+ component.style.background+";"
-  if(component.style.boxShadow != None): boxshadow =f"box-shadow: {component.style.boxShadow};"+"\n"
-  if(component.style.borderStyle) != None: border =f"border: {component.style.borderStyle};"+"\n"
+  if(component.style.boxShadow != None): boxshadow ="\n  "+f"box-shadow: {component.style.boxShadow};"
+  if(component.style.borderStyle) != None: border ="\n  "+f"border: {component.style.borderStyle};"
 
   css = """\n.component"""+ idcomponent +""" {
   display:"""+ component.style.display+ """;
@@ -205,18 +205,18 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
   css = ""
   newline = '\n\t'
   if isinstance(elem,TextElement) : 
-    if elem.textStyle.fontStyle != None: csskeyvalues+=f"font-style: {elem.textStyle.fontStyle};{newline}"
-    if elem.textStyle.fontWeight != None: csskeyvalues+=f"font-weight: {elem.textStyle.fontWeight};{newline}"
-    if elem.textStyle.fontSize != None: csskeyvalues+=f"font-size:{elem.textStyle.fontSize};{newline}"
-    if elem.textStyle.fontFamily != None: csskeyvalues+=f"font-family: {elem.textStyle.fontFamily};{newline}"
-    if elem.textStyle.color != None: csskeyvalues+=f"color: {elem.textStyle.color};{newline}"
-    if elem.textStyle.gridcolumnStart != None: csskeyvalues+=f"grid-column-start: {str(elem.textStyle.gridcolumnStart)};{newline}"
-    if elem.textStyle.gridcolumnEnd != None: csskeyvalues+=f"grid-column-end: {str(elem.textStyle.gridcolumnEnd)};{newline}"
-    if elem.textStyle.gridrowStart != None: csskeyvalues+=f"grid-row-start: {str(elem.textStyle.gridrowStart)};{newline}"
-    if elem.textStyle.gridrowEnd != None: csskeyvalues+=f"grid-row-end: {str(elem.textStyle.gridrowEnd)};{newline}"
+    if elem.style.fontStyle != None: csskeyvalues+=f"font-style: {elem.style.fontStyle};{newline}"
+    if elem.style.fontWeight != None: csskeyvalues+=f"font-weight: {elem.style.fontWeight};{newline}"
+    if elem.style.fontSize != None: csskeyvalues+=f"font-size:{elem.style.fontSize};{newline}"
+    if elem.style.fontFamily != None: csskeyvalues+=f"font-family: {elem.style.fontFamily};{newline}"
+    if elem.style.color != None: csskeyvalues+=f"color: {elem.style.color};{newline}"
+    if elem.style.gridcolumnStart != None: csskeyvalues+=f"grid-column-start: {str(elem.style.gridcolumnStart)};{newline}"
+    if elem.style.gridcolumnEnd != None: csskeyvalues+=f"grid-column-end: {str(elem.style.gridcolumnEnd)};{newline}"
+    if elem.style.gridrowStart != None: csskeyvalues+=f"grid-row-start: {str(elem.style.gridrowStart)};{newline}"
+    if elem.style.gridrowEnd != None: csskeyvalues+=f"grid-row-end: {str(elem.style.gridrowEnd)};{newline}"
     csskeyvalues+=f"white-space: nowrap;{newline}"
 
-    font = "//fonts.googleapis.com/css2?family="+elem.textStyle.fontFamily+":wght@"+ str(elem.textStyle.fontWeight) +"&display=swap"
+    font = "//fonts.googleapis.com/css2?family="+elem.style.fontFamily+":wght@"+ str(elem.style.fontWeight) +"&display=swap"
     if((pagename in font_imports) and (font not in font_imports[pagename])):
       font_imports[pagename].append(font)
     if((pagename not in font_imports)):
@@ -226,19 +226,19 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
 
   if isinstance(elem,ContainerElement): 
 
-    if elem.containerStyle.backgroundColor != None: csskeyvalues+=f"background-color: {elem.containerStyle.backgroundColor};{newline}"
-    if elem.containerStyle.background != None: csskeyvalues+=f"background: {elem.containerStyle.background};{newline}"
-    if elem.containerStyle.boxShadow != None: csskeyvalues+=f"box-shadow: {elem.containerStyle.boxShadow};{newline}"
-    if elem.containerStyle.borderStyle != None: csskeyvalues+=f"border: {elem.containerStyle.borderStyle};{newline}"
-    if elem.containerStyle.borderRadius != None: csskeyvalues+=f"border-radius: {elem.containerStyle.borderRadius}px;{newline}"
-    if elem.containerStyle.gridcolumnStart != None: csskeyvalues+=f"grid-column-start: {str(elem.containerStyle.gridcolumnStart)};{newline}"
-    if elem.containerStyle.gridcolumnEnd != None: csskeyvalues+=f"grid-column-end: {str(elem.containerStyle.gridcolumnEnd)};{newline}"
-    if elem.containerStyle.gridrowStart != None: csskeyvalues+=f"grid-row-start: {str(elem.containerStyle.gridrowStart)};{newline}"
-    if elem.containerStyle.gridrowEnd != None: csskeyvalues+=f"grid-row-end: {str(elem.containerStyle.gridrowEnd)};{newline}"
+    if elem.style.backgroundColor != None: csskeyvalues+=f"background-color: {elem.style.backgroundColor};{newline}"
+    if elem.style.background != None: csskeyvalues+=f"background: {elem.style.background};{newline}"
+    if elem.style.boxShadow != None: csskeyvalues+=f"box-shadow: {elem.style.boxShadow};{newline}"
+    if elem.style.borderStyle != None: csskeyvalues+=f"border: {elem.style.borderStyle};{newline}"
+    if elem.style.borderRadius != None: csskeyvalues+=f"border-radius: {elem.style.borderRadius}px;{newline}"
+    if elem.style.gridcolumnStart != None: csskeyvalues+=f"grid-column-start: {str(elem.style.gridcolumnStart)};{newline}"
+    if elem.style.gridcolumnEnd != None: csskeyvalues+=f"grid-column-end: {str(elem.style.gridcolumnEnd)};{newline}"
+    if elem.style.gridrowStart != None: csskeyvalues+=f"grid-row-start: {str(elem.style.gridrowStart)};{newline}"
+    if elem.style.gridrowEnd != None: csskeyvalues+=f"grid-row-end: {str(elem.style.gridrowEnd)};{newline}"
 
-    if elem.containerStyle.display != None: csskeyvalues+=f"display: {str(elem.containerStyle.display)};{newline}"
-    if elem.containerStyle.gridtemplatecolumns != None: csskeyvalues+=f"grid-template-columns: {str(elem.containerStyle.gridtemplatecolumns)};{newline}"
-    if elem.containerStyle.gridtemplaterows != None: csskeyvalues+=f"grid-template-rows: {str(elem.containerStyle.gridtemplaterows)};{newline}"
+    if elem.style.display != None: csskeyvalues+=f"display: {str(elem.style.display)};{newline}"
+    if elem.style.gridtemplatecolumns != None: csskeyvalues+=f"grid-template-columns: {str(elem.style.gridtemplatecolumns)};{newline}"
+    if elem.style.gridtemplaterows != None: csskeyvalues+=f"grid-template-rows: {str(elem.style.gridtemplaterows)};{newline}"
 
     css = "\n."+cssclass+" {\n\t"+ csskeyvalues[:-1] +"}\n\n"
 
