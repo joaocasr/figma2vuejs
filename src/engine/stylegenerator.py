@@ -1,7 +1,10 @@
 from parser.model.ContainerElement import ContainerElement
 from parser.model.TextElement import TextElement
+from parser.model.Mpage import Mpage
+from parser.model.Mcomponent import Mcomponent
 
 import os
+import re
 import math
 
 # key: page_name; value: list_of_font_imports -> list(string)
@@ -138,6 +141,58 @@ def generatePageStyle(name,page):
   newcsscontent += css
 
   with open("../output/"+name+"/src/assets/"+page.getPagename().lower()+".css","r+") as f:
+    lines = f.readlines()  
+    lines.insert(0, newcsscontent)
+    f.seek(0)   
+    f.writelines(lines)
+
+def generateComponentStyle(name,component):
+
+  global font_imports
+  pattern = "[:;]"
+  idcomponent = re.sub(pattern,"",component.idComponent)
+
+  width = component.style.width
+  height = component.style.height
+
+  background = "background-color:white;"
+  boxshadow = ""
+  border = ""
+  if(component.style.backgroundColor!=None): background = """\n  background-color:"""+ component.style.backgroundColor+";"
+  if(component.style.background!=None): background = """\n  background:"""+ component.style.background+";"
+  if(component.style.boxShadow != None): boxshadow =f"box-shadow: {component.style.boxShadow};"+"\n"
+  if(component.style.borderStyle) != None: border =f"border: {component.style.borderStyle};"+"\n"
+
+  css = """\n.component"""+ idcomponent +""" {
+  display:"""+ component.style.display+ """;
+  grid-template-columns:"""+ component.style.gridtemplatecolumns+""";
+  grid-template-rows:"""+ component.style.gridtemplaterows+""";
+  grid-column-start:"""+ str(component.style.gridcolumnStart)+""";""" + background + """
+  grid-column-end:"""+ str(component.style.gridcolumnEnd)+""";
+  grid-row-start:"""+ str(component.style.gridrowStart)+""";"""+ border + boxshadow +"""
+  grid-row-end:"""+ str(component.style.gridrowEnd)+""";
+  border-radius:"""+ str(component.style.borderRadius) + """px;
+  margin:"""+ component.style.margin + """;
+  padding:"""+ component.style.padding + """;
+}
+  
+.grid-item {
+  display:flex;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+  """
+
+  newcsscontent=""
+  if component.componentName in font_imports:
+    for font in font_imports[component.componentName]:
+      newcsscontent += '@import url(' + '"' + font + '");\n'
+  newcsscontent += css
+
+  with open("../output/"+name+"/src/assets/"+component.componentName.lower()+".css","r+") as f:
     lines = f.readlines()  
     lines.insert(0, newcsscontent)
     f.seek(0)   

@@ -2,6 +2,7 @@ from setup.vueprojectsetup import setup_project, create_project, remove_boilervi
 from engine.stylegenerator import overwrite_styling
 from engine.routergenerator import generate_routes
 from engine.pagegenerator import buildpage
+from engine.componentgenerator import buildcomponent
 from parser.modelconverter import getFigmaData
 
 import sys
@@ -26,8 +27,18 @@ else:
   # pages_info will be a dictionary of the path and components ids of each page
   pagesInfo = dict()
   for page in allpages:
-    pagesInfo[page] = {"path":allpages[page].pagepath, "name": page, "id": allpages[page].idpage, "components": []}
+    pagesInfo[page] = {"path":allpages[page].pagepath, "name": page, "id": allpages[page].idpage, "components": allpages[page].components}
 
+  # filter unique components by its id
+  uniqueComponents = []
+  for page in pagesInfo:
+    for x in pagesInfo[page]["components"]:
+      if(not any(x.idComponent == c.idComponent for c in uniqueComponents)):
+        uniqueComponents.append(x)
+
+  for component in uniqueComponents:
+    buildcomponent(component,project_name,pagesInfo)
+  
   # build each page (elements within, styling and components)
   for page in pages:
     buildpage(project_name,pages[page],pagesInfo)

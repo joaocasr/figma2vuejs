@@ -20,9 +20,10 @@ allpages = {}
 
 # key: component_id ; value: MComponent
 allcomponents = {}
+pageComponents = {}
 
 def getFigmaData(prototype):
-    global allpages, allcomponents
+    global allpages, allcomponents,pageComponents
     prototype1 = "../tests/prototype"+str(prototype)+".json"
     figmadata = {}
     with open(prototype1,"r") as file1:
@@ -30,6 +31,12 @@ def getFigmaData(prototype):
         figmadata = data
     project_name = figmadata["name"]
     pages = parsePageEntities(figmadata)
+    
+    # assign the components for each page
+    for p in pageComponents:
+        if(p in allpages):
+            allpages[p].components = pageComponents[p]
+
     return (project_name, pages, allpages)
 
 def parsePageEntities(data):
@@ -37,9 +44,7 @@ def parsePageEntities(data):
     pages = []
     for page in data["document"]["children"][0]["children"]:
         if(page["type"]=="FRAME"):
-            pagina = Mpage(page["name"],
-                            "/"+page["name"],
-                            page["id"])
+            pagina = Mpage(page["name"],"/"+page["name"],page["id"])
             pages.append(pagina)
             allpages[pagina.getPagename()] = pagina
     iterate_nestedElements(data)
@@ -56,10 +61,10 @@ def iterate_nestedElements(data):
                 component_height = melement["absoluteRenderBounds"]["height"]
                 componentX = melement["absoluteRenderBounds"]["x"]
                 componentY = melement["absoluteRenderBounds"]["y"]
-                p = processElement(element["name"],element,component_width,component_height,componentX,componentY)
+                p = processElement(melement["name"],element["name"],element,component_width,component_height,componentX,componentY)
                 elements.append(p)
             
-            allcomponents[melement["id"]] = Mcomponent(melement["id"],melement["name"],elements,"","")
+            allcomponents[melement["id"]] = Mcomponent(melement["id"],melement["name"],"","",elements)
             setComponentStyle(melement)
 
     #iterate the frame nodes (represent the pages)
@@ -70,7 +75,7 @@ def iterate_nestedElements(data):
                 page_height = page["absoluteRenderBounds"]["height"]
                 pageX = page["absoluteRenderBounds"]["x"]
                 pageY = page["absoluteRenderBounds"]["y"]
-                p = processElement(element["name"],element,page_width,page_height,pageX,pageY)
+                p = processElement(page["name"],element["name"],element,page_width,page_height,pageX,pageY)
 
                 allpages[page["name"]].elements.append(p)
         else:
@@ -79,8 +84,8 @@ def iterate_nestedElements(data):
         setPageStyle(page["name"],page)
 
 
-def processElement(name,data,page_width,page_height,pageX,pageY,parent_data=None):
-
+def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_data=None):
+    global allcomponents,pageComponents
     children = []
 
     elementwidth = data["absoluteRenderBounds"]["width"]
@@ -105,11 +110,7 @@ def processElement(name,data,page_width,page_height,pageX,pageY,parent_data=None
               
         nrrows = 128 #if it is first level element, then position it in the grid of 48 rows
 
-    nr_columnstart = max(round((xielem / page_width) * 64 ) + 1,1)
-    nr_columnend = min(round((elementwidth / page_width) * 64) + 1 + nr_columnstart,64)
-
-    nr_rowstart = round((yielem / page_height) * nrrows ) + 1
-    nr_rowend = min(round((elementheight / page_height) * nrrows) + nr_rowstart, nrrows)
+    (nr_columnstart,nr_columnend,nr_rowstart,nr_rowend) = getPosition(xielem,yielem,elementwidth,elementheight,page_width,page_height,nrrows)
 
     if(parent_data==None and nr_columnend==64):
         nrcolumn = nr_columnend
@@ -135,9 +136,21 @@ def processElement(name,data,page_width,page_height,pageX,pageY,parent_data=None
                         nr_rowend)
         mtextelement = TextElement(data["id"],"",data["characters"],style)
         melement = mtextelement
+    
+    if(data["type"]=="INSTANCE"):
+        componentelement = Mcomponent(data["id"],data["name"],"","")
+        componentStyle = setComponentStyle(data)
+        componentStyle.setGridcolumnStart(nr_columnstart)
+        componentStyle.setGridcolumnEnd(nr_columnend)
+        componentStyle.setGridrowStart(nr_rowstart)
+        componentStyle.setGridrowEnd(nr_rowend)
+
+        componentelement.setComponentStyle(componentStyle)
+        pageComponents.setdefault(pagename, []).append(componentelement)
+        melement = componentelement
+
     # handles ContainerElement
     if(data["type"]=="FRAME"):
-
 
         lineargradient = None
         rgba = None
@@ -183,39 +196,40 @@ def processElement(name,data,page_width,page_height,pageX,pageY,parent_data=None
             borderstyle = strokeWeight + stroketype + " rgba("+','.join(str(val) for val in rgba_stroke)+")"
             style.setBorderStyle(borderstyle)
 
-        mcontainerelement = ContainerElement(data["id"],"",style)
+        melement = ContainerElement(data["id"],"",style)
 
-        element_interactions = []
-        for interaction in data["interactions"]:
-            type = interaction["trigger"]["type"]
-            if(type == "ON_CLICK"):
-                interactionelement = InteractionElement()
-                interactionelement.setInteractionType(InteractionElement.Interaction.ONCLICK)
+    element_interactions = []
+    for interaction in data["interactions"]:
+        type = interaction["trigger"]["type"]
+        if(type == "ON_CLICK"):
+            interactionelement = InteractionElement()
+            interactionelement.setInteractionType(InteractionElement.Interaction.ONCLICK)
 
-            for action in interaction["actions"]:
-                if(action["type"]=="NODE" and action["navigation"]=="NAVIGATE"):
-                    navigateAction = NavigationAction(action["destinationId"])
-                    interactionelement.addAction(navigateAction)
-                if(action["type"]=="NODE" and action["navigation"]=="OVERLAY"):
-                    if(action["destinationId"] in allcomponents):
-                        #  update the position of the component relatively to the node which will open the component overlay
-                        compstyle = allcomponents[data["transitionNodeID"]].getComponentStyle()
-                        (columnstart,columnend,rowstart,rowend)= calculate_RelativePosition(xielem+action["overlayRelativePosition"]["x"],
+        for action in interaction["actions"]:
+            if(action["type"]=="NODE" and action["navigation"]=="NAVIGATE"):
+                navigateAction = NavigationAction(action["destinationId"])
+                interactionelement.addAction(navigateAction)
+            if(action["type"]=="NODE" and action["navigation"]=="OVERLAY"):
+                if(action["destinationId"] in allcomponents):
+                    #  update the position of the component relatively to the node which will open the component overlay
+                    compstyle = allcomponents[data["transitionNodeID"]].getComponentStyle()
+                    (columnstart,columnend,rowstart,rowend)= getPosition(xielem+action["overlayRelativePosition"]["x"],
                                                                                             yielem+action["overlayRelativePosition"]["y"],
                                                                                             compstyle.getWidth(),
                                                                                             compstyle.getHeight(),
                                                                                             page_width,
-                                                                                            page_height)
-                        compstyle.setGridcolumnStart(columnstart)
-                        compstyle.setGridcolumnEnd(columnend)
-                        compstyle.setGridrowStart(rowstart)
-                        compstyle.setGridrowEnd(rowend)
-                        allcomponents[data["transitionNodeID"]].setComponentStyle(compstyle)
+                                                                                            page_height,
+                                                                                            nrrows)
+                    compstyle.setGridcolumnStart(columnstart)
+                    compstyle.setGridcolumnEnd(columnend)
+                    compstyle.setGridrowStart(rowstart)
+                    compstyle.setGridrowEnd(rowend)
+                    allcomponents[data["transitionNodeID"]].setComponentStyle(compstyle)
+                    allcomponents[data["transitionNodeID"]].setTypeComponent("OVERLAY")
+                    pageComponents.setdefault(pagename, []).append(allcomponents[data["transitionNodeID"]])
 
-            element_interactions.append(interactionelement)
-        mcontainerelement.setInteractions(element_interactions)
-
-        melement = mcontainerelement
+        element_interactions.append(interactionelement)
+    if(melement!=None): melement.setInteractions(element_interactions)
 
     myparent_data = data
     # Iterates for all nested children of each element
@@ -225,20 +239,20 @@ def processElement(name,data,page_width,page_height,pageX,pageY,parent_data=None
             style.setGridTemplateColumns("repeat(64,1fr)")
             style.setGridTemplateRows("repeat(64,1fr)")
         for element in data["children"]:
-            nestedelem = processElement(element["name"],element,data["absoluteRenderBounds"]["width"],data["absoluteRenderBounds"]["height"],pageX,pageY,myparent_data)
+            nestedelem = processElement(pagename,element["name"],element,data["absoluteRenderBounds"]["width"],data["absoluteRenderBounds"]["height"],pageX,pageY,myparent_data)
             children.append(nestedelem)
 
         melement.setChildren(children)
     return melement
 
-# auxiliar funcion to calculate relative position when navigation is "OVERLAY"  
-def calculate_RelativePosition(xielem,yielem,elementwidth,elementheight,page_width,page_height):
+# auxiliar funcion to calculate position 
+def getPosition(xielem,yielem,elementwidth,elementheight,page_width,page_height, nrrows):
 
     nr_columnstart = max(round((xielem / page_width) * 64 ) + 1,1)
     nr_columnend = min(round((elementwidth / page_width) * 64) + 1 + nr_columnstart,64)
 
-    nr_rowstart = round((yielem / page_height) * 128 ) + 1
-    nr_rowend = min(round((elementheight / page_height) * 128) + nr_rowstart, 128)
+    nr_rowstart = round((yielem / page_height) * nrrows ) + 1
+    nr_rowend = min(round((elementheight / page_height) * nrrows) + nr_rowstart, nrrows)
 
     return (nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
 
@@ -274,7 +288,6 @@ def setPageStyle(pagename,pagedata):
 def setComponentStyle(component):
     global allcomponents
 
-
     lineargradient = None
     rgba = None
     for background in component["background"]:
@@ -289,7 +302,7 @@ def setComponentStyle(component):
                                             background["gradientStops"][1])
 
     id = component["id"]
-    # falta fazer a verificacao do tipo de componente e atribuir os estilos apropriados
+
     componentStyle = ComponentStyle()
     componentStyle.setWidth(component["absoluteRenderBounds"]["width"])
     componentStyle.setHeight(component["absoluteRenderBounds"]["height"])
@@ -299,4 +312,29 @@ def setComponentStyle(component):
     componentStyle.setMargin("0")
     componentStyle.setPadding("0")
     componentStyle.setGridTemplateColumns("repeat(64,1fr)")
-    allcomponents[id].setComponentStyle(componentStyle)
+    componentStyle.setGridTemplateRows("repeat(64,1fr)")
+    if("cornerRadius" in component):
+        componentStyle.setBorderRadius(component["cornerRadius"])
+
+    for effect in component["effects"]:
+        if effect["type"] == "DROP_SHADOW":
+            rgba_shadow = (effect["color"]["r"], effect["color"]["g"], effect["color"]["b"], effect["color"]["a"])
+            shadowX , shadowY = (str(round(effect["offset"]["x"])), str(round(effect["offset"]["y"])))
+            shadowRadius = str(round(effect["radius"]))+"px "
+            spread = "0px"
+            if("spread" in effect): spread = str(round(effect["spread"]))+"px "
+
+            boxshadow = shadowX+"px " + shadowY+"px " + shadowRadius + spread + "rgba("+','.join(str(val) for val in rgba_shadow)+")"
+            componentStyle.setBoxShadow(boxshadow)
+
+    for stroke in component["strokes"]:
+        rgba_stroke = (stroke["color"]["r"], stroke["color"]["g"], stroke["color"]["b"], stroke["color"]["a"])
+        stroketype = str(stroke["type"]).lower()
+        strokeWeight = str(component["strokeWeight"])+"px "
+
+        borderstyle = strokeWeight + stroketype + " rgba("+','.join(str(val) for val in rgba_stroke)+")"
+        componentStyle.setBorderStyle(borderstyle)
+    
+    if(id in allcomponents): allcomponents[id].setComponentStyle(componentStyle)
+
+    return componentStyle

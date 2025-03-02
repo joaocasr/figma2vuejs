@@ -1,7 +1,7 @@
 from parser.model.InteractionElement import InteractionElement
 from parser.model.NavigationAction import NavigationAction
 
-def handleBehaviour(elem,cssclass,allPagesInfo):
+def handleBehaviour(elem,allPagesInfo):
     directives = []
     hooks = {}
     elemBehaviour = [[],None]

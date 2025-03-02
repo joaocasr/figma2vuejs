@@ -47,6 +47,9 @@ class Mpage(object):
 
 	def __str__(self):
 		allelements=""
+		allcomponents=""
 		for e in self.elements:
-			allelements += str(e) + ";"
-		return "name:" + str(self.pagename) + ", "+ "path:" + str(self.pagepath) + ", elements: [" + allelements + "] , style: "+ str(self.containerstyle)
+			allelements += str(e) + ","
+		for c in self.components:
+			allcomponents += str(c) + ","
+		return "name:" + str(self.pagename) + ", "+ "path:" + str(self.pagepath) + ", elements: [" + allelements + "]"+ ", components: [" + allcomponents + "], style: "+ str(self.containerstyle)

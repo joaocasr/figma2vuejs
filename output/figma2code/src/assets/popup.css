@@ -1,0 +1,52 @@
+@import url("//fonts.googleapis.com/css2?family=Inter:wght@400&display=swap");
+
+.component4338803 {
+  display:grid;
+  grid-template-columns:repeat(64,1fr);
+  grid-template-rows:repeat(64,1fr);
+  grid-column-start:10;
+  background:linear-gradient(90.0deg, rgba(204.76146697998047,212.29725301265717,255.0,255.0), rgba(122.8568771481514,127.37835332751274,153.00000607967377,255.0));
+  grid-column-end:56;
+  grid-row-start:23;box-shadow: 0px 4px 4px 0pxrgba(0.0,0.0,0.0,0.25);
+
+  grid-row-end:55;
+  border-radius:15.0px;
+  margin:0;
+  padding:0;
+}
+  
+.grid-item {
+  display:flex;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+  
+.text433707 {
+	font-style: Regular;
+	font-weight: 400;
+	font-size:50px;
+	font-family: Inter;
+	color: rgba(0.0,0.0,0.0,255.0);
+	grid-column-start: 9;
+	grid-column-end: 57;
+	grid-row-start: 58;
+	grid-row-end: 73;
+	white-space: nowrap;
+}
+
+
+.container433728 {
+	background-color: rgba(255.0,255.0,255.0,255.0);
+	border-radius: 20.0px;
+	grid-column-start: 61;
+	grid-column-end:  span 64;
+	grid-row-start: 7;
+	grid-row-end: 25;
+	display: grid;
+	grid-template-columns: repeat(64,1fr);
+	grid-template-rows: repeat(64,1fr);
+}
+

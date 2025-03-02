@@ -4,10 +4,11 @@ class Mcomponent(object):
 	def __init__(self,id,name,tag,type,elementos=[]):
 		self.idComponent = id
 		self.componentName = name
-		self.elements = elementos
+		self.children = elementos
 		self.tag = tag
 		self.type = type
 		self.style = None
+		self.interactions = []
 
 	def getIdComponent(self):
 		"""@ReturnType String"""
@@ -55,5 +56,14 @@ class Mcomponent(object):
 		@ReturnType void"""
 		return self.style
 
+	def setChildren(self,children):
+		self.children = children
+
+	def getInteractions(self):
+		return self.interactions
+
+	def setInteractions(self, interactions):
+		self.interactions = interactions
+
 	def __str__(self):
-		return "(id: " + str(self.idComponent) + ",name: "+  str(self.componentName) + ",type: "+  str(self.type) + ",tag: "+  str(self.tag) + ", style: "+  str(self.style) + ", elements: [" + ";".join(str(val) for val in self.elements) + "]"
+		return "(id: " + str(self.idComponent) + ",name: "+  str(self.componentName) + ",type: "+  str(self.type) + ",tag: "+  str(self.tag) + "; interactions: ["+ ";".join(str(val) for val in self.interactions)  +"]" + ", children: [" + ";".join(str(val) for val in self.children) + "]"

@@ -4,7 +4,7 @@ import os
 def setup_project(name):
     create_project(name)
     remove_boilerview(name)
-    remove_boilercomponents(name)
+    remove_boilercomponents(name,0)
     updateAppVue(name)
     viteconfig(name)
     install_dependencies(name)
@@ -16,10 +16,12 @@ def create_project(name):
         cssdirectory = destination+"/src/assets/"
 
         print("The Vue Project "+name+" already exists.")
-        print("Removing the css files from previous execution...")
+        print("Removing the css files from previous generation...")
         subprocess.run(["find "+ cssdirectory +" -type f -not \( -name 'main.css' -or -name 'base.css' -or -name 'logo.svg' \) -delete"],shell=True)
-        print("Removing the view files from previous execution...")
+        print("Removing the view files from previous generation...")
         remove_boilerview(name)
+        print("Removing the component files from previous generation...")
+        remove_boilercomponents(name,1)
         raise Exception("The Vue Project "+name+" already exists.")
     else:
         print("Creating Vue project named: "+name+" ...")
@@ -43,8 +45,8 @@ def remove_boilerview(name):
       raise Exception("Error while cleaning boilerplate code from the view folder!")
 
 
-def remove_boilercomponents(name):
-    print("Removing boilerplate code from components folder...")
+def remove_boilercomponents(name,n):
+    if(n==0): print("Removing boilerplate code from components folder...")
     directory = '../output/'+name+'/src/components/*'
     rm = subprocess.run(['sh',
                             '-c',
