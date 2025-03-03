@@ -32,19 +32,19 @@ def getFigmaData(prototype):
     project_name = figmadata["name"]
     parsePageEntities(figmadata)
 
-    """
+    #"""
     #update overlay components coordinates
     for p in pageComponents:
         for c in pageComponents[p]:
             if(c.getTypeComponent()=="OVERLAY"):
                 updateOverlayPosition(c,c.style.getOverlayVector()[0],c.style.getOverlayVector()[1],allpages[p].style.getWidth(),allpages[p].style.getHeight())
                 allpages[p].addElement(c)
-    """
+    #"""
     # assign the components for each page
     for p in pageComponents:
         if(p in allpages):
             allpages[p].components = pageComponents[p]
-    print(allpages['PrincipalPage'].elements)
+    #print(allpages['PrincipalPage'].elements)
     return (project_name, allpages)
 
 def parsePageEntities(data):
@@ -133,13 +133,19 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
 
         color = data["fills"][0]["color"]
         rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"] * 255)
+        autoresize = None
+        if("textAutoResize" in data["style"]):
+            autoresize = data["style"]["textAutoResize"]
         style = TextStyle(data["absoluteRenderBounds"]["x"],
                         data["absoluteRenderBounds"]["y"],
                         elementwidth,
                         elementheight,
+                        data["style"]["textAlignHorizontal"],
+                        round(data["style"]["lineHeightPx"]),
+                        autoresize,
                         data["style"]["fontStyle"],
                         data["style"]["fontWeight"],
-                        str(round(data["style"]["fontSize"]/1.5))+"px",
+                        str(round(data["style"]["fontSize"]/1.2))+"px",
                         data["style"]["fontFamily"],
                         "rgba("+','.join(str(val) for val in rgba)+")",
                         nr_columnstart,
@@ -233,22 +239,10 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
                     compstyle = allcomponents[data["transitionNodeID"]].getComponentStyle()
                     (xe,ye) = (xielem,yielem)
                     (rx,ry) = (action["overlayRelativePosition"]["x"],action["overlayRelativePosition"]["y"])
-                    #(px,py) = (rx-xe,ry-ye)
-                    #(vx,vy) = (px-compstyle.getX(),py-compstyle.getY())
-                    compstyle.setOverlayVector(rx,ry)
-                    """
-                    (columnstart,columnend,rowstart,rowend)= getPosition(xielem+action["overlayRelativePosition"]["x"],
-                                                                                            yielem+action["overlayRelativePosition"]["y"],
-                                                                                            compstyle.getWidth(),
-                                                                                            compstyle.getHeight(),
-                                                                                            page_width,
-                                                                                            page_height,
-                                                                                            nrrows)
-                    compstyle.setGridcolumnStart(columnstart)
-                    compstyle.setGridcolumnEnd(columnend)
-                    compstyle.setGridrowStart(rowstart)
-                    compstyle.setGridrowEnd(rowend)
-                    """
+                    (px,py) = (rx+xe,ry+ye)
+                    (vx,vy) = (px-compstyle.getX(),py-compstyle.getY())
+                    compstyle.setOverlayVector(vx,vy)
+
                     allcomponents[data["transitionNodeID"]].setComponentStyle(compstyle)
                     allcomponents[data["transitionNodeID"]].setTypeComponent("OVERLAY")
                     pageComponents.setdefault(pagename, []).append(allcomponents[data["transitionNodeID"]])
@@ -368,7 +362,7 @@ def setComponentStyle(component):
 
 
 def updateOverlayPosition(component, vx, vy, page_width, page_height):
-    if isinstance(component, (Mcomponent, TextElement, ContainerElement)):
+    if isinstance(component, (Mcomponent, TextElement, ContainerElement )):
         nrrows = 128 if isinstance(component, Mcomponent) else 64
         (columnstart, columnend, rowstart, rowend) = getPosition(
             component.style.getX() + vx,

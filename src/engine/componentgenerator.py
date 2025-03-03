@@ -75,7 +75,7 @@ def writeVueComponent(name,project_name,content,component,pagesInfo):
         pagehooks = pagehooks[:-2]
         pagehooks +="\n\t}"
 
-    template = '<div class="component'+ idcomponent +'"'+ ' '.join(d for d in directives) + ">"+ content + '</div>'
+    template = '<div class="grid-item component'+ idcomponent +'"'+ ' '.join(d for d in directives) + ">"+ content + '</div>'
     componentpage = """<template>\n""" + processTemplate(template) + """
 </template>
 

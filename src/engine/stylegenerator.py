@@ -117,7 +117,7 @@ def generatePageStyle(name,page):
   css = """\n.grid-container {
   display:"""+ page.style.display+ """;
   grid-template-columns:"""+ page.style.gridtemplatecolumns+""";
-  grid-template-rows: repeat(128,minmax("""+ str(row_height) +"""px,1fr));""" + background + """  width: 100%;
+  grid-template-rows: repeat(128,"""+ str(row_height) +"""px);""" + background + """  width: 100%;
   min-height: 100vh;
   max-height: auto;
   margin:"""+ page.style.margin + """;
@@ -176,14 +176,6 @@ def generateComponentStyle(name,component):
   padding:"""+ component.style.padding + """;
 }
   
-.grid-item {
-  display:flex;
-  text-align: center;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-}
   """
 
   newcsscontent=""
@@ -207,14 +199,26 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
   if isinstance(elem,TextElement) : 
     if elem.style.fontStyle != None: csskeyvalues+=f"font-style: {elem.style.fontStyle};{newline}"
     if elem.style.fontWeight != None: csskeyvalues+=f"font-weight: {elem.style.fontWeight};{newline}"
-    if elem.style.fontSize != None: csskeyvalues+=f"font-size:{elem.style.fontSize};{newline}"
+    if elem.style.fontSize != None: csskeyvalues+=f"font-size: calc({elem.style.fontSize} + 0.1vw);{newline}"
     if elem.style.fontFamily != None: csskeyvalues+=f"font-family: {elem.style.fontFamily};{newline}"
+    if elem.style.textHorizontalAlign != None: csskeyvalues+=f"text-align: {elem.style.textHorizontalAlign.lower()};{newline}"
+    if elem.style.lineHeight != None: csskeyvalues+=f"line-height: {str(elem.style.lineHeight)}px;{newline}"
     if elem.style.color != None: csskeyvalues+=f"color: {elem.style.color};{newline}"
     if elem.style.gridcolumnStart != None: csskeyvalues+=f"grid-column-start: {str(elem.style.gridcolumnStart)};{newline}"
     if elem.style.gridcolumnEnd != None: csskeyvalues+=f"grid-column-end: {str(elem.style.gridcolumnEnd)};{newline}"
     if elem.style.gridrowStart != None: csskeyvalues+=f"grid-row-start: {str(elem.style.gridrowStart)};{newline}"
     if elem.style.gridrowEnd != None: csskeyvalues+=f"grid-row-end: {str(elem.style.gridrowEnd)};{newline}"
-    csskeyvalues+=f"white-space: nowrap;{newline}"
+    csskeyvalues+=f"overflow-wrap: break-word;{newline}word-break: break-word;{newline}"
+
+    if(elem.style.textAutoResize == "WIDTH_AND_HEIGHT"):
+      csskeyvalues+=f"white-space: normal;{newline}"
+    elif(elem.style.textAutoResize == "WIDTH"):
+      csskeyvalues+=f"white-space: nowrap;{newline}"
+    elif(elem.style.textAutoResize == "HEIGHT"):
+      csskeyvalues+=f"word-wrap: break-word;{newline}"
+
+    csskeyvalues +=f"width: 100%;height: auto;{newline}display: flex;{newline}align-items: stretch;{newline}justify-content: stretch;{newline}"
+  
 
     font = "//fonts.googleapis.com/css2?family="+elem.style.fontFamily+":wght@"+ str(elem.style.fontWeight) +"&display=swap"
     if((pagename in font_imports) and (font not in font_imports[pagename])):

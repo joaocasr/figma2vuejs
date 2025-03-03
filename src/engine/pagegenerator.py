@@ -54,10 +54,11 @@ def applytransformation(elem,projectname,pagename):
 
             # insert directives and functions if there is some behaviour
             directives, hooks = handleBehaviour(elem,allPagesInfo)
+            txt = re.sub(r"\n", "<br/>",elem.text)
             if(hooks!=None): 
                 for hook in hooks:
                     allhooks[pagename].setdefault(hook, []).extend(hooks[hook])
-            return ("<p class="+'"grid-item text'+ cssclass  + '" '+ ' '.join(d for d in directives) +">"+elem.text, "</p>")
+            return ("<p class="+'"grid-item text'+ cssclass  + '" '+ ' '.join(d for d in directives) +">"+txt, "</p>")
     if isinstance(elem, ContainerElement):
         if elem.tag=="" or elem.tag == None:
             generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)

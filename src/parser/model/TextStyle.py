@@ -1,12 +1,12 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 class TextStyle(object):
-	def __init__(self,x,y,width,height,font,weight,size,family,color,gridcolumnStart,gridcolumnEnd,gridrowStart,gridrowEnd):
+	def __init__(self,x,y,width,height,horizontalalign,lineheight,autoresize,font,weight,size,family,color,gridcolumnStart,gridcolumnEnd,gridrowStart,gridrowEnd):
 		self.x = x
 		self.y = y
 		self.width = width
 		self.height = height
-		self.textAlign = None
+		self.textHorizontalAlign = horizontalalign
 		self.textDecoration = None
 		self.textIndent = None
 		self.textTransform = None
@@ -14,8 +14,9 @@ class TextStyle(object):
 		self.fontWeight = weight
 		self.fontSize = size
 		self.fontFamily = family
-		self.lineHeight = None
+		self.lineHeight = lineheight
 		self.color = color
+		self.textAutoResize = autoresize
 		self.letterSpacing = None
 		self.cursor = None
 		self.transition = None
@@ -63,12 +64,12 @@ class TextStyle(object):
 
 	def getTextAlign(self):
 		"""@ReturnType String"""
-		return self.textAlign
+		return self.textHorizontalAlign
 
 	def setTextAlign(self, textAlign):
 		"""@ParamType textAlign String
 		@ReturnType void"""
-		self.textAlign = textAlign
+		self.textHorizontalAlign = textAlign
 
 	def getTextDecoration(self):
 		"""@ReturnType String"""
@@ -141,6 +142,15 @@ class TextStyle(object):
 		"""@ParamType lineHeight String
 		@ReturnType void"""
 		self.lineHeight = lineHeight
+
+	def getTextAutoResize(self):
+		"""@ReturnType String"""
+		return self.textAutoResize
+
+	def setTextAutoResize(self, autoresize):
+		"""@ParamType textAutoResize String
+		@ReturnType void"""
+		self.textAutoResize = autoresize
 
 	def getColor(self):
 		"""@ReturnType String"""
