@@ -68,7 +68,10 @@ def applytransformation(elem,projectname,pagename):
             if(hooks!=None): 
                 for hook in hooks:
                     allhooks[pagename].setdefault(hook, []).extend(hooks[hook])
-            return ("<div class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) +">", "</div>")
+            id = ""
+            if(elem.style.getgridArea()!=None):
+                id = ' id="'+elem.style.getgridArea()+'"'
+            return ("<div"+ id +" class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) +">", "</div>")
     if isinstance(elem, Mcomponent):
         componentName = elem.componentName.capitalize()
         components.setdefault(pagename, []).append(elem.componentName)

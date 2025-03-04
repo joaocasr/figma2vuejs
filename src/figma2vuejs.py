@@ -1,14 +1,15 @@
 from setup.vueprojectsetup import setup_project, create_project, remove_boilerview, remove_boilercomponents, updateAppVue
 from engine.stylegenerator import overwrite_styling
 from engine.routergenerator import generate_routes
+from engine.gridgenerator import generateGridTemplate
 from engine.pagegenerator import buildpage
 from engine.componentgenerator import buildcomponent
 from parser.modelconverter import getFigmaData
 
 import sys
 
-if(len(sys.argv)!=2):
-  print("man: python3 figma2vuejs.py <nrº of prototype>")
+if(len(sys.argv)!=2 and len(sys.argv)!=4):
+  print("MANUAL:\n python3 figma2vuejs.py <nrº of prototype>\n python3 figma2vuejs.py <nrº of prototype> <nr_columns> <nr_rows>")
 else:
   prototype = sys.argv[1]
   # extract figma data and build intern model
@@ -29,6 +30,11 @@ else:
   for page in allpages:
     pagesInfo[page] = {"path":allpages[page].pagepath, "name": page, "id": allpages[page].idpage, "components": allpages[page].components}
 
+  mypages = allpages
+
+  if(len(sys.argv)==4): mypages = generateGridTemplate(sys.argv[2],sys.argv[3],allpages)
+  
+  print(mypages)
   # filter unique components by its id
   uniqueComponents = []
   for page in pagesInfo:
@@ -38,7 +44,7 @@ else:
 
   for component in uniqueComponents:
     buildcomponent(component,project_name,pagesInfo)
-  
+    
   # build each page (elements within, styling and components)
-  for page in allpages:
-    buildpage(project_name,allpages[page],pagesInfo)
+  for page in mypages:
+    buildpage(project_name,mypages[page],pagesInfo)

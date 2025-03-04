@@ -3,9 +3,10 @@
 
 class Melement(object):
 
-	def __init__(self,id,tag):
+	def __init__(self,id,tag,name):
 		self.idElement = id
 		self.tag = tag
+		self.name = name
 		self.children = []
 		self.interactions = []
 
@@ -20,6 +21,12 @@ class Melement(object):
 
 	def setTag(self, tag):
 		self.tag = tag
+
+	def getName(self):
+		return self.name
+
+	def setName(self, name):
+		self.name = name
 
 	def setChildren(self, nchildren):
 		self.children = nchildren

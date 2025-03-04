@@ -113,17 +113,25 @@ def generatePageStyle(name,page):
     background = """\n  background-color:"""+ page.style.backgroundColor+";\n"
   if(page.style.background!=None):
     background = """\n  background:"""+ page.style.background+";\n"
+
+  gridtemplaterows = f"repeat(128, {str(row_height)}px);"+"\n"
+  if(page.style.getGridTemplateArea()!=None):
+    gridtemplaterows = page.style.getGridTemplateRows() + ";\n"
     
-  css = """\n.grid-container {
+  cssgridcontainer = """\n.grid-container {
   display:"""+ page.style.display+ """;
   grid-template-columns:"""+ page.style.gridtemplatecolumns+""";
-  grid-template-rows: repeat(128,"""+ str(row_height) +"""px);""" + background + """  width: 100%;
+  grid-template-rows:""" + gridtemplaterows + background + """  width: 100%;
   min-height: 100vh;
   max-height: auto;
   margin:"""+ page.style.margin + """;
   padding:"""+ page.style.padding + """;
-}
-  
+  """
+  if(page.style.getGridTemplateArea()!=None):
+    cssgridcontainer+="grid-template-areas:\n    "+ '\n    '.join(page.style.getGridTemplateArea())+";\n"
+
+  cssgriditem = """}
+ 
 .grid-item {
   display:flex;
   text-align: center;
@@ -134,7 +142,8 @@ def generatePageStyle(name,page):
 }
   """
 
-  newcsscontent=""
+  css = cssgridcontainer + cssgriditem
+  newcsscontent= ""
   if page.pagename in font_imports:
     for font in font_imports[page.pagename]:
       newcsscontent += '@import url(' + '"' + font + '");\n'
@@ -244,7 +253,11 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     if elem.style.gridtemplatecolumns != None: csskeyvalues+=f"grid-template-columns: {str(elem.style.gridtemplatecolumns)};{newline}"
     if elem.style.gridtemplaterows != None: csskeyvalues+=f"grid-template-rows: {str(elem.style.gridtemplaterows)};{newline}"
 
-    css = "\n."+cssclass+" {\n\t"+ csskeyvalues[:-1] +"}\n\n"
+    gridareacss = ""
+    if(elem.style.getgridArea()!=None):
+      gridareacss = "#"+elem.name+" {\n\t"+ "grid-area:"+elem.style.getgridArea()+";\n}\n\n"
+
+    css = gridareacss + "\n."+cssclass+" {\n\t"+ csskeyvalues[:-1] +"}\n\n"
 
   cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
   mode = "w"

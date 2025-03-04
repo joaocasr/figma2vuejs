@@ -24,7 +24,10 @@ class ContainerStyle(object):
 		self.gridcolumnEnd = None
 		self.gridrowStart = None
 		self.gridrowEnd = None
+		self.gridTemplateArea = None
+		self.gridArea = None
 		self.boxShadow = None
+		self.gap = None
 
 	def getX(self):
 		"""@ReturnType int"""
@@ -218,6 +221,24 @@ class ContainerStyle(object):
 
 	def setGridTemplateRows(self, gridtemplaterows):
 		self.gridtemplaterows = gridtemplaterows
+
+	def getGridTemplateArea(self):
+		return self.gridTemplateArea
+
+	def setGridTemplateArea(self, gridTemplateArea):
+		self.gridTemplateArea = gridTemplateArea
+	
+	def getGap(self):
+		return self.gap
+
+	def setGap(self, gap):
+		self.gap = gap
+
+	def getgridArea(self):
+		return self.gridArea
+
+	def setgridArea(self, gridarea):
+		self.gridArea = gridarea
 
 	def __str__(self):
 		return "width:" + str(self.width) +",\n"+"height:" + str(self.height) +",\n"+ "backgroundColor:" + str(self.backgroundColor) +",\n"+ "display:" + str(self.display) +",\n"+ "gridtemplatecolumns:" + str(self.gridtemplatecolumns) +",\n"+ "gridtemplaterows:" + str(self.gridtemplaterows) +",\n"+ "margin:" + str(self.margin) +",\n"+ "margin:" + str(self.margin) +",\n"+ "padding:" + str(self.padding)

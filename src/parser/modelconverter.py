@@ -152,7 +152,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
                         nr_columnend,
                         nr_rowstart,
                         nr_rowend)
-        mtextelement = TextElement(data["id"],"",data["characters"],style)
+        mtextelement = TextElement(data["id"],"",data["name"],data["characters"],style)
         melement = mtextelement
     
     if(data["type"]=="INSTANCE"):
@@ -218,7 +218,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
             borderstyle = strokeWeight + stroketype + " rgba("+','.join(str(val) for val in rgba_stroke)+")"
             style.setBorderStyle(borderstyle)
 
-        melement = ContainerElement(data["id"],"",style)
+        melement = ContainerElement(data["id"],"",data["name"],style)
 
     element_interactions = []
     for interaction in data["interactions"]:

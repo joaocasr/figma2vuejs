@@ -5,15 +5,16 @@
 .grid-container {
   display:grid;
   grid-template-columns:repeat(64,1fr);
-  grid-template-rows: repeat(128,31.8359375px);
+  grid-template-rows:repeat(128, 31.8359375px);
+
   background-color:rgba(236.00000113248825,238.00000101327896,236.00000113248825,255.0);
   width: 100%;
   min-height: 100vh;
   max-height: auto;
   margin:0;
   padding:0;
-}
-  
+  }
+ 
 .grid-item {
   display:flex;
   text-align: center;
