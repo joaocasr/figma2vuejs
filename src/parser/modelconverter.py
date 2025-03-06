@@ -7,9 +7,11 @@ import json
 from parser.model.Mpage import Mpage
 from parser.model.Melement import Melement
 from parser.model.ContainerElement import ContainerElement
+from parser.model.ImageElement import ImageElement
 from parser.model.Mcomponent import Mcomponent
 from parser.model.TextElement import TextElement
 from parser.model.ContainerStyle import ContainerStyle
+from parser.model.ImageStyle import ImageStyle
 from parser.model.ComponentStyle import ComponentStyle
 from parser.model.TextStyle import TextStyle
 from parser.model.InteractionElement import InteractionElement
@@ -21,6 +23,8 @@ allpages = {}
 # key: component_id ; value: MComponent
 allcomponents = {}
 pageComponents = {}
+
+pageWidth = -1
 
 def getFigmaData(prototype):
     global allpages, allcomponents,pageComponents
@@ -59,11 +63,12 @@ def parsePageEntities(data):
     return allpages
 
 def iterate_nestedElements(data):    
-    global allpages
+    global allpages, pageWidth
     #iterate first for all the components nodes
     for melement in data["document"]["children"][0]["children"]:
         elements = []
         if(melement["type"]=="COMPONENT" and "children" in melement):
+            pageWidth = melement["absoluteRenderBounds"]["width"]*1.2
             for element in melement["children"]:
                 component_width = melement["absoluteRenderBounds"]["width"]
                 component_height = melement["absoluteRenderBounds"]["height"]
@@ -78,6 +83,7 @@ def iterate_nestedElements(data):
     #iterate the frame nodes (represent the pages)
     for page in data["document"]["children"][0]["children"]:
         if(page["type"]=="FRAME" and "children" in page):
+            pageWidth = page["absoluteRenderBounds"]["width"]
             for element in page["children"]:
                 page_width = page["absoluteRenderBounds"]["width"]
                 page_height = page["absoluteRenderBounds"]["height"]
@@ -93,7 +99,7 @@ def iterate_nestedElements(data):
 
 
 def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_data=None):
-    global allcomponents,pageComponents,allpages
+    global allcomponents,pageComponents,allpages,pageWidth
     children = []
 
     elementwidth = data["absoluteRenderBounds"]["width"]
@@ -128,8 +134,28 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
         nr_rowend = " span "+ str(nrrow)
 
     melement = None
+    # handling ImageElement
+    if(data["type"]=="RECTANGLE" and any(("imageRef" in x) for x in data["fills"])):
+        
+        data["type"] = "IMAGE"
+        style = ImageStyle(data["absoluteRenderBounds"]["x"],
+                        data["absoluteRenderBounds"]["y"],
+                        elementwidth,
+                        elementheight,
+                        nr_columnstart,
+                        nr_columnend,
+                        nr_rowstart,
+                        nr_rowend,
+                        "0",
+                        "0"
+        )
+        mimagelement = ImageElement(data["id"],"img",data["name"],data["fills"][0]["imageRef"],style)
+        melement = mimagelement
+
     # handles TextElement
     if(data["type"]=="TEXT"):
+
+        fontsize = ((data["style"]["fontSize"]) / (pageWidth / 100))
 
         color = data["fills"][0]["color"]
         rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"] * 255)
@@ -145,7 +171,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
                         autoresize,
                         data["style"]["fontStyle"],
                         data["style"]["fontWeight"],
-                        str(round(data["style"]["fontSize"]/1.2))+"px",
+                        str(fontsize)+"vw",
                         data["style"]["fontFamily"],
                         "rgba("+','.join(str(val) for val in rgba)+")",
                         nr_columnstart,

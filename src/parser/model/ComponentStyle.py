@@ -26,6 +26,7 @@ class ComponentStyle(object):
 		self.gridrowEnd = None
 		self.boxShadow = None
 		self.overlayVector = (0,0)
+		self.gridArea = None
 
 	def getX(self):
 		"""@ReturnType int"""
@@ -207,6 +208,12 @@ class ComponentStyle(object):
 		"""@ParamType boxShadow String
 		@ReturnType void"""
 		self.boxShadow = boxShadow
+
+	def getgridArea(self):
+		return self.gridArea
+
+	def setgridArea(self, gridarea):
+		self.gridArea = gridarea
 
 	def getGridTemplateColumns(self):
 		return self.gridtemplatecolumns

@@ -1,4 +1,5 @@
 from parser.model.ContainerElement import ContainerElement
+from parser.model.ImageElement import ImageElement
 from parser.model.TextElement import TextElement
 from parser.model.Mpage import Mpage
 from parser.model.Mcomponent import Mcomponent
@@ -208,7 +209,7 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
   if isinstance(elem,TextElement) : 
     if elem.style.fontStyle != None: csskeyvalues+=f"font-style: {elem.style.fontStyle};{newline}"
     if elem.style.fontWeight != None: csskeyvalues+=f"font-weight: {elem.style.fontWeight};{newline}"
-    if elem.style.fontSize != None: csskeyvalues+=f"font-size: calc({elem.style.fontSize} + 0.1vw);{newline}"
+    if elem.style.fontSize != None: csskeyvalues+=f"font-size: {elem.style.fontSize};{newline}"
     if elem.style.fontFamily != None: csskeyvalues+=f"font-family: {elem.style.fontFamily};{newline}"
     if elem.style.textHorizontalAlign != None: csskeyvalues+=f"text-align: {elem.style.textHorizontalAlign.lower()};{newline}"
     if elem.style.lineHeight != None: csskeyvalues+=f"line-height: {str(elem.style.lineHeight)}px;{newline}"
@@ -226,8 +227,8 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     elif(elem.style.textAutoResize == "HEIGHT"):
       csskeyvalues+=f"word-wrap: break-word;{newline}"
 
-    csskeyvalues +=f"width: 100%;height: auto;{newline}display: flex;{newline}align-items: stretch;{newline}justify-content: stretch;{newline}"
-  
+    csskeyvalues +=f"width: 100%;{newline}display: flex;{newline}align-items: stretch;{newline}justify-content: stretch;{newline}"
+    #height:auto
 
     font = "//fonts.googleapis.com/css2?family="+elem.style.fontFamily+":wght@"+ str(elem.style.fontWeight) +"&display=swap"
     if((pagename in font_imports) and (font not in font_imports[pagename])):
@@ -237,6 +238,16 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
 
     css = "\n."+cssclass+" {\n\t"+ csskeyvalues[:-1] +"}\n\n"
 
+  if isinstance(elem,ImageElement) : 
+    if elem.style.width != None: csskeyvalues+=f"width: {str(elem.style.width)};{newline}"
+    if elem.style.height != None: csskeyvalues+=f"height: {str(elem.style.height)};{newline}"
+    if elem.style.gridcolumnStart != None: csskeyvalues+=f"grid-column-start: {str(elem.style.gridcolumnStart)};{newline}"
+    if elem.style.gridcolumnEnd != None: csskeyvalues+=f"grid-column-end: {str(elem.style.gridcolumnEnd)};{newline}"
+    if elem.style.gridrowStart != None: csskeyvalues+=f"grid-row-start: {str(elem.style.gridrowStart)};{newline}"
+    if elem.style.gridrowEnd != None: csskeyvalues+=f"grid-row-end: {str(elem.style.gridrowEnd)};{newline}"
+    
+    css = "."+cssclass+" {\n\t"+ csskeyvalues[:-1] +"}\n\n"
+  
   if isinstance(elem,ContainerElement): 
 
     if elem.style.backgroundColor != None: csskeyvalues+=f"background-color: {elem.style.backgroundColor};{newline}"

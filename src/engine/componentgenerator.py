@@ -43,18 +43,16 @@ def applytransformation(elem,projectname,pagename):
     pattern = "[:;]"
     if(not isinstance(elem,Mcomponent)): cssclass = re.sub(pattern,"",elem.idElement)
     else: cssclass = re.sub(pattern,"",elem.idComponent)
-    if isinstance(elem, TextElement):
-        if elem.tag=="" or elem.tag == None:
-            generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
-            #iterate the list of interactions (logicgenerator.py)
-            return ("<p class="+'"grid-item text'+ cssclass +'">'+elem.text, "</p>")
-    if isinstance(elem, ContainerElement):
-        if elem.tag=="" or elem.tag == None:
-            generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
-            #iterate the list of interactions (logicgenerator.py)
-            directives = []
-            html = "<div class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) +">"
-            return (html, "</div>")
+    if(isinstance(elem, TextElement) and (elem.tag=="" or elem.tag == None)):
+        generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
+        #iterate the list of interactions (logicgenerator.py)
+        return ("<p class="+'"grid-item text'+ cssclass +'">'+elem.text, "</p>")
+    if(isinstance(elem, ContainerElement) and (elem.tag=="" or elem.tag == None)):
+        generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
+        #iterate the list of interactions (logicgenerator.py)
+        directives = []
+        html = "<div class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) +">"
+        return (html, "</div>")
 
 def writeVueComponent(name,project_name,content,component,pagesInfo):
     global allhooks 
@@ -74,7 +72,7 @@ def writeVueComponent(name,project_name,content,component,pagesInfo):
             pagehooks += chook[1] + ",\n"
         pagehooks = pagehooks[:-2]
         pagehooks +="\n\t}"
-
+    if(len(pagehooks)>0): pagehooks = ",\n    "+pagehooks
     template = '<div class="grid-item component'+ idcomponent +'"'+ ' '.join(d for d in directives) + ">"+ content + '</div>'
     componentpage = """<template>\n""" + processTemplate(template) + """
 </template>
@@ -84,8 +82,7 @@ export default {
     data(){
         return {
         }
-    },
-    """ + pagehooks + """
+    }""" + pagehooks + """
 }
 </script>
 <style lang="css" scoped>

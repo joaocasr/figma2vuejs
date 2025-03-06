@@ -34,7 +34,6 @@ else:
 
   if(len(sys.argv)==4): mypages = generateGridTemplate(sys.argv[2],sys.argv[3],allpages)
   
-  print(mypages)
   # filter unique components by its id
   uniqueComponents = []
   for page in pagesInfo:

@@ -3,6 +3,7 @@ from engine.logicgenerator import handleBehaviour
 from parser.model.Mcomponent import Mcomponent
 from parser.model.TextElement import TextElement
 from parser.model.ContainerElement import ContainerElement
+from parser.model.ImageElement import ImageElement
 
 import xml.etree.ElementTree as ET
 from lxml import etree, html
@@ -48,30 +49,29 @@ def applytransformation(elem,projectname,pagename):
     pattern = "[:;]"
     if(not isinstance(elem,Mcomponent)): cssclass = re.sub(pattern,"",elem.idElement)
     else: cssclass = re.sub(pattern,"",elem.idComponent)
-    if isinstance(elem, TextElement):
-        if elem.tag=="" or elem.tag == None:
-            generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
+    
+    # insert directives and functions if there is some behaviour
+    directives, hooks = handleBehaviour(elem,allPagesInfo)
+    if(hooks!=None): 
+        for hook in hooks:
+            allhooks[pagename].setdefault(hook, []).extend(hooks[hook])
+    id = ""
+    if(elem.style.getgridArea()!=None):
+        id = ' id="'+elem.style.getgridArea()+'"'
+    if(isinstance(elem, TextElement) and (elem.tag=="" or elem.tag == None)):
+        generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
 
-            # insert directives and functions if there is some behaviour
-            directives, hooks = handleBehaviour(elem,allPagesInfo)
-            txt = re.sub(r"\n", "<br/>",elem.text)
-            if(hooks!=None): 
-                for hook in hooks:
-                    allhooks[pagename].setdefault(hook, []).extend(hooks[hook])
-            return ("<p class="+'"grid-item text'+ cssclass  + '" '+ ' '.join(d for d in directives) +">"+txt, "</p>")
-    if isinstance(elem, ContainerElement):
-        if elem.tag=="" or elem.tag == None:
-            generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
+        txt = re.sub(r"\n", "<br/>",elem.text)
+        return ("<p class="+'"grid-item text'+ cssclass  + '" '+ ' '.join(d for d in directives) +">"+txt, "</p>")
+    if(isinstance(elem, ContainerElement) and (elem.tag=="" or elem.tag == None)):
 
-            # insert directives and functions if there is some behaviour
-            directives, hooks = handleBehaviour(elem,allPagesInfo)
-            if(hooks!=None): 
-                for hook in hooks:
-                    allhooks[pagename].setdefault(hook, []).extend(hooks[hook])
-            id = ""
-            if(elem.style.getgridArea()!=None):
-                id = ' id="'+elem.style.getgridArea()+'"'
-            return ("<div"+ id +" class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) +">", "</div>")
+        generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
+
+        return ("<div"+ id +" class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) +">", "</div>")
+    if(isinstance(elem, ImageElement) and elem.tag=="img"):
+        generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
+
+        return ("<img"+ id +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getSrc() + '"' + ' '.join(d for d in directives) , "/>")
     if isinstance(elem, Mcomponent):
         componentName = elem.componentName.capitalize()
         components.setdefault(pagename, []).append(elem.componentName)
@@ -93,6 +93,7 @@ def writeVue(name,page,content):
             pagehooks += content[1] + ",\n"
         pagehooks = pagehooks[:-2]
         pagehooks +="\n\t}"
+    if(len(pagehooks)>0): pagehooks= ",\n    "+pagehooks
     vuepage = """<template>\n""" + processTemplate(template,page.getPagename()) + """
 </template>
 
@@ -102,8 +103,7 @@ export default {"""+ pagecomponents +"""
     data(){
         return {
         }
-    },
-    """ + pagehooks + """
+    }""" + pagehooks + """
 }
 </script>
 <style lang="css" scoped>

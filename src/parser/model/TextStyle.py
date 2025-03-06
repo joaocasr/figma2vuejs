@@ -25,6 +25,7 @@ class TextStyle(object):
 		self.gridcolumnEnd = gridcolumnEnd
 		self.gridrowStart = gridrowStart
 		self.gridrowEnd = gridrowEnd
+		self.gridArea = None
 
 	def getX(self):
 		"""@ReturnType int"""
@@ -232,6 +233,12 @@ class TextStyle(object):
 		"""@ParamType gridrowEnd String
 		@ReturnType void"""
 		self.gridrowEnd = gridrowEnd
+
+	def getgridArea(self):
+		return self.gridArea
+
+	def setgridArea(self, gridarea):
+		self.gridArea = gridarea
 
 	def __str__(self):
 		return "fontStyle:" + str(self.fontStyle) +",\n"+"fontWeight:" + str(self.fontWeight) +",\n"+ "fontSize:" + self.fontSize +",\n"+ "fontFamily:" + self.fontFamily +",\n"+ "color:" + self.color +",\n"+ "gridcolumnStart:" + self.gridcolumnStart +",\n"+ "gridcolumnEnd:" + str(self.gridcolumnEnd) +",\n"+ "gridrowStart:" + str(self.gridrowStart) +",\n"+ "gridrowEnd:" + str(self.gridrowEnd)

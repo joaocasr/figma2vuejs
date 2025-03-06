@@ -1,8 +1,38 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-import ImageElement
-
 class ImageStyle(object):
+
+	def __init__(self,x,y,height,width,gridcolumnstart,gridcolumnend,gridrowstart,gridrowend,opacity,cornerradius):
+		self.x = x
+		self.y = y
+		self.height = height
+		self.width = width
+		self.gridcolumnStart = gridcolumnstart
+		self.gridcolumnEnd = gridcolumnend
+		self.gridrowStart = gridrowstart
+		self.gridrowEnd = gridrowend
+		self.opacity = opacity
+		self.cornerRadius = cornerradius
+		self.gridArea = None
+
+	def getX(self):
+		"""@ReturnType int"""
+		return self.x
+
+	def setX(self, x):
+		"""@ParamType width int
+		@ReturnType void"""
+		self.x = x
+
+	def getY(self):
+		"""@ReturnType int"""
+		return self.y
+
+	def setY(self, y):
+		"""@ParamType width int
+		@ReturnType void"""
+		self.y = y
+
 	def getHeight(self):
 		"""@ReturnType String"""
 		return self.height
@@ -75,24 +105,8 @@ class ImageStyle(object):
 		@ReturnType void"""
 		self.cornerRadius = cornerRadius
 
-	def __init__(self):
-		self.height = None
-		"""@AttributeType String"""
-		self.width = None
-		"""@AttributeType String"""
-		self.gridcolumnStart = None
-		"""@AttributeType String"""
-		self.gridcolumnEnd = None
-		"""@AttributeType String"""
-		self.gridrowStart = None
-		"""@AttributeType String"""
-		self.gridrowEnd = None
-		"""@AttributeType String"""
-		self.opacity = None
-		"""@AttributeType String"""
-		self.cornerRadius = None
-		"""@AttributeType String"""
-		self.unnamed_ImageElement_ = None
-		"""@AttributeType ImageElement
-		# @AssociationType ImageElement"""
+	def getgridArea(self):
+		return self.gridArea
 
+	def setgridArea(self, gridarea):
+		self.gridArea = gridarea
