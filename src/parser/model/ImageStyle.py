@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 class ImageStyle(object):
 
-	def __init__(self,x,y,height,width,gridcolumnstart,gridcolumnend,gridrowstart,gridrowend,opacity,cornerradius):
+	def __init__(self,x,y,height,width,gridcolumnstart,gridcolumnend,gridrowstart,gridrowend):
 		self.x = x
 		self.y = y
 		self.height = height
@@ -11,8 +11,9 @@ class ImageStyle(object):
 		self.gridcolumnEnd = gridcolumnend
 		self.gridrowStart = gridrowstart
 		self.gridrowEnd = gridrowend
-		self.opacity = opacity
-		self.cornerRadius = cornerradius
+		self.boxShadow = None
+		self.opacity = None
+		self.cornerRadius = None
 		self.gridArea = None
 
 	def getX(self):
@@ -95,6 +96,15 @@ class ImageStyle(object):
 		"""@ParamType opacity String
 		@ReturnType void"""
 		self.opacity = opacity
+
+	def getBoxShadow(self):
+		"""@ReturnType String"""
+		return self.boxShadow
+
+	def setBoxShadow(self, boxShadow):
+		"""@ParamType boxShadow String
+		@ReturnType void"""
+		self.boxShadow = boxShadow
 
 	def getCornerRadius(self):
 		"""@ReturnType String"""

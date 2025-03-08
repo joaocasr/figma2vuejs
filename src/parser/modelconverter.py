@@ -147,22 +147,34 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
                         nr_columnstart,
                         nr_columnend,
                         nr_rowstart,
-                        nr_rowend,
-                        "0",
-                        "0"
-        )
+                        nr_rowend
+                        )
+        if("cornerRadius" in data): style.setCornerRadius(data["cornerRadius"])
+        for effect in data["effects"]:
+            if effect["type"] == "DROP_SHADOW":
+                rgba_shadow = (effect["color"]["r"]*255, effect["color"]["g"]*255, effect["color"]["b"]*255, effect["color"]["a"])
+                shadowX , shadowY = (str(round(effect["offset"]["x"])), str(round(effect["offset"]["y"])))
+                shadowRadius = str(round(effect["radius"]))+"px "
+                spread = ""
+                if("spread" in effect): spread = str(round(effect["spread"]))+"px "
+
+                boxshadow = shadowX+"px " + shadowY+"px " + shadowRadius + spread + "rgba("+','.join(str(val) for val in rgba_shadow)+")"
+                style.setBoxShadow(boxshadow)
+
         mimagelement = ImageElement(data["id"],"img",data["name"],data["fills"][0]["imageRef"],style)
         melement = mimagelement
 
     # handles shape elements
     if(data["type"]=="STAR" or data["type"]=="REGULAR_POLYGON" or data["type"]=="RECTANGLE" or data["type"]=="ELLIPSE"):
-        lineargradient = None
+        rotation = None
+        if("rotation" in data):
+            rotation = str(data["rotation"])+"rad"
         rgba = None
         for fill in data["fills"]:
 
             if("color" in fill):
                 color = fill["color"]
-                rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"] * 255)
+                rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"])
 
         shapestyle = ShapeStyle(data["absoluteRenderBounds"]["x"],
                         data["absoluteRenderBounds"]["y"],
@@ -173,6 +185,18 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
                         nr_rowstart,
                         nr_rowend)
         if(rgba!=None): shapestyle.setBackground("rgba("+','.join(str(val) for val in rgba)+")")
+        if(rotation!=None): shapestyle.setTransform(rotation)
+
+        for effect in data["effects"]:
+            if effect["type"] == "DROP_SHADOW":
+                rgba_shadow = (effect["color"]["r"], effect["color"]["g"], effect["color"]["b"], effect["color"]["a"])
+                shadowX , shadowY = (str(round(effect["offset"]["x"])), str(round(effect["offset"]["y"])))
+                shadowRadius = str(round(effect["radius"]))+"px "
+                spread = ""
+                if("spread" in effect): spread = str(round(effect["spread"]))+"px "
+
+                boxshadow = shadowX+"px " + shadowY+"px " + shadowRadius + spread + "rgba("+','.join(str(val) for val in rgba_shadow)+")"
+                shapestyle.setBoxShadow(boxshadow)
 
         mshapeelement = ShapeElement(data["id"],"",data["name"],data["type"],shapestyle)
         melement = mshapeelement
@@ -183,7 +207,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
         fontsize = ((data["style"]["fontSize"]) / (pageWidth / 100))
 
         color = data["fills"][0]["color"]
-        rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"] * 255)
+        rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"])
         autoresize = None
         if("textAutoResize" in data["style"]):
             autoresize = data["style"]["textAutoResize"]
@@ -227,7 +251,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
 
             if("color" in background):
                 color = data["background"][0]["color"]
-                rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"] * 255)
+                rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"])
             elif(background["type"] == "GRADIENT_LINEAR"):
                 lineargradient = calculate_gradientDegree(background["gradientHandlePositions"][0],
                                                 background["gradientHandlePositions"][1],
@@ -253,7 +277,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
 
         for effect in data["effects"]:
             if effect["type"] == "DROP_SHADOW":
-                rgba_shadow = (effect["color"]["r"], effect["color"]["g"], effect["color"]["b"], effect["color"]["a"])
+                rgba_shadow = (effect["color"]["r"]*255, effect["color"]["g"]*255, effect["color"]["b"]*255, effect["color"]["a"])
                 shadowX , shadowY = (str(round(effect["offset"]["x"])), str(round(effect["offset"]["y"])))
                 shadowRadius = str(round(effect["radius"]))+"px "
                 spread = str(round(effect["spread"]))+"px "
@@ -262,7 +286,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
                 style.setBoxShadow(boxshadow)
 
         for stroke in data["strokes"]:
-            rgba_stroke = (stroke["color"]["r"], stroke["color"]["g"], stroke["color"]["b"], stroke["color"]["a"])
+            rgba_stroke = (stroke["color"]["r"]*255, stroke["color"]["g"]*255, stroke["color"]["b"]*255, stroke["color"]["a"])
             stroketype = str(stroke["type"]).lower()
             strokeWeight = str(data["strokeWeight"])+"px "
 
@@ -320,7 +344,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
 def getPosition(xielem,yielem,elementwidth,elementheight,page_width,page_height, nrrows):
 
     nr_columnstart = max(round((xielem / page_width) * 64 ) + 1,1)
-    nr_columnend = min(round((elementwidth / page_width) * 64) + 1 + nr_columnstart,64)
+    nr_columnend = min(round((elementwidth / page_width) * 64) + 1 + nr_columnstart,65)
 
     nr_rowstart = round((yielem / page_height) * nrrows ) + 1
     nr_rowend = min(round((elementheight / page_height) * nrrows) + nr_rowstart, nrrows)
@@ -337,7 +361,7 @@ def setPageStyle(pagename,pagedata):
 
         if("color" in background):
             color = pagedata["background"][0]["color"]
-            rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"] * 255)
+            rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"])
         elif(background["type"] == "GRADIENT_LINEAR"):
             lineargradient = calculate_gradientDegree(background["gradientHandlePositions"][0],
                                             background["gradientHandlePositions"][1],
@@ -364,7 +388,7 @@ def setComponentStyle(component):
 
         if("color" in background):
             color = component["background"][0]["color"]
-            rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"] * 255)
+            rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"])
         elif(background["type"] == "GRADIENT_LINEAR"):
             lineargradient = calculate_gradientDegree(background["gradientHandlePositions"][0],
                                             background["gradientHandlePositions"][1],
@@ -390,7 +414,7 @@ def setComponentStyle(component):
 
     for effect in component["effects"]:
         if effect["type"] == "DROP_SHADOW":
-            rgba_shadow = (effect["color"]["r"], effect["color"]["g"], effect["color"]["b"], effect["color"]["a"])
+            rgba_shadow = (effect["color"]["r"]*255, effect["color"]["g"]*255, effect["color"]["b"]*255, effect["color"]["a"])
             shadowX , shadowY = (str(round(effect["offset"]["x"])), str(round(effect["offset"]["y"])))
             shadowRadius = str(round(effect["radius"]))+"px "
             spread = "0px"
@@ -400,7 +424,7 @@ def setComponentStyle(component):
             componentStyle.setBoxShadow(boxshadow)
 
     for stroke in component["strokes"]:
-        rgba_stroke = (stroke["color"]["r"], stroke["color"]["g"], stroke["color"]["b"], stroke["color"]["a"])
+        rgba_stroke = (stroke["color"]["r"]*255, stroke["color"]["g"]*255, stroke["color"]["b"]*255, stroke["color"]["a"])
         stroketype = str(stroke["type"]).lower()
         strokeWeight = str(component["strokeWeight"])+"px "
 

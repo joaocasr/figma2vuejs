@@ -11,12 +11,12 @@
     </div>
     <div class="grid-item container214688">
         <p class="grid-item text214689">Top Bloggers</p>
-        <img class="grid-item container215612" src="https://i.pinimg.com/736x/1d/dc/c9/1ddcc96d17b6d26d175242ddd01f2d79.jpg"/>
-        <img class="grid-item container215610" src="https://i.pinimg.com/736x/1d/dc/c9/1ddcc96d17b6d26d175242ddd01f2d79.jpg"/>
-        <img class="grid-item container21568" src="https://i.pinimg.com/736x/1d/dc/c9/1ddcc96d17b6d26d175242ddd01f2d79.jpg"/>
-        <img class="grid-item container21566" src="https://i.pinimg.com/736x/1d/dc/c9/1ddcc96d17b6d26d175242ddd01f2d79.jpg"/>
-        <img class="grid-item container21564" src="https://i.pinimg.com/736x/1d/dc/c9/1ddcc96d17b6d26d175242ddd01f2d79.jpg"/>
-        <img class="grid-item container21562" src="https://i.pinimg.com/736x/1d/dc/c9/1ddcc96d17b6d26d175242ddd01f2d79.jpg"/>
+        <img class="grid-item container215612" src="https://hypermediamagazine.com/wp-content/uploads/2023/06/Screenshot-2023-06-29-at-10.44.08-AM.png"/>
+        <img class="grid-item container215610" src="https://hypermediamagazine.com/wp-content/uploads/2023/06/Screenshot-2023-06-29-at-10.44.08-AM.png"/>
+        <img class="grid-item container21568" src="https://hypermediamagazine.com/wp-content/uploads/2023/06/Screenshot-2023-06-29-at-10.44.08-AM.png"/>
+        <img class="grid-item container21566" src="https://hypermediamagazine.com/wp-content/uploads/2023/06/Screenshot-2023-06-29-at-10.44.08-AM.png"/>
+        <img class="grid-item container21564" src="https://hypermediamagazine.com/wp-content/uploads/2023/06/Screenshot-2023-06-29-at-10.44.08-AM.png"/>
+        <img class="grid-item container21562" src="https://hypermediamagazine.com/wp-content/uploads/2023/06/Screenshot-2023-06-29-at-10.44.08-AM.png"/>
     </div>
     <div class="grid-item container21623">
         <div class="grid-item container214669">
@@ -82,12 +82,14 @@
         <div class="grid-item container214667">
             <p class="grid-item text214668">Top Stories</p>
         </div>
-        <img class="grid-item container2146112" src="https://i.pinimg.com/736x/1d/dc/c9/1ddcc96d17b6d26d175242ddd01f2d79.jpg"/>
+        <img class="grid-item container2146112" src="https://hypermediamagazine.com/wp-content/uploads/2023/06/Screenshot-2023-06-29-at-10.44.08-AM.png"/>
         <div class="grid-item star217711"/>
         <div class="grid-item regular_polygon217712"/>
         <div class="grid-item ellipse217713"/>
         <div class="grid-item rectangle217714"/>
-        <div class="grid-item rectangle217715"/>
+        <div class="grid-item wrapperrectangle217715">
+            <div class="grid-item rectangle217715"/>
+        </div>
     </div>
 </div>
 

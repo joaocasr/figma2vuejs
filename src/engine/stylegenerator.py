@@ -224,8 +224,10 @@ def generateShapeCSS(projectname,pagename,cssclass,type,elem):
   clip-path: """+  clippath+ """;
   height: """+  str(elem.style.height) + """px;
   width:  """+  str(elem.style.width) + """px;
-}
-"""
+  """
+  if(elem.style.transform!=None): css+="transform: rotate("+elem.style.getTransform()+");\n"
+
+  css = css + "}"
   cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
   mode = "w"
   if os.path.isfile(cssfile):
@@ -233,6 +235,21 @@ def generateShapeCSS(projectname,pagename,cssclass,type,elem):
   with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
     f.write(css)
 
+def generateShapeShadowCSS(projectname,pagename,cssclass,elem):
+  css ="""\n."""+ cssclass + """ {
+  grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
+  grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
+  grid-row-start: """+  str(elem.style.gridrowStart)+""";
+  grid-row-end: """+  str(elem.style.gridrowEnd)+""";
+  filter: drop-shadow("""+  str(elem.style.getBoxShadow())+""");
+}
+  """
+  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  mode = "w"
+  if os.path.isfile(cssfile):
+    mode = "a"
+  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+    f.write(css)
 
 def generateElemCssProperties(projectname,pagename,cssclass,elem):
   global font_imports
@@ -276,7 +293,9 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     if elem.style.gridcolumnEnd != None: csskeyvalues+=f"grid-column-end: {str(elem.style.gridcolumnEnd)};{newline}"
     if elem.style.gridrowStart != None: csskeyvalues+=f"grid-row-start: {str(elem.style.gridrowStart)};{newline}"
     if elem.style.gridrowEnd != None: csskeyvalues+=f"grid-row-end: {str(elem.style.gridrowEnd)};{newline}"
-    
+    if elem.style.getCornerRadius() != None: csskeyvalues+=f"border-radius: {elem.style.getCornerRadius()}px;{newline}"
+    if elem.style.boxShadow != None: csskeyvalues+=f"box-shadow: {elem.style.boxShadow};{newline}"
+
     css = "."+cssclass+" {\n\t"+ csskeyvalues[:-1] +"}\n\n"
   
   if isinstance(elem,ContainerElement): 
