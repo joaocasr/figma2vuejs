@@ -31,19 +31,18 @@ else:
     pagesInfo[page] = {"path":allpages[page].pagepath, "name": page, "id": allpages[page].idpage, "components": allpages[page].components}
 
   mypages = allpages
-
   if(len(sys.argv)==4): mypages = generateGridTemplate(sys.argv[2],sys.argv[3],allpages)
-  
-  # filter unique components by its id
-  uniqueComponents = []
-  for page in pagesInfo:
-    for x in pagesInfo[page]["components"]:
-      if(not any(x.idComponent == c.idComponent for c in uniqueComponents)):
-        uniqueComponents.append(x)
+  if(mypages!=None):
+    # filter unique components by its id
+    uniqueComponents = []
+    for page in pagesInfo:
+      for x in pagesInfo[page]["components"]:
+        if(not any(x.idComponent == c.idComponent for c in uniqueComponents)):
+          uniqueComponents.append(x)
 
-  for component in uniqueComponents:
-    buildcomponent(component,project_name,pagesInfo)
-    
-  # build each page (elements within, styling and components)
-  for page in mypages:
-    buildpage(project_name,mypages[page],pagesInfo)
+    for component in uniqueComponents:
+      buildcomponent(component,project_name,pagesInfo)
+      
+    # build each page (elements within, styling and components)
+    for page in mypages:
+      buildpage(project_name,mypages[page],pagesInfo)

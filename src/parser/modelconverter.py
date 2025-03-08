@@ -8,6 +8,8 @@ from parser.model.Mpage import Mpage
 from parser.model.Melement import Melement
 from parser.model.ContainerElement import ContainerElement
 from parser.model.ImageElement import ImageElement
+from parser.model.ShapeElement import ShapeElement
+from parser.model.ShapeStyle import ShapeStyle
 from parser.model.Mcomponent import Mcomponent
 from parser.model.TextElement import TextElement
 from parser.model.ContainerStyle import ContainerStyle
@@ -152,6 +154,29 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
         mimagelement = ImageElement(data["id"],"img",data["name"],data["fills"][0]["imageRef"],style)
         melement = mimagelement
 
+    # handles shape elements
+    if(data["type"]=="STAR" or data["type"]=="REGULAR_POLYGON" or data["type"]=="RECTANGLE" or data["type"]=="ELLIPSE"):
+        lineargradient = None
+        rgba = None
+        for fill in data["fills"]:
+
+            if("color" in fill):
+                color = fill["color"]
+                rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"] * 255)
+
+        shapestyle = ShapeStyle(data["absoluteRenderBounds"]["x"],
+                        data["absoluteRenderBounds"]["y"],
+                        elementwidth,
+                        elementheight,
+                        nr_columnstart,
+                        nr_columnend,
+                        nr_rowstart,
+                        nr_rowend)
+        if(rgba!=None): shapestyle.setBackground("rgba("+','.join(str(val) for val in rgba)+")")
+
+        mshapeelement = ShapeElement(data["id"],"",data["name"],data["type"],shapestyle)
+        melement = mshapeelement
+                  
     # handles TextElement
     if(data["type"]=="TEXT"):
 

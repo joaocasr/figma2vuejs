@@ -2,6 +2,8 @@ grid = []
 nrrows = 0
 nrcolumns = 0
 
+tags = ["Nav","Footer","Main","Section","Side","Article","P","Header","H1","H2","H3","H4","H5","H6"]
+
 def generateGridTemplate(rows,columns,allpages):
     global grid,nrrows,nrcolumns
     nrrows = int(rows)
@@ -9,6 +11,10 @@ def generateGridTemplate(rows,columns,allpages):
     grid = [["." for _ in range(int(nrcolumns))] for _ in range(int(nrrows))]
     for p in allpages:
         for e in allpages[p].elements:
+            if(e.getName().capitalize() not in tags):
+                print(e.getName())
+                print("First level elements should include frames with the following names:\n- "+'\n- '.join(tags))
+                return None
             (columnstart,columnend,rowstart,rowend) = getTemplatePosition(allpages[p].style.height,
                             allpages[p].style.width,
                             e.style.height,

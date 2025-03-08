@@ -1,7 +1,8 @@
-from engine.stylegenerator import generatePageStyle, generateElemCssProperties
+from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS
 from engine.logicgenerator import handleBehaviour
 from parser.model.Mcomponent import Mcomponent
 from parser.model.TextElement import TextElement
+from parser.model.ShapeElement import ShapeElement
 from parser.model.ContainerElement import ContainerElement
 from parser.model.ImageElement import ImageElement
 
@@ -72,11 +73,17 @@ def applytransformation(elem,projectname,pagename):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
 
         return ("<img"+ id +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getSrc() + '"' + ' '.join(d for d in directives) , "/>")
+    if(isinstance(elem, ShapeElement)):
+        cssclassifier = ""
+        cssclassifier = elem.getType().lower() + str(cssclass)
+        generateShapeCSS(projectname,pagename,cssclassifier,elem.getType(),elem)
+
+        return ("<div"+ id +" class="+'"grid-item '+ cssclassifier + '" '+ ' '.join(d for d in directives) +">", "</div>")
     if isinstance(elem, Mcomponent):
         componentName = elem.componentName.capitalize()
         components.setdefault(pagename, []).append(elem.componentName)
         return ("<"+componentName+">","</"+componentName+">")
-
+    return ("","")
 
 def writeVue(name,page,content):
     global allhooks, components 

@@ -200,6 +200,39 @@ def generateComponentStyle(name,component):
     f.seek(0)   
     f.writelines(lines)
 
+def generateShapeCSS(projectname,pagename,cssclass,type,elem):
+  clippath=""
+  if(type=="STAR"):
+    clippath = "polygon(50% 0,79% 90%,2% 35%,98% 35%,21% 90%)"
+  if(type=="REGULAR_POLYGON"):
+    clippath = "polygon(50% 0,100% 100%,0 100%)"
+  if(type=="RECTANGLE"):
+    clippath = "polygon(0 0, 0% 100%, 100% 100%,100% 0)"
+  if(type=="ELLIPSE" and abs(int(elem.style.width)-int(elem.style.height))<5):
+    clippath = "circle(50% at 50% 50%)"
+  if(type=="ELLIPSE" and abs(int(elem.style.width)-int(elem.style.height))>=5):
+    clippath = "ellipse(50% 30% at 50% 50%)"
+
+
+  css ="""\n."""+ cssclass + """ {
+  grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
+  grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
+  grid-row-start: """+  str(elem.style.gridrowStart)+""";
+  grid-row-end: """+  str(elem.style.gridrowEnd)+""";
+  aspect-ratio: 1;
+  background: """+  elem.style.background+""";
+  clip-path: """+  clippath+ """;
+  height: """+  str(elem.style.height) + """px;
+  width:  """+  str(elem.style.width) + """px;
+}
+"""
+  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  mode = "w"
+  if os.path.isfile(cssfile):
+    mode = "a"
+  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+    f.write(css)
+
 
 def generateElemCssProperties(projectname,pagename,cssclass,elem):
   global font_imports
@@ -239,8 +272,6 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     css = "\n."+cssclass+" {\n\t"+ csskeyvalues[:-1] +"}\n\n"
 
   if isinstance(elem,ImageElement) : 
-    if elem.style.width != None: csskeyvalues+=f"width: {str(elem.style.width)};{newline}"
-    if elem.style.height != None: csskeyvalues+=f"height: {str(elem.style.height)};{newline}"
     if elem.style.gridcolumnStart != None: csskeyvalues+=f"grid-column-start: {str(elem.style.gridcolumnStart)};{newline}"
     if elem.style.gridcolumnEnd != None: csskeyvalues+=f"grid-column-end: {str(elem.style.gridcolumnEnd)};{newline}"
     if elem.style.gridrowStart != None: csskeyvalues+=f"grid-row-start: {str(elem.style.gridrowStart)};{newline}"

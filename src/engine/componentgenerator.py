@@ -53,6 +53,7 @@ def applytransformation(elem,projectname,pagename):
         directives = []
         html = "<div class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) +">"
         return (html, "</div>")
+    return ("","")
 
 def writeVueComponent(name,project_name,content,component,pagesInfo):
     global allhooks 
