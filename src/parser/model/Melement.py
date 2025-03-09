@@ -4,9 +4,12 @@
 class Melement(object):
 
 	def __init__(self,id,tag,name):
+		if("#" in name):
+			self.name = name.split("#")[0]
+		else:
+			self.name = name
 		self.idElement = id
 		self.tag = tag
-		self.name = name
 		self.children = []
 		self.interactions = []
 

@@ -8,8 +8,8 @@ from parser.modelconverter import getFigmaData
 
 import sys
 
-if(len(sys.argv)!=2 and len(sys.argv)!=4):
-  print("MANUAL:\n python3 figma2vuejs.py <nrº of prototype>\n python3 figma2vuejs.py <nrº of prototype> <nr_columns> <nr_rows>")
+if(len(sys.argv)!=2 and len(sys.argv)!=3):
+  print("MANUAL:\n python3 figma2vuejs.py <nrº of prototype>\n python3 figma2vuejs.py <nrº of prototype> <template-file>")
 else:
   prototype = sys.argv[1]
   # extract figma data and build intern model
@@ -31,7 +31,7 @@ else:
     pagesInfo[page] = {"path":allpages[page].pagepath, "name": page, "id": allpages[page].idpage, "components": allpages[page].components}
 
   mypages = allpages
-  if(len(sys.argv)==4): mypages = generateGridTemplate(sys.argv[2],sys.argv[3],allpages)
+  if(len(sys.argv)==3): mypages = generateGridTemplate(sys.argv[2],allpages)
   if(mypages!=None):
     # filter unique components by its id
     uniqueComponents = []

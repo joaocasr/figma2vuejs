@@ -27,6 +27,8 @@ allcomponents = {}
 pageComponents = {}
 
 pageWidth = -1
+tags = ["nav","footer","main","section","aside","article","p","header","h1","h2","h3","h4","h5","h6","ul","li"]
+
 
 def getFigmaData(prototype):
     global allpages, allcomponents,pageComponents
@@ -79,7 +81,8 @@ def iterate_nestedElements(data):
                 p = processElement(melement["name"],element["name"],element,component_width,component_height,componentX,componentY)
                 elements.append(p)
             
-            allcomponents[melement["id"]] = Mcomponent(melement["id"],melement["name"],"","",elements)
+            tag = getElementTag(melement)
+            allcomponents[melement["id"]] = Mcomponent(melement["id"],melement["name"],tag,"",elements)
             setComponentStyle(melement)
 
     #iterate the frame nodes (represent the pages)
@@ -135,6 +138,8 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
         nrrow = nr_rowend
         nr_rowend = " span "+ str(nrrow)
 
+    tag = getElementTag(data)
+
     melement = None
     # handling ImageElement
     if(data["type"]=="RECTANGLE" and any(("imageRef" in x) for x in data["fills"])):
@@ -160,8 +165,8 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
 
                 boxshadow = shadowX+"px " + shadowY+"px " + shadowRadius + spread + "rgba("+','.join(str(val) for val in rgba_shadow)+")"
                 style.setBoxShadow(boxshadow)
-
-        mimagelement = ImageElement(data["id"],"img",data["name"],data["fills"][0]["imageRef"],style)
+        if(tag==""): tag = "img"
+        mimagelement = ImageElement(data["id"],tag,data["name"],data["fills"][0]["imageRef"],style)
         melement = mimagelement
 
     # handles shape elements
@@ -198,14 +203,15 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
                 boxshadow = shadowX+"px " + shadowY+"px " + shadowRadius + spread + "rgba("+','.join(str(val) for val in rgba_shadow)+")"
                 shapestyle.setBoxShadow(boxshadow)
 
-        mshapeelement = ShapeElement(data["id"],"",data["name"],data["type"],shapestyle)
+        mshapeelement = ShapeElement(data["id"],tag,data["name"],data["type"],shapestyle)
         melement = mshapeelement
                   
     # handles TextElement
     if(data["type"]=="TEXT"):
 
         fontsize = ((data["style"]["fontSize"]) / (pageWidth / 100))
-
+        #lineheight = ((round(data["style"]["lineHeightPx"])) / (pageWidth / 100))
+        lineheight = (round(data["style"]["lineHeightPx"])) 
         color = data["fills"][0]["color"]
         rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"])
         autoresize = None
@@ -216,7 +222,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
                         elementwidth,
                         elementheight,
                         data["style"]["textAlignHorizontal"],
-                        round(data["style"]["lineHeightPx"]),
+                        str(lineheight)+"px",
                         autoresize,
                         data["style"]["fontStyle"],
                         data["style"]["fontWeight"],
@@ -227,11 +233,11 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
                         nr_columnend,
                         nr_rowstart,
                         nr_rowend)
-        mtextelement = TextElement(data["id"],"",data["name"],data["characters"],style)
+        mtextelement = TextElement(data["id"],tag,data["name"],data["characters"],style)
         melement = mtextelement
     
     if(data["type"]=="INSTANCE"):
-        componentelement = Mcomponent(data["id"],data["name"],"","")
+        componentelement = Mcomponent(data["id"],data["name"],tag,"")
         componentStyle = setComponentStyle(data)
         componentStyle.setGridcolumnStart(nr_columnstart)
         componentStyle.setGridcolumnEnd(nr_columnend)
@@ -292,8 +298,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
 
             borderstyle = strokeWeight + stroketype + " rgba("+','.join(str(val) for val in rgba_stroke)+")"
             style.setBorderStyle(borderstyle)
-
-        melement = ContainerElement(data["id"],"",data["name"],style)
+        melement = ContainerElement(data["id"],tag,data["name"],style)
 
     element_interactions = []
     for interaction in data["interactions"]:
@@ -456,3 +461,12 @@ def updateOverlayPosition(component, vx, vy, page_width, page_height):
     if(component!=None and component.children):
         for element in component.children:
             updateOverlayPosition(element, vx, vy, page_width, page_height)
+
+def getElementTag(elem):
+    global tags
+    tag = ""
+    if("#" in elem["name"]):
+        ntag = elem["name"].split("#")[1]
+        if(ntag.lower() in tags):
+            tag = ntag.lower()
+    return tag

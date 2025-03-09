@@ -59,20 +59,23 @@ def applytransformation(elem,projectname,pagename):
     id = ""
     if(elem.style.getgridArea()!=None):
         id = ' id="'+elem.style.getgridArea()+'"'
-    if(isinstance(elem, TextElement) and (elem.tag=="" or elem.tag == None)):
+    if(isinstance(elem, TextElement)):
         generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
-
+        if(elem.tag==""):
+            elem.tag = "p"
         txt = re.sub(r"\n", "<br/>",elem.text)
-        return ("<p class="+'"grid-item text'+ cssclass  + '" '+ ' '.join(d for d in directives) +">"+txt, "</p>")
-    if(isinstance(elem, ContainerElement) and (elem.tag=="" or elem.tag == None)):
+        return ("<"+ elem.tag +" class="+'"grid-item text'+ cssclass  + '" '+ ' '.join(d for d in directives) +">"+txt, "</"+elem.tag+">")
+    if(isinstance(elem, ContainerElement)):
 
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
-
-        return ("<div"+ id +" class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) +">", "</div>")
-    if(isinstance(elem, ImageElement) and elem.tag=="img"):
+        if(elem.tag==""):
+            elem.tag = "div"
+        return ("<"+elem.tag + id +" class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) +">", "</"+elem.tag+">")
+    if(isinstance(elem, ImageElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
-
-        return ("<img"+ id +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getSrc() + '"' + ' '.join(d for d in directives) , "/>")
+        if(elem.tag==""):
+            elem.tag = "img"
+        return ("<"+elem.tag+ id +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getSrc() + '"' + ' '.join(d for d in directives) , "/>")
     if(isinstance(elem, ShapeElement)):
         cssclassifier = ""
         cssclassifier = elem.getType().lower() + str(cssclass)

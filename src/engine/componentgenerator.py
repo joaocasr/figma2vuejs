@@ -43,16 +43,20 @@ def applytransformation(elem,projectname,pagename):
     pattern = "[:;]"
     if(not isinstance(elem,Mcomponent)): cssclass = re.sub(pattern,"",elem.idElement)
     else: cssclass = re.sub(pattern,"",elem.idComponent)
-    if(isinstance(elem, TextElement) and (elem.tag=="" or elem.tag == None)):
+    if(isinstance(elem, TextElement)):
         generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
         #iterate the list of interactions (logicgenerator.py)
-        return ("<p class="+'"grid-item text'+ cssclass +'">'+elem.text, "</p>")
-    if(isinstance(elem, ContainerElement) and (elem.tag=="" or elem.tag == None)):
+        if(elem.tag==""):
+            elem.tag = "p"
+        return ("<"+elem.tag+" class="+'"grid-item text'+ cssclass +'">'+elem.text, "</"+elem.tag+">")
+    if(isinstance(elem, ContainerElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
+        if(elem.tag==""):
+            elem.tag = "p"
         #iterate the list of interactions (logicgenerator.py)
         directives = []
-        html = "<div class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) +">"
-        return (html, "</div>")
+        html = "<"+elem.tag+" class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) +">"
+        return (html, "</"+elem.tag+">")
     return ("","")
 
 def writeVueComponent(name,project_name,content,component,pagesInfo):

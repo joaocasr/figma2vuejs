@@ -129,7 +129,7 @@ def generatePageStyle(name,page):
   padding:"""+ page.style.padding + """;
   """
   if(page.style.getGridTemplateArea()!=None):
-    cssgridcontainer+="grid-template-areas:\n    "+ '\n    '.join(page.style.getGridTemplateArea())+";\n"
+    cssgridcontainer+="grid-template-areas:\n    "+ '\n    '.join(page.style.getGridTemplateArea())+";\n  gap: "+page.style.getGap()+";\n"
 
   cssgriditem = """}
  
@@ -262,13 +262,13 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     if elem.style.fontSize != None: csskeyvalues+=f"font-size: {elem.style.fontSize};{newline}"
     if elem.style.fontFamily != None: csskeyvalues+=f"font-family: {elem.style.fontFamily};{newline}"
     if elem.style.textHorizontalAlign != None: csskeyvalues+=f"text-align: {elem.style.textHorizontalAlign.lower()};{newline}"
-    if elem.style.lineHeight != None: csskeyvalues+=f"line-height: {str(elem.style.lineHeight)}px;{newline}"
+    if elem.style.lineHeight != None: csskeyvalues+=f"line-height: {str(elem.style.lineHeight)};{newline}"
     if elem.style.color != None: csskeyvalues+=f"color: {elem.style.color};{newline}"
     if elem.style.gridcolumnStart != None: csskeyvalues+=f"grid-column-start: {str(elem.style.gridcolumnStart)};{newline}"
     if elem.style.gridcolumnEnd != None: csskeyvalues+=f"grid-column-end: {str(elem.style.gridcolumnEnd)};{newline}"
     if elem.style.gridrowStart != None: csskeyvalues+=f"grid-row-start: {str(elem.style.gridrowStart)};{newline}"
     if elem.style.gridrowEnd != None: csskeyvalues+=f"grid-row-end: {str(elem.style.gridrowEnd)};{newline}"
-    csskeyvalues+=f"overflow-wrap: break-word;{newline}word-break: break-word;{newline}"
+    csskeyvalues+=f"overflow-wrap: break-word;{newline}" #word-break: break-word;{newline}
 
     if(elem.style.textAutoResize == "WIDTH_AND_HEIGHT"):
       csskeyvalues+=f"white-space: normal;{newline}"
@@ -277,7 +277,9 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     elif(elem.style.textAutoResize == "HEIGHT"):
       csskeyvalues+=f"word-wrap: break-word;{newline}"
 
-    csskeyvalues +=f"width: 100%;{newline}display: flex;{newline}align-items: stretch;{newline}justify-content: stretch;{newline}"
+    alignment = "stretch"
+    if(elem.style.textHorizontalAlign.lower()=="center"): alignment = "center"
+    csskeyvalues +=f"width: 100%;{newline}display: flex;{newline}align-items: {alignment};{newline}justify-content: stretch;{newline}"
     #height:auto
 
     font = "//fonts.googleapis.com/css2?family="+elem.style.fontFamily+":wght@"+ str(elem.style.fontWeight) +"&display=swap"
@@ -313,10 +315,10 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     if elem.style.display != None: csskeyvalues+=f"display: {str(elem.style.display)};{newline}"
     if elem.style.gridtemplatecolumns != None: csskeyvalues+=f"grid-template-columns: {str(elem.style.gridtemplatecolumns)};{newline}"
     if elem.style.gridtemplaterows != None: csskeyvalues+=f"grid-template-rows: {str(elem.style.gridtemplaterows)};{newline}"
-
+    csskeyvalues +=f"padding: 0;{newline}"
     gridareacss = ""
     if(elem.style.getgridArea()!=None):
-      gridareacss = "#"+elem.name+" {\n\t"+ "grid-area:"+elem.style.getgridArea()+";\n}\n\n"
+      gridareacss = "#"+elem.name.lower()+" {\n\t"+ "grid-area:"+elem.style.getgridArea()+";\n}\n\n"
 
     css = gridareacss + "\n."+cssclass+" {\n\t"+ csskeyvalues[:-1] +"}\n\n"
 
