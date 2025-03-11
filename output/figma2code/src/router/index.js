@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import BlogPageView from '@/views/BlogPageView.vue';
+import PrincipalPageView from '@/views/PrincipalPageView.vue';
+import SecondaryPageView from '@/views/SecondaryPageView.vue';
 import ErrorPageView from '@/views/ErrorPageView.vue';
 
 const router = createRouter({
@@ -9,9 +10,14 @@ const router = createRouter({
   },
   routes: [
   {
-    "path": "/blogpage",
-    "name": "BlogPage",
-    "component": BlogPageView
+    "path": "/principalpage",
+    "name": "PrincipalPage",
+    "component": PrincipalPageView
+},
+{
+    "path": "/secondarypage",
+    "name": "SecondaryPage",
+    "component": SecondaryPageView
 },
 {
     "path": "/:catchAll(.*)",

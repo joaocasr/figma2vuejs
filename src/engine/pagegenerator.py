@@ -24,35 +24,36 @@ def buildpage(name,page,pagesInfo):
     allPagesInfo = pagesInfo
     output = ""  
     for element in page.elements:
-        output += processChildren(element,name,page.pagename)
+        output += processChildren(element,name,page)
 
     writeVue(name,page,output)
 
-def processChildren(data,projectname,pagename):
+def processChildren(data,projectname,page):
     if(data==None): return ""
     if(len(data.children)>0):
         content=""
-        output, endtag = applytransformation(data,projectname,pagename)
+        output, endtag = applytransformation(data,projectname,page)
         for element in data.children:
-            content += processChildren(element,projectname,pagename)
+            content += processChildren(element,projectname,page)
 
         return output + content + endtag
 
     else:
-        output, endtag = applytransformation(data,projectname,pagename)
+        output, endtag = applytransformation(data,projectname,page)
         output += endtag    
         return output
 
 # Do a better handling of the tags
-def applytransformation(elem,projectname,pagename):
+def applytransformation(elem,projectname,page):
     global allPagesInfo, allhooks, components
+    pagename = page.pagename
     cssclass = ""
     pattern = "[:;]"
     if(not isinstance(elem,Mcomponent)): cssclass = re.sub(pattern,"",elem.idElement)
     else: cssclass = re.sub(pattern,"",elem.idComponent)
     
     # insert directives and functions if there is some behaviour
-    directives, hooks = handleBehaviour(elem,allPagesInfo)
+    directives, hooks = handleBehaviour(elem,allPagesInfo,page.getData())
     if(hooks!=None): 
         for hook in hooks:
             allhooks[pagename].setdefault(hook, []).extend(hooks[hook])
@@ -94,7 +95,7 @@ def applytransformation(elem,projectname,pagename):
     if isinstance(elem, Mcomponent):
         componentName = elem.componentName.capitalize()
         components.setdefault(pagename, []).append(elem.componentName)
-        return ("<"+componentName+">","</"+componentName+">")
+        return ("<"+componentName+" "+ ' '.join(d for d in directives) + ">","</"+componentName+">")
     return ("","")
 
 def writeVue(name,page,content):
@@ -121,6 +122,7 @@ def writeVue(name,page,content):
 export default {"""+ pagecomponents +"""
     data(){
         return {
+            """ + ',\n            '.join(str(key)+":"+str(value) for variables in page.getData() for key, value in variables.items()) + """    
         }
     }""" + pagehooks + """
 }
@@ -141,8 +143,8 @@ def processTemplate(html_string,page):
     finalHtml = etree.tostring(myhtml, encoding='unicode', pretty_print=True)
     for p in components:
         for c in components[p]:
-            pattern = "<"+c+">"+r"(\n[\s]*.*)*\n[\s]*"+r"<\/"+c+">"
-            processedTemplate = re.sub(pattern,"<"+c.capitalize()+">"+"</"+c.capitalize()+">",finalHtml)
+            pattern = "<"+c+r"([\s]*.*)"+">"+r"(\n[\s]*.*)*\n[\s]*"+r"<\/"+c+">"
+            processedTemplate = re.sub(pattern,"<"+c.capitalize()+ r'\1' +">"+"</"+c.capitalize()+">",finalHtml)
             finalHtml = processedTemplate
     return finalHtml
 

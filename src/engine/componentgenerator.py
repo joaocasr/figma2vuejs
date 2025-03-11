@@ -16,28 +16,30 @@ def buildcomponent(component,projectname,pagesInfo):
     allhooks[name] = {}
     # build elements from the component  
     output = ""
+    pattern = "[:;]"
+    idcomponent = re.sub(pattern,"",component.idComponent)
     for element in component.children:
-        output += processChildren(element,projectname,name)
+        output += processChildren(element,projectname,name,idcomponent)
 
     writeVueComponent(name,projectname,output,component,pagesInfo)
 
 
-def processChildren(data,projectname,name):
+def processChildren(data,projectname,name,idcomponent):
     if(data==None): return ""
     if(len(data.children)>0):
         content=""
-        output, endtag = applytransformation(data,projectname,name)
+        output, endtag = applytransformation(data,projectname,name,idcomponent)
         for element in data.children:
-            content += processChildren(element,projectname,name)
+            content += processChildren(element,projectname,name,idcomponent)
 
         return output + content + endtag
 
     else:
-        output, endtag = applytransformation(data,projectname,name)
+        output, endtag = applytransformation(data,projectname,name,idcomponent)
         output += endtag    
         return output
 
-def applytransformation(elem,projectname,pagename):
+def applytransformation(elem,projectname,pagename,idcomponent):
     global allhooks
     cssclass = ""
     pattern = "[:;]"
@@ -48,14 +50,14 @@ def applytransformation(elem,projectname,pagename):
         #iterate the list of interactions (logicgenerator.py)
         if(elem.tag==""):
             elem.tag = "p"
-        return ("<"+elem.tag+" class="+'"grid-item text'+ cssclass +'">'+elem.text, "</"+elem.tag+">")
+        return ("<"+elem.tag+" class="+'"grid-item-'+ idcomponent +' text'+ cssclass +'">'+elem.text, "</"+elem.tag+">")
     if(isinstance(elem, ContainerElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         if(elem.tag==""):
             elem.tag = "p"
         #iterate the list of interactions (logicgenerator.py)
         directives = []
-        html = "<"+elem.tag+" class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) +">"
+        html = "<"+elem.tag+" class="+'"grid-item-'+ idcomponent +' container'+ cssclass + '" '+ ' '.join(d for d in directives) +">"
         return (html, "</"+elem.tag+">")
     return ("","")
 
@@ -66,7 +68,7 @@ def writeVueComponent(name,project_name,content,component,pagesInfo):
     cssimport = "@import '../assets/"+name+".css';"
     pagehooks=""
 
-    directives, hooks = handleBehaviour(component,pagesInfo)
+    directives, hooks = handleBehaviour(component,pagesInfo,component.getData())
     if(hooks!=None): 
         for hook in hooks:
             allhooks[name].setdefault(hook, []).extend(hooks[hook])
@@ -78,7 +80,7 @@ def writeVueComponent(name,project_name,content,component,pagesInfo):
         pagehooks = pagehooks[:-2]
         pagehooks +="\n\t}"
     if(len(pagehooks)>0): pagehooks = ",\n    "+pagehooks
-    template = '<div class="grid-item component'+ idcomponent +'"'+ ' '.join(d for d in directives) + ">"+ content + '</div>'
+    template = '<div class="grid-item-'+idcomponent+' component'+ idcomponent +'"'+ ' '.join(d for d in directives) + ">"+ content + '</div>'
     componentpage = """<template>\n""" + processTemplate(template) + """
 </template>
 

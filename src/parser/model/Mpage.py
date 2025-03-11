@@ -45,6 +45,12 @@ class Mpage(object):
 	def addElement(self,element):
 		self.elements.append(element)
 
+	def addVariable(self,var):
+		return self.data.append(var)
+
+	def getData(self):
+		return self.data
+		
 	def __str__(self):
 		allelements=""
 		allcomponents=""

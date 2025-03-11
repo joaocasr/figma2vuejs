@@ -9,6 +9,7 @@ class Mcomponent(object):
 		self.type = type
 		self.style = None
 		self.interactions = []
+		self.data = []
 
 	def getIdComponent(self):
 		"""@ReturnType String"""
@@ -55,6 +56,15 @@ class Mcomponent(object):
 		"""@ParamType type String
 		@ReturnType void"""
 		return self.style
+
+	def getData(self):
+		return self.data
+
+	def setData(self, data):
+		self.data = data
+
+	def addVariable(self,var):
+		return self.data.append(var)
 
 	def setChildren(self,children):
 		self.children = children

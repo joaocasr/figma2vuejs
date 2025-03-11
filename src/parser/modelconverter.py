@@ -4,6 +4,7 @@ para nesta fase de development e debug nao atingir o limite da chamadas com o to
 """
 import math
 import json
+import re
 from parser.model.Mpage import Mpage
 from parser.model.Melement import Melement
 from parser.model.ContainerElement import ContainerElement
@@ -327,6 +328,11 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
                     allcomponents[data["transitionNodeID"]].setTypeComponent("OVERLAY")
                     pageComponents.setdefault(pagename, []).append(allcomponents[data["transitionNodeID"]])
                     #allpages[pagename].addElement(allcomponents[data["transitionNodeID"]])
+
+                    #adicionar variavel na pagina visto que o componente não estará visivel no imediato
+                    pattern = "[:;]"
+                    idcomponent = re.sub(pattern,"",action["destinationId"])
+                    allpages[pagename].addVariable({"show"+idcomponent:"false"})
 
         element_interactions.append(interactionelement)
     if(melement!=None): melement.setInteractions(element_interactions)

@@ -186,6 +186,13 @@ def generateComponentStyle(name,component):
   padding:"""+ component.style.padding + """;
 }
   
+.grid-item-"""+ idcomponent + """ {
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
   """
 
   newcsscontent=""
