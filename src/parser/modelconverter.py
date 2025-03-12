@@ -18,7 +18,9 @@ from parser.model.ImageStyle import ImageStyle
 from parser.model.ComponentStyle import ComponentStyle
 from parser.model.TextStyle import TextStyle
 from parser.model.InteractionElement import InteractionElement
-from parser.model.NavigationAction import NavigationAction
+from parser.model.NavigationAction import NavigationAction 
+from parser.model.CloseAction import CloseAction
+from parser.model.OverlayAction import OverlayAction
 from engine.stylegenerator import calculate_gradientDegree
 
 allpages = {}
@@ -79,7 +81,7 @@ def iterate_nestedElements(data):
                 component_height = melement["absoluteRenderBounds"]["height"]
                 componentX = melement["absoluteRenderBounds"]["x"]
                 componentY = melement["absoluteRenderBounds"]["y"]
-                p = processElement(melement["name"],element["name"],element,component_width,component_height,componentX,componentY)
+                p = processElement(melement["name"],element["name"],element,component_width,component_height,componentX,componentY,melement)
                 elements.append(p)
             
             tag = getElementTag(melement)
@@ -95,7 +97,7 @@ def iterate_nestedElements(data):
                 page_height = page["absoluteRenderBounds"]["height"]
                 pageX = page["absoluteRenderBounds"]["x"]
                 pageY = page["absoluteRenderBounds"]["y"]
-                p = processElement(page["name"],element["name"],element,page_width,page_height,pageX,pageY)
+                p = processElement(page["name"],element["name"],element,page_width,page_height,pageX,pageY,element)
 
                 allpages[page["name"]].elements.append(p)
         else:
@@ -104,7 +106,7 @@ def iterate_nestedElements(data):
         setPageStyle(page["name"],page)
 
 
-def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_data=None):
+def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstlevelelem,parent_data=None):
     global allcomponents,pageComponents,allpages,pageWidth
     children = []
 
@@ -171,12 +173,18 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
         melement = mimagelement
 
     # handles shape elements
-    if(data["type"]=="STAR" or data["type"]=="REGULAR_POLYGON" or data["type"]=="RECTANGLE" or data["type"]=="ELLIPSE"):
+    if(data["type"]=="STAR" or data["type"]=="REGULAR_POLYGON" or data["type"]=="RECTANGLE" or data["type"]=="ELLIPSE" or data["type"]=="LINE"):
         rotation = None
         if("rotation" in data):
             rotation = str(data["rotation"])+"rad"
         rgba = None
-        for fill in data["fills"]:
+
+        colorData=""
+        if(len(data["fills"])==0):
+            colorData= "strokes"
+        else:
+            colorData= "fills"
+        for fill in data[colorData]:
 
             if("color" in fill):
                 color = fill["color"]
@@ -308,34 +316,43 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
             interactionelement = InteractionElement()
             interactionelement.setInteractionType(InteractionElement.Interaction.ONCLICK)
 
-        for action in interaction["actions"]:
-            if(action["type"]=="NODE" and action["navigation"]=="NAVIGATE"):
-                navigateAction = NavigationAction(action["destinationId"])
-                interactionelement.addAction(navigateAction)
-            if(action["type"]=="NODE" and action["navigation"]=="OVERLAY"):
-                if(action["destinationId"] in allcomponents): 
-                    # neste caso estamos apenas a criar o elemento com overlay position se for apenas um componente já que considero que os frames no primeiro nivel correspondem a paginas
-                    # caso queira extender é essencial acrescentar um 'type' no Melement para ajustar as coordenadas no final
-                    #  update the position of the component relatively to the node which will open the component overlay
-                    compstyle = allcomponents[data["transitionNodeID"]].getComponentStyle()
-                    (xe,ye) = (xielem,yielem)
-                    (rx,ry) = (action["overlayRelativePosition"]["x"],action["overlayRelativePosition"]["y"])
-                    (px,py) = (rx+xe,ry+ye)
-                    (vx,vy) = (px-compstyle.getX(),py-compstyle.getY())
-                    compstyle.setOverlayVector(vx,vy)
+            for action in interaction["actions"]:
+                if(action["type"]=="NODE" and action["navigation"]=="NAVIGATE"):
+                    navigateAction = NavigationAction(action["destinationId"])
+                    interactionelement.addAction(navigateAction)
+                if(action["type"]=="NODE" and action["navigation"]=="OVERLAY"):
+                    if(action["destinationId"] in allcomponents): 
+                        # neste caso estamos apenas a criar o elemento com overlay position se for apenas um componente já que considero que os frames no primeiro nivel correspondem a paginas
+                        # caso queira extender é essencial acrescentar um 'type' no Melement para ajustar as coordenadas no final
+                        #  update the position of the component relatively to the node which will open the component overlay
+                        compstyle = allcomponents[data["transitionNodeID"]].getComponentStyle()
+                        (xe,ye) = (xielem,yielem)
+                        (rx,ry) = (action["overlayRelativePosition"]["x"],action["overlayRelativePosition"]["y"])
+                        (px,py) = (rx+xe,ry+ye)
+                        (vx,vy) = (px-compstyle.getX(),py-compstyle.getY())
+                        compstyle.setOverlayVector(vx,vy)
 
-                    allcomponents[data["transitionNodeID"]].setComponentStyle(compstyle)
-                    allcomponents[data["transitionNodeID"]].setTypeComponent("OVERLAY")
-                    pageComponents.setdefault(pagename, []).append(allcomponents[data["transitionNodeID"]])
-                    #allpages[pagename].addElement(allcomponents[data["transitionNodeID"]])
+                        allcomponents[data["transitionNodeID"]].setComponentStyle(compstyle)
+                        allcomponents[data["transitionNodeID"]].setTypeComponent("OVERLAY")
+                        pageComponents.setdefault(pagename, []).append(allcomponents[data["transitionNodeID"]])
+                        #allpages[pagename].addElement(allcomponents[data["transitionNodeID"]])
 
-                    #adicionar variavel na pagina visto que o componente não estará visivel no imediato
-                    pattern = "[:;]"
-                    idcomponent = re.sub(pattern,"",action["destinationId"])
-                    allpages[pagename].addVariable({"show"+idcomponent:"false"})
+                        #adicionar variavel na pagina visto que o componente não estará visivel no imediato
+                        pattern = "[:;]"
+                        idcomponent = re.sub(pattern,"",action["destinationId"])
+                        allpages[pagename].addVariable({"show"+idcomponent:"false"})
+
+                        overlayAction = OverlayAction(action["destinationId"])
+                        interactionelement.addAction(overlayAction)
+                if(action["type"]=="CLOSE"):
+                    closeAction = CloseAction(firstlevelelem["id"])
+                    interactionelement.addAction(closeAction)
 
         element_interactions.append(interactionelement)
-    if(melement!=None): melement.setInteractions(element_interactions)
+    if(melement!=None):
+        melement.setInteractions(element_interactions)
+        if(firstlevelelem["type"]=="COMPONENT"):
+            melement.setupperIdComponent(firstlevelelem["id"])
 
     myparent_data = data
     # Iterates for all nested children of each element
@@ -345,7 +362,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,parent_
             style.setGridTemplateColumns("repeat(64,1fr)")
             style.setGridTemplateRows("repeat(64,1fr)")
         for element in data["children"]:
-            nestedelem = processElement(pagename,element["name"],element,data["absoluteRenderBounds"]["width"],data["absoluteRenderBounds"]["height"],pageX,pageY,myparent_data)
+            nestedelem = processElement(pagename,element["name"],element,data["absoluteRenderBounds"]["width"],data["absoluteRenderBounds"]["height"],pageX,pageY,firstlevelelem,myparent_data)
             children.append(nestedelem)
 
         melement.setChildren(children)

@@ -10,6 +10,7 @@ class Mcomponent(object):
 		self.style = None
 		self.interactions = []
 		self.data = []
+		self.hasCloseAction = False
 
 	def getIdComponent(self):
 		"""@ReturnType String"""
@@ -65,6 +66,12 @@ class Mcomponent(object):
 
 	def addVariable(self,var):
 		return self.data.append(var)
+
+	def getHasCloseAction(self):
+		return self.hasCloseAction
+
+	def setHasCloseAction(self, hasCloseAction):
+		self.hasCloseAction = hasCloseAction
 
 	def setChildren(self,children):
 		self.children = children

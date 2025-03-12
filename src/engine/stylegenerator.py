@@ -219,19 +219,31 @@ def generateShapeCSS(projectname,pagename,cssclass,type,elem):
     clippath = "circle(50% at 50% 50%)"
   if(type=="ELLIPSE" and abs(int(elem.style.width)-int(elem.style.height))>=5):
     clippath = "ellipse(50% 30% at 50% 50%)"
-
-
-  css ="""\n."""+ cssclass + """ {
-  grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
-  grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
-  grid-row-start: """+  str(elem.style.gridrowStart)+""";
-  grid-row-end: """+  str(elem.style.gridrowEnd)+""";
-  aspect-ratio: 1;
-  background: """+  elem.style.background+""";
-  clip-path: """+  clippath+ """;
-  height: """+  str(elem.style.height) + """px;
-  width:  """+  str(elem.style.width) + """px;
-  """
+  css=""
+  css ="""\n."""+ str(cssclass) + """ {
+    grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
+    grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
+    grid-row-start: """+  str(elem.style.gridrowStart)+""";
+    grid-row-end: """+  str(elem.style.gridrowEnd)+""";
+    aspect-ratio: 1;
+    background: """+  str(elem.style.background)+""";
+    clip-path: """+  str(clippath)+ """;
+    height: """+  str(elem.style.height) + """px;
+    width:  """+  str(elem.style.width) + """px;
+    """
+  if(type=="LINE"):
+    css ="""\n."""+ str(cssclass) + """ {
+    grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
+    grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
+    grid-row-start: """+  str(elem.style.gridrowStart)+""";
+    grid-row-end: """+  str(elem.style.gridrowEnd)+""";
+    background: """+  str(elem.style.background)+""";
+    width:  """+  str(elem.style.width) + """px;
+    display: block;
+    height: 1px;
+    border: 0;
+    padding: 0;
+    """
   if(elem.style.transform!=None): css+="transform: rotate("+elem.style.getTransform()+");\n"
 
   css = css + "}"

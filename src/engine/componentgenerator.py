@@ -1,20 +1,23 @@
-from engine.stylegenerator import generatePageStyle, generateComponentStyle, generateElemCssProperties
+from engine.stylegenerator import generatePageStyle, generateComponentStyle, generateElemCssProperties, generateShapeCSS
 from engine.logicgenerator import handleBehaviour
 from parser.model.Mcomponent import Mcomponent
 from parser.model.TextElement import TextElement
 from parser.model.ContainerElement import ContainerElement
+from parser.model.ShapeElement import ShapeElement
 
 import xml.etree.ElementTree as ET
 from lxml import etree, html
 import re
 
 allhooks = dict()
+allpagesInfo = {}
 
 def buildcomponent(component,projectname,pagesInfo):
-    global allhooks
+    global allhooks,allpagesInfo
     name = component.componentName
     allhooks[name] = {}
     # build elements from the component  
+    allpagesInfo = pagesInfo
     output = ""
     pattern = "[:;]"
     idcomponent = re.sub(pattern,"",component.idComponent)
@@ -40,11 +43,17 @@ def processChildren(data,projectname,name,idcomponent):
         return output
 
 def applytransformation(elem,projectname,pagename,idcomponent):
-    global allhooks
+    global allhooks, allpagesInfo
     cssclass = ""
     pattern = "[:;]"
     if(not isinstance(elem,Mcomponent)): cssclass = re.sub(pattern,"",elem.idElement)
     else: cssclass = re.sub(pattern,"",elem.idComponent)
+    
+    directives, hooks = handleBehaviour(elem,allpagesInfo)
+    if(hooks!=None): 
+        for hook in hooks:
+            allhooks[pagename].setdefault(hook, []).extend(hooks[hook])
+
     if(isinstance(elem, TextElement)):
         generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
         #iterate the list of interactions (logicgenerator.py)
@@ -54,11 +63,23 @@ def applytransformation(elem,projectname,pagename,idcomponent):
     if(isinstance(elem, ContainerElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         if(elem.tag==""):
-            elem.tag = "p"
+            elem.tag = "div"
         #iterate the list of interactions (logicgenerator.py)
-        directives = []
+        #directives = []
         html = "<"+elem.tag+" class="+'"grid-item-'+ idcomponent +' container'+ cssclass + '" '+ ' '.join(d for d in directives) +">"
         return (html, "</"+elem.tag+">")
+    if(isinstance(elem, ShapeElement)):
+        cssclassifier = ""
+        cssclassifier = elem.getType().lower() + str(cssclass)
+        generateShapeCSS(projectname,pagename,cssclassifier,elem.getType(),elem)
+    
+        #directives = []
+        html = "<div class="+'"grid-item-'+ idcomponent +' '+ cssclassifier + '" '+ ' '.join(d for d in directives) +">"
+        return (html, "</div>")
+
+
+        return (begintag,endtag)
+
     return ("","")
 
 def writeVueComponent(name,project_name,content,component,pagesInfo):
@@ -68,11 +89,6 @@ def writeVueComponent(name,project_name,content,component,pagesInfo):
     cssimport = "@import '../assets/"+name+".css';"
     pagehooks=""
 
-    directives, hooks = handleBehaviour(component,pagesInfo,component.getData())
-    if(hooks!=None): 
-        for hook in hooks:
-            allhooks[name].setdefault(hook, []).extend(hooks[hook])
-
     for hook in allhooks[name]:
         pagehooks = hook + ":{\n"
         for chook in allhooks[name][hook]:
@@ -80,7 +96,7 @@ def writeVueComponent(name,project_name,content,component,pagesInfo):
         pagehooks = pagehooks[:-2]
         pagehooks +="\n\t}"
     if(len(pagehooks)>0): pagehooks = ",\n    "+pagehooks
-    template = '<div class="grid-item-'+idcomponent+' component'+ idcomponent +'"'+ ' '.join(d for d in directives) + ">"+ content + '</div>'
+    template = '<div class="grid-item-'+idcomponent+' component'+ idcomponent +'"'+ ">"+ content + '</div>'
     componentpage = """<template>\n""" + processTemplate(template) + """
 </template>
 
@@ -104,6 +120,5 @@ def processTemplate(html_string):
     myhtml = html.fromstring(html_string)
     etree.indent(myhtml, space="    ")
     finalHtml = etree.tostring(myhtml, encoding='unicode', pretty_print=True)
-    
     return finalHtml
 

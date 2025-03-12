@@ -2,10 +2,10 @@
 # -*- coding: UTF-8 -*-
 from  parser.model.ElementAction import ElementAction
 
-class OverlayAction(ElementAction):
+class CloseAction(ElementAction):
 	def __init__(self,id):
 
-		super().__init__("OVERLAY") 
+		super().__init__("CLOSE") 
 		self.destinationID = id
 
 	def getDestinationID(self):

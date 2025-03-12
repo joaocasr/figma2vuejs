@@ -42,7 +42,9 @@ else:
 
     for component in uniqueComponents:
       buildcomponent(component,project_name,pagesInfo)
-      
+
     # build each page (elements within, styling and components)
     for page in mypages:
       buildpage(project_name,mypages[page],pagesInfo)
+
+

@@ -6,8 +6,7 @@ from parser.model.ShapeElement import ShapeElement
 from parser.model.ContainerElement import ContainerElement
 from parser.model.ImageElement import ImageElement
 
-import xml.etree.ElementTree as ET
-from lxml import etree, html
+from bs4 import BeautifulSoup
 import re
 
 allhooks = dict()
@@ -25,7 +24,6 @@ def buildpage(name,page,pagesInfo):
     output = ""  
     for element in page.elements:
         output += processChildren(element,name,page)
-
     writeVue(name,page,output)
 
 def processChildren(data,projectname,page):
@@ -53,7 +51,7 @@ def applytransformation(elem,projectname,page):
     else: cssclass = re.sub(pattern,"",elem.idComponent)
     
     # insert directives and functions if there is some behaviour
-    directives, hooks = handleBehaviour(elem,allPagesInfo,page.getData())
+    directives, hooks = handleBehaviour(elem,allPagesInfo)
     if(hooks!=None): 
         for hook in hooks:
             allhooks[pagename].setdefault(hook, []).extend(hooks[hook])
@@ -138,9 +136,8 @@ export default {"""+ pagecomponents +"""
 def processTemplate(html_string,page):
     global components
 
-    myhtml = html.fromstring(html_string)
-    etree.indent(myhtml, space="    ")
-    finalHtml = etree.tostring(myhtml, encoding='unicode', pretty_print=True)
+    soup = BeautifulSoup(html_string, "html.parser")
+    finalHtml = soup.prettify()
     for p in components:
         for c in components[p]:
             pattern = "<"+c+r"([\s]*.*)"+">"+r"(\n[\s]*.*)*\n[\s]*"+r"<\/"+c+">"

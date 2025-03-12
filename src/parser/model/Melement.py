@@ -12,6 +12,7 @@ class Melement(object):
 		self.tag = tag
 		self.children = []
 		self.interactions = []
+		self.upperIdComponent = None
 
 	def getIdElement(self):
 		return self.idElement
@@ -33,6 +34,12 @@ class Melement(object):
 
 	def setChildren(self, nchildren):
 		self.children = nchildren
+
+	def getupperIdComponent(self):
+		return self.upperIdComponent
+
+	def setupperIdComponent(self, id):
+		self.upperIdComponent = id
 
 	def getInteractions(self):
 		return self.interactions

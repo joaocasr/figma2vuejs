@@ -148,3 +148,30 @@
 	padding: 0;
 }
 
+
+.line222311 {
+    grid-column-start: 20;
+    grid-column-end: 46;
+    grid-row-start: 21;
+    grid-row-end: 46;
+    background: rgba(55.095075219869614,55.095075219869614,55.095075219869614,1.0);
+    width:  32.563720703125px;
+    display: block;
+    height: 1px;
+    border: 0;
+    padding: 0;
+    transform: rotate(-0.7853982476911467rad);
+}
+.line222312 {
+    grid-column-start: 20;
+    grid-column-end: 46;
+    grid-row-start: 21;
+    grid-row-end: 46;
+    background: rgba(55.095075219869614,55.095075219869614,55.095075219869614,1.0);
+    width:  32.56396484375px;
+    display: block;
+    height: 1px;
+    border: 0;
+    padding: 0;
+    transform: rotate(0.7853980791037498rad);
+}
