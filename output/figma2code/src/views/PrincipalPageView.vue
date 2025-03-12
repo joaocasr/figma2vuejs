@@ -8,21 +8,19 @@
    Click Me
   </p>
  </div>
- <div class="grid-item container22236" v-on:click="changeVisibility22238()">
-  <p class="grid-item text22237">
-   i
-  </p>
- </div>
- <Popup @closefrom222310to22238="show22238=false" v-if="show22238==true"></Popup>
+ <Iconi v-on:click="changeVisibility22238()"></Iconi>
+ <Popup @close-from222310-to22238="show22238=false" v-if="show22238==true"></Popup>
 </div>
 
 </template>
 
 <script>
+import Iconi from '@/components/Iconi.vue';
 import Popup from '@/components/Popup.vue';
 
 export default {
     components:{
+        Iconi,
         Popup
     },
     data(){
@@ -36,9 +34,6 @@ export default {
         },
 		changeVisibility22238(){
             this.show22238 = true;
-        },
-		close22238(){
-            this.$emit('closeFrom222310To22238');
         }
 	}
 }

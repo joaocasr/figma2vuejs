@@ -49,7 +49,7 @@ def applytransformation(elem,projectname,pagename,idcomponent):
     if(not isinstance(elem,Mcomponent)): cssclass = re.sub(pattern,"",elem.idElement)
     else: cssclass = re.sub(pattern,"",elem.idComponent)
     
-    directives, hooks = handleBehaviour(elem,allpagesInfo)
+    directives, hooks = handleBehaviour(elem,allpagesInfo,False)
     if(hooks!=None): 
         for hook in hooks:
             allhooks[pagename].setdefault(hook, []).extend(hooks[hook])

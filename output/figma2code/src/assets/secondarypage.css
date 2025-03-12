@@ -48,7 +48,7 @@
 	font-weight: 400;
 	font-size: 2.272727272727273vw;
 	font-family: Inter;
-	text-align: left;
+	text-align: center;
 	line-height: 73px;
 	color: rgba(255.0,255.0,255.0,1.0);
 	grid-column-start: 18;
@@ -59,7 +59,7 @@
 	white-space: normal;
 	width: 100%;
 	display: flex;
-	align-items: stretch;
+	align-items: center;
 	justify-content: stretch;
 }
 

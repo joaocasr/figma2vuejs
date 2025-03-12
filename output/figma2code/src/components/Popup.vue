@@ -17,7 +17,7 @@ export default {
     },
     methods:{
 		close22238(){
-            this.$emit('closeFrom222310To22238');
+            this.$emit('close-from222310-to22238');
         }
 	}
 }

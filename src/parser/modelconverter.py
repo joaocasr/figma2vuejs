@@ -252,6 +252,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         componentStyle.setGridcolumnEnd(nr_columnend)
         componentStyle.setGridrowStart(nr_rowstart)
         componentStyle.setGridrowEnd(nr_rowend)
+        componentStyle.setinstanceFromComponentId(data["componentId"])
 
         componentelement.setComponentStyle(componentStyle)
         pageComponents.setdefault(pagename, []).append(componentelement)
@@ -377,6 +378,10 @@ def getPosition(xielem,yielem,elementwidth,elementheight,page_width,page_height,
     nr_rowstart = round((yielem / page_height) * nrrows ) + 1
     nr_rowend = min(round((elementheight / page_height) * nrrows) + nr_rowstart, nrrows)
 
+    if(nr_columnstart<0): nr_columnstart=max(abs(nr_columnstart),1)
+    if(nr_columnend<0): nr_columnend=min(abs(nr_columnend),65)
+    if(nr_rowstart<0): nr_rowstart=abs(nr_rowstart)
+    if(nr_rowend<0): nr_rowend=min(abs(nr_rowend),nrrows)
     return (nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
 
 
@@ -466,16 +471,18 @@ def setComponentStyle(component):
 
 def updateOverlayPosition(component, vx, vy, page_width, page_height):
     if isinstance(component, (Mcomponent, TextElement, ContainerElement )):
-        nrrows = 128 if isinstance(component, Mcomponent) else 64
-        (columnstart, columnend, rowstart, rowend) = getPosition(
-            component.style.getX() + vx,
-            component.style.getY() + vy,
-            component.style.getWidth(),
-            component.style.getHeight(),
-            page_width,
-            page_height,
-            nrrows
-        )
+        if isinstance(component, Mcomponent):
+            nrrows = 128 
+        else:
+            nrrows = 64
+        (columnstart, columnend, rowstart, rowend) = getPosition(component.style.getX() + vx,
+                                                                component.style.getY() + vy,
+                                                                component.style.getWidth(),
+                                                                component.style.getHeight(),
+                                                                page_width,
+                                                                page_height,
+                                                                nrrows
+                                                            )
         component.style.setGridcolumnStart(columnstart)
         component.style.setGridcolumnEnd(columnend)
         component.style.setGridrowStart(rowstart)

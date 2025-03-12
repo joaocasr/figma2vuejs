@@ -1,20 +1,20 @@
 @import url("//fonts.googleapis.com/css2?family=Inter:wght@400&display=swap");
 
-.component222319 {
+.component22504 {
   display:grid;
   grid-template-columns:repeat(64,1fr);
   grid-template-rows:repeat(64,1fr);
-  grid-column-start:27;
-  background-color:rgba(158.48957151174545,158.48957151174545,158.48957151174545,1.0);
-  grid-column-end:40;
-  grid-row-start:61;
-  grid-row-end:69;
-  border-radius:22.0px;
+  grid-column-start:32;
+  background-color:rgba(0.0,0.0,0.0,1.0);
+  grid-column-end:35;
+  grid-row-start:70;
+  grid-row-end:75;
+  border-radius:20.0px;
   margin:0;
   padding:0;
 }
   
-.grid-item-222319 {
+.grid-item-22504 {
   text-align: center;
   align-items: center;
   justify-content: center;
@@ -22,20 +22,20 @@
   height: 100%;
 }
   
-.textI222319222316 {
+.textI2250422237 {
 	font-style: Regular;
 	font-weight: 400;
-	font-size: 2.272727272727273vw;
+	font-size: 3.0303030303030303vw;
 	font-family: Inter;
 	text-align: center;
-	line-height: 73px;
+	line-height: 97px;
 	color: rgba(255.0,255.0,255.0,1.0);
-	grid-column-start: 18;
-	grid-column-end: 50;
-	grid-row-start: 23;
-	grid-row-end: 43;
+	grid-column-start: 30;
+	grid-column-end: 37;
+	grid-row-start: 13;
+	grid-row-end: 51;
 	overflow-wrap: break-word;
-	white-space: normal;
+	word-wrap: break-word;
 	width: 100%;
 	display: flex;
 	align-items: center;

@@ -51,7 +51,7 @@ def applytransformation(elem,projectname,page):
     else: cssclass = re.sub(pattern,"",elem.idComponent)
     
     # insert directives and functions if there is some behaviour
-    directives, hooks = handleBehaviour(elem,allPagesInfo)
+    directives, hooks = handleBehaviour(elem,allPagesInfo,True)
     if(hooks!=None): 
         for hook in hooks:
             allhooks[pagename].setdefault(hook, []).extend(hooks[hook])
@@ -104,7 +104,8 @@ def writeVue(name,page,content):
     cssimport = "@import '../assets/"+page.getPagename().lower()+".css';"
     template = '<div class="grid-container">'+ content + '</div>'
     pagehooks=""
-    pagecomponents="""\n    components:{\n        """+ ',\n        '.join(components[page.getPagename()]).capitalize() +"""\n    },"""
+    allcomponents = (x.capitalize() for x in components[page.getPagename()])
+    pagecomponents="""\n    components:{\n        """+ ',\n        '.join(allcomponents) +"""\n    },"""
     for hook in allhooks[page.getPagename()]:
         pagehooks = hook + ":{\n"
         for content in allhooks[page.getPagename()][hook]:

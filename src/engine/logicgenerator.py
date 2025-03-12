@@ -8,7 +8,7 @@ import re
 # id: [vars]
 shareableHooks = {}
 
-def handleBehaviour(elem,allPagesInfo):
+def handleBehaviour(elem,allPagesInfo,isPageRender):
     global shareableHooks
     directives = []
     hooks = {}
@@ -33,20 +33,20 @@ def handleBehaviour(elem,allPagesInfo):
                     insertFunction("methods",hooks,methodName,getChangeVisibilityFunction(methodName,"show"+destinationid))
                     elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                     elemBehaviour[1] = hooks
-                if(isinstance(action,CloseAction) and elem.getupperIdComponent()!=None):#verificar se o elemento tem uma acao close e se pertence a um componente 
+                if(isinstance(action,CloseAction) and isPageRender==False and elem.getupperIdComponent()!=None):#verificar se o elemento tem uma acao close e se pertence a um elemento filho de um componente 
                     pattern = "[:;]"
                     destination = action.getDestinationID()
                     destinationid = re.sub(pattern,"",destination)
                     originid = re.sub(pattern,"",elem.getIdElement())
-                    # in order to capture the emit signals
-                    shareableHooks.setdefault(elem.getupperIdComponent(), []).append(("closeFrom"+str(originid)+"To"+str(destinationid),"show"+destinationid+'=false'))
+                    # in order to capture the emit signals close-from222310-to22238
+                    shareableHooks.setdefault(elem.getupperIdComponent(), []).append(("close-from"+str(originid)+"-to"+str(destinationid),"show"+destinationid+'=false'))
                     methodName = "close"+destinationid
-                    insertFunction("methods",hooks,methodName,closeOverlay(methodName,"closeFrom"+str(originid)+"To"+str(destinationid)))
+                    insertFunction("methods",hooks,methodName,closeOverlay(methodName,"close-from"+str(originid)+"-to"+str(destinationid)))
                     elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                     elemBehaviour[1] = hooks
 
     # SHOW CONDITIONAL ELEMENTS | from page
-    if(isinstance(elem,Mcomponent) and elem.getTypeComponent()=="OVERLAY"):
+    if(isinstance(elem,Mcomponent) and elem.getTypeComponent()=="OVERLAY" and isPageRender==True):
         pattern = "[:;]"
         idcomponent = re.sub(pattern,"",elem.idComponent)
         elemBehaviour[0].append('v-if="show'+idcomponent+'==true"')

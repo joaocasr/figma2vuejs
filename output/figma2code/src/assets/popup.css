@@ -7,9 +7,9 @@
   grid-column-start:10;
   background:linear-gradient(90.0deg, rgba(204.76146697998047,212.29725301265717,255.0,255.0), rgba(122.8568771481514,127.37835332751274,153.00000607967377,255.0));
   grid-column-end:56;
-  grid-row-start:23;
+  grid-row-start:40;
   box-shadow: 0px 4px 4px 0px rgba(0.0,0.0,0.0,0.25);
-  grid-row-end:55;
+  grid-row-end:8;
   border-radius:15.0px;
   margin:0;
   padding:0;
@@ -33,8 +33,8 @@
 	color: rgba(0.0,0.0,0.0,1.0);
 	grid-column-start: 16;
 	grid-column-end: 50;
-	grid-row-start: 19;
-	grid-row-end: 21;
+	grid-row-start: 12;
+	grid-row-end: 10;
 	overflow-wrap: break-word;
 	white-space: normal;
 	width: 100%;
@@ -49,8 +49,8 @@
 	border-radius: 20.0px;
 	grid-column-start: 53;
 	grid-column-end: 56;
-	grid-row-start: 13;
-	grid-row-end: 15;
+	grid-row-start: 19;
+	grid-row-end: 17;
 	display: grid;
 	grid-template-columns: repeat(64,1fr);
 	grid-template-rows: repeat(64,1fr);
