@@ -100,6 +100,25 @@
 }
 
 
+.vueselect22801349 {
+    grid-column-start: 30;
+    grid-column-end: 37;
+    grid-row-start: 52;
+    grid-row-end: 54;
+    --vs-option-hover-background-color:rgba(195.98697781562805,202.8298482298851,222.6380181312561,1.0);
+    --vs-option-focused-background-color:rgba(195.98697781562805,202.8298482298851,222.6380181312561,1.0);
+    --vs-menu-background-color:rgba(255.0,255.0,255.0,1.0);
+    --vs-placeholder-color:rgba(49.32124704122543,48.94140422344208,67.93359830975533,1.0);
+    --vs-background-color:rgba(255.0,255.0,255.0,1.0);
+}
+div:deep(.menu){
+  margin-top:235px;
+}
+div:deep(.menu-option.selected){
+  background-color:rgba(195.98697781562805,202.8298482298851,222.6380181312561,1.0);
+  color:rgba(49.32124704122543,48.94140422344208,67.93359830975533,1.0);
+}
+  
 .text22239 {
 	font-style: Regular;
 	font-weight: 400;
@@ -110,8 +129,8 @@
 	color: rgba(0.0,0.0,0.0,1.0);
 	grid-column-start: 16;
 	grid-column-end: 50;
-	grid-row-start: 12;
-	grid-row-end: 10;
+	grid-row-start: 15;
+	grid-row-end: 13;
 	overflow-wrap: break-word;
 	white-space: normal;
 	width: 100%;
@@ -126,8 +145,8 @@
 	border-radius: 20.0px;
 	grid-column-start: 53;
 	grid-column-end: 56;
-	grid-row-start: 19;
-	grid-row-end: 17;
+	grid-row-start: 21;
+	grid-row-end: 19;
 	display: grid;
 	grid-template-columns: repeat(64,1fr);
 	grid-template-rows: repeat(64,1fr);

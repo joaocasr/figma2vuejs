@@ -1,10 +1,12 @@
-from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS
+from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties
 from engine.logicgenerator import handleBehaviour
 from parser.model.Mcomponent import Mcomponent
 from parser.model.TextElement import TextElement
+from parser.model.Vue3SelectComponent import Vue3SelectComponent
 from parser.model.ShapeElement import ShapeElement
 from parser.model.ContainerElement import ContainerElement
 from parser.model.ImageElement import ImageElement
+from setup.vueprojectsetup import installVue3select_dependency
 
 from bs4 import BeautifulSoup
 import re
@@ -12,6 +14,7 @@ import re
 allhooks = dict()
 imports = dict()
 components = dict()
+componentAssets = dict()
 allPagesInfo = dict()
 
 def buildpage(name,page,pagesInfo):
@@ -20,6 +23,7 @@ def buildpage(name,page,pagesInfo):
     allhooks[page.pagename] = {}
     imports[page.pagename] = []
     components[page.pagename] = []
+    componentAssets[page.pagename] = []
     allPagesInfo = pagesInfo
     output = ""  
     for element in page.elements:
@@ -43,7 +47,7 @@ def processChildren(data,projectname,page):
 
 # Do a better handling of the tags
 def applytransformation(elem,projectname,page):
-    global allPagesInfo, allhooks, components
+    global allPagesInfo, allhooks, components, componentAssets
     pagename = page.pagename
     cssclass = ""
     pattern = "[:;]"
@@ -58,6 +62,19 @@ def applytransformation(elem,projectname,page):
     id = ""
     if(elem.style.getgridArea()!=None):
         id = ' id="'+elem.style.getgridArea()+'"'
+    if(isinstance(elem,Mcomponent)):
+        if(elem.getNameComponent()=="DropdownFilter" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+            installVue3select_dependency(projectname)
+            componentAssets[pagename].append('import VueSelect from "vue3-select-component";')
+            options = ':options="allOptions'+str(cssclass)+'"'
+            cssclass= "vueselect" + cssclass
+            vmodel = 'v-model="'+str(elem.vmodel)+'"'
+            ismulti = ':is-multi="'+str(elem.ismulti)+'"'
+            placeholder = 'placeholder="'+str(elem.placeholder)+'"'
+
+            generateVueSelectCssProperties(projectname,pagename,cssclass,elem)
+            return ("<VueSelect class="+'"grid-item '+ cssclass  + '" '+vmodel+' '+ismulti+' '+options+' '+placeholder, "/>")
+
     if(isinstance(elem, TextElement)):
         generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
         if(elem.tag==""):
@@ -97,14 +114,19 @@ def applytransformation(elem,projectname,page):
     return ("","")
 
 def writeVue(name,page,content):
-    global allhooks, components 
+    global allhooks, components, componentAssets
     componentsimports=""
     for comp in components[page.getPagename()]:
         componentsimports += "import "+str(comp).capitalize()+" from '@/components/"+str(comp).capitalize()+".vue';\n" 
+    for comp in componentAssets[page.getPagename()]:
+        componentsimports += comp + "\n"
     cssimport = "@import '../assets/"+page.getPagename().lower()+".css';"
     template = '<div class="grid-container">'+ content + '</div>'
     pagehooks=""
     allcomponents = (x.capitalize() for x in components[page.getPagename()])
+    allcomponents = list(allcomponents)
+    for x in componentAssets[page.getPagename()]:
+        allcomponents.append(x.split(" ")[1])
     pagecomponents="""\n    components:{\n        """+ ',\n        '.join(allcomponents) +"""\n    },"""
     for hook in allhooks[page.getPagename()]:
         pagehooks = hook + ":{\n"
@@ -143,6 +165,12 @@ def processTemplate(html_string,page):
         for c in components[p]:
             pattern = "<"+c+r"([\s]*.*)"+">"+r"(\n[\s]*.*)*\n[\s]*"+r"<\/"+c+">"
             processedTemplate = re.sub(pattern,"<"+c.capitalize()+ r'\1' +">"+"</"+c.capitalize()+">",finalHtml)
+            finalHtml = processedTemplate
+    for p in componentAssets:
+        for c in componentAssets[p]:
+            tag = c.split(" ")[1]
+            pattern = "<"+tag.lower()+r"([\s]*.*)"+">"+r"(\n[\s]*.*)*\n[\s]*"+r"<\/"+tag.lower()+">"
+            processedTemplate = re.sub(pattern,"<"+tag+ r'\1' +"/>",finalHtml)
             finalHtml = processedTemplate
     return finalHtml
 

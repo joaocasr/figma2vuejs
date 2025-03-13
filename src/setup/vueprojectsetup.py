@@ -117,3 +117,13 @@ def install_dependencies(name):
                     cwd='../output/'+name,capture_output=True, text=True)
     if rm.returncode != 0:
       raise Exception("Error while installing dependencies!")  
+
+def installVue3select_dependency(name):
+  c =  subprocess.run(['npm','ls','vue3-select-component'],cwd='../output/'+name,capture_output=True, text=True)
+  if("vue3-select-component" in c.stdout):
+    print("Vue3-select-component already installed.")
+  else:
+    i =  subprocess.run(['npm','install','vue3-select-component'],cwd='../output/'+name,capture_output=True, text=True)
+    print("Installing Vue3-select-component...")
+    if(c.returncode != 0 or i.returncode != 0):
+      raise Exception("Error while installing Vue3-select-component")  

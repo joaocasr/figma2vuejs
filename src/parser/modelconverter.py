@@ -22,6 +22,7 @@ from parser.model.NavigationAction import NavigationAction
 from parser.model.CloseAction import CloseAction
 from parser.model.OverlayAction import OverlayAction
 from engine.stylegenerator import calculate_gradientDegree
+from parser.assetsconverter import convertToVueSelect
 
 allpages = {}
 
@@ -31,12 +32,12 @@ pageComponents = {}
 
 pageWidth = -1
 tags = ["nav","footer","main","section","aside","article","p","header","h1","h2","h3","h4","h5","h6","ul","li"]
-
+figmadata = {}
 
 def getFigmaData(prototype):
-    global allpages, allcomponents,pageComponents
+    global allpages, allcomponents,pageComponents, figmadata
     prototype1 = "../tests/prototype"+str(prototype)+".json"
-    figmadata = {}
+
     with open(prototype1,"r") as file1:
         data = json.load(file1)
         figmadata = data
@@ -107,7 +108,7 @@ def iterate_nestedElements(data):
 
 
 def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstlevelelem,parent_data=None):
-    global allcomponents,pageComponents,allpages,pageWidth
+    global allcomponents,pageComponents,allpages,pageWidth, figmadata
     children = []
 
     elementwidth = data["absoluteRenderBounds"]["width"]
@@ -144,8 +145,28 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
     tag = getElementTag(data)
 
     melement = None
+    # handling assets from components created
+    if(data["name"]=="DropdownFilter" and data["type"]=="INSTANCE"):
+        componentsetId = ""
+        for id in figmadata["componentSets"]:
+            if(figmadata["componentSets"][id]["name"]=="DropdownFilter"):
+                componentsetId = id
+                break
+        componentset = None
+        for c in figmadata["document"]["children"][0]["children"]:
+            if(c["id"]==componentsetId):
+                componentset = c
+                break
+        print(data["id"])
+        print(data["name"])
+        melement = convertToVueSelect(componentset,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
+        pattern = "[:;]"
+        elemid = re.sub(pattern,"",str(data["id"]))
+        allpages[pagename].addVariable({"selectedOption"+elemid:'""'})
+        allpages[pagename].addVariable({"allOptions"+elemid:melement.options})
+        return melement
     # handling ImageElement
-    if(data["type"]=="RECTANGLE" and any(("imageRef" in x) for x in data["fills"])):
+    elif(data["type"]=="RECTANGLE" and any(("imageRef" in x) for x in data["fills"])):
         
         data["type"] = "IMAGE"
         style = ImageStyle(data["absoluteRenderBounds"]["x"],
@@ -173,7 +194,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         melement = mimagelement
 
     # handles shape elements
-    if(data["type"]=="STAR" or data["type"]=="REGULAR_POLYGON" or data["type"]=="RECTANGLE" or data["type"]=="ELLIPSE" or data["type"]=="LINE"):
+    elif(data["type"]=="STAR" or data["type"]=="REGULAR_POLYGON" or data["type"]=="RECTANGLE" or data["type"]=="ELLIPSE" or data["type"]=="LINE"):
         rotation = None
         if("rotation" in data):
             rotation = str(data["rotation"])+"rad"
@@ -216,7 +237,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         melement = mshapeelement
                   
     # handles TextElement
-    if(data["type"]=="TEXT"):
+    elif(data["type"]=="TEXT"):
 
         fontsize = ((data["style"]["fontSize"]) / (pageWidth / 100))
         #lineheight = ((round(data["style"]["lineHeightPx"])) / (pageWidth / 100))
@@ -245,7 +266,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         mtextelement = TextElement(data["id"],tag,data["name"],data["characters"],style)
         melement = mtextelement
     
-    if(data["type"]=="INSTANCE"):
+    elif(data["type"]=="INSTANCE"):
         componentelement = Mcomponent(data["id"],data["name"],tag,"")
         componentStyle = setComponentStyle(data)
         componentStyle.setGridcolumnStart(nr_columnstart)
@@ -259,7 +280,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         melement = componentelement
 
     # handles ContainerElement
-    if(data["type"]=="FRAME"):
+    elif(data["type"]=="FRAME"):
 
         lineargradient = None
         rgba = None

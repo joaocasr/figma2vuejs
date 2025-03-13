@@ -207,6 +207,33 @@ def generateComponentStyle(name,component):
     f.seek(0)   
     f.writelines(lines)
 
+def generateVueSelectCssProperties(projectname,pagename,cssclass,elem):
+  css ="""\n."""+ str(cssclass) + """ {
+    grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
+    grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
+    grid-row-start: """+  str(elem.style.gridrowStart)+""";
+    grid-row-end: """+  str(elem.style.gridrowEnd)+""";
+    --vs-option-hover-background-color:"""+  str(elem.style.option_hover_background_color)+""";
+    --vs-option-focused-background-color:"""+  str(elem.style.option_focused_background_color)+""";
+    --vs-menu-background-color:"""+  str(elem.style.menu_background_color)+""";
+    --vs-placeholder-color:"""+  str(elem.style.placeholder_color)+""";
+    --vs-background-color:"""+  str(elem.style.background_color)+""";
+}
+div:deep(.menu){
+  margin-top:235px;
+}
+div:deep(.menu-option.selected){
+  background-color:"""+  str(elem.style.menu_option_selected_background_color)+""";
+  color:"""+  str(elem.style.menu_option_selected_color)+""";
+}
+  """
+  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  mode = "w"
+  if os.path.isfile(cssfile):
+    mode = "a"
+  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+    f.write(css)
+
 def generateShapeCSS(projectname,pagename,cssclass,type,elem):
   clippath=""
   if(type=="STAR"):
