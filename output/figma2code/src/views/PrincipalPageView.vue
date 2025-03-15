@@ -9,12 +9,14 @@
   </p>
  </div>
  <Iconi v-on:click="changeVisibility22238()"></Iconi>
- <IconField class="searchinputfilter23041263">
+ <IconField class="ssearchinputfilter23041263">
   <InputIcon class="pi pi-search">
   </InputIcon>
   <InputText placeholder="Search . . ." v-model="inputsearch23041263">
   </InputText>
  </IconField>
+ <DatePicker :showonfocus="false" class="sdatepicker23201811"  showIcon fluid  v-model="datepicker23201811">
+ </DatePicker>
  <Popup @close-from222310-to22238="show22238=false" v-if="show22238==true"></Popup>
 </div>
 
@@ -32,7 +34,8 @@ export default {
     data(){
         return {
             show22238:false,
-            inputsearch23041263:""    
+            inputsearch23041263:"",
+            datepicker23201811:""    
         }
     },
     methods:{

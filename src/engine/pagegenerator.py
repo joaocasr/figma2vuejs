@@ -1,5 +1,5 @@
-from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties
-from setup.vueprojectsetup import installVue3select_dependency, useIconFieldPrimevuePlugin
+from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties
+from setup.vueprojectsetup import installVue3select_dependency, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin
 from engine.logicgenerator import handleBehaviour
 from parser.model.Mcomponent import Mcomponent
 from parser.model.TextElement import TextElement
@@ -69,7 +69,7 @@ def applytransformation(elem,projectname,page):
             installVue3select_dependency(projectname)
             componentAssets[pagename].append('import VueSelect from "vue3-select-component";')
             options = ':options="allOptions'+str(cssclass)+'"'
-            cssclass= "vueselect" + cssclass
+            cssclass= "svueselect" + cssclass
             vmodel = 'v-model="'+str(elem.vmodel)+'"'
             ismulti = ':is-multi="'+str(elem.ismulti)+'"'
             placeholder = 'placeholder="'+str(elem.placeholder)+'"'
@@ -78,12 +78,22 @@ def applytransformation(elem,projectname,page):
             return ("<VueSelect class="+'"grid-item '+ cssclass  + '" '+vmodel+' '+ismulti+' '+options+' '+placeholder, "/>")
         if(elem.getNameComponent()=="InputSearchFilter" and elem.getTypeComponent()=="COMPONENT_ASSET"):
             useIconFieldPrimevuePlugin(projectname)
-            cssclass= "searchinputfilter" + cssclass
+            cssclass= "ssearchinputfilter" + cssclass
             vmodel = 'v-model="'+str(elem.vmodel)+'"'
             placeholder = 'placeholder="'+str(elem.placeholder)+'"'
             generateInputSearchFilterCssProperties(projectname,pagename,cssclass,elem)
             primeVueComponents[pagename].extend([" IconField"," InputIcon"," InputText"])
             return (f'<IconField class="{cssclass}"><InputIcon class="pi pi-search"/><InputText {vmodel} {placeholder} />','</IconField>')
+        if(elem.getNameComponent()=="DatePicker" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+            useDatePickerPrimevuePlugin(projectname)
+            cssclass= "sdatepicker" + cssclass
+            vmodel = 'v-model="'+str(elem.vmodel)+'"'
+            generateDatePickerCssProperties(projectname,pagename,cssclass,elem)
+            primeVueComponents[pagename].extend([" DatePicker"])
+            showicon = ""
+            if(elem.style.getdropdownbackgroundcolor()!=None):
+                showicon = ":showOnFocus='false' showIcon='' fluid=''"
+            return (f'<DatePicker {vmodel} class="{cssclass}" {showicon} >','</DatePicker>')
 
     if(isinstance(elem, TextElement)):
         generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
@@ -180,6 +190,9 @@ def processTemplate(html_string,page):
         tag = c.split(" ")[1]
         pattern = "<"+tag.lower()+r"([\s]*.*?)"+">"+r"((\n|.)*?)"+r"<\/"+tag.lower()+">"
         processedTemplate = re.sub(pattern,"<"+tag+ r'\1' +">"+r'\2'+"</"+tag+">",finalHtml)
+        if(tag=="DatePicker"):
+            processedTemplate = re.sub('<DatePicker'+r"([\s]*.*?)"+'fluid="" showicon=""'+r'([\s]*.*?)'+'>',"<DatePicker"+r"\1 showIcon fluid \2>",processedTemplate,)
+            print(processedTemplate)
         finalHtml = processedTemplate
     return finalHtml
 

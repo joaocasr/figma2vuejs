@@ -22,14 +22,14 @@ from parser.model.NavigationAction import NavigationAction
 from parser.model.CloseAction import CloseAction
 from parser.model.OverlayAction import OverlayAction
 from engine.stylegenerator import calculate_gradientDegree
-from parser.assetsconverter import convertToVueSelect, convertToSearchInputFilter
+from parser.assetsconverter import convertToVueSelect, convertToSearchInputFilter, convertToDatePicker
 
 allpages = {}
 
 # key: component_id ; value: MComponent
 allcomponents = {}
 pageComponents = {}
-
+primeVueComponents = ["InputSearchFilter","DatePicker","DropdownFilter"]
 pageWidth = -1
 tags = ["nav","footer","main","section","aside","article","p","header","h1","h2","h3","h4","h5","h6","ul","li"]
 figmadata = {}
@@ -71,11 +71,11 @@ def parsePageEntities(data):
     return allpages
 
 def iterate_nestedElements(data):    
-    global allpages, pageWidth
-    #iterate first for all the components nodes
+    global allpages, pageWidth, primeVueComponents
+    #iterate first for all the components nodes (except primevue components)
     for melement in data["document"]["children"][0]["children"]:
         elements = []
-        if(melement["type"]=="COMPONENT" and "children" in melement):
+        if(melement["type"]=="COMPONENT" and "children" in melement and melement["name"] not in primeVueComponents):
             pageWidth = melement["absoluteRenderBounds"]["width"]*1.2
             for element in melement["children"]:
                 component_width = melement["absoluteRenderBounds"]["width"]
@@ -110,7 +110,6 @@ def iterate_nestedElements(data):
 def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstlevelelem,parent_data=None):
     global allcomponents,pageComponents,allpages,pageWidth, figmadata
     children = []
-
     elementwidth = data["absoluteRenderBounds"]["width"]
     elementheight = data["absoluteRenderBounds"]["height"]
     
@@ -173,6 +172,18 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         melement = convertToSearchInputFilter(componentset,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
         allpages[pagename].addVariable({melement.vmodel:'""'})
         return melement
+    if(data["name"]=="DatePicker" and data["type"]=="INSTANCE"):
+        componentsetId = data["componentId"]
+        componentset = None
+        for c in figmadata["document"]["children"][0]["children"]:
+            if(c["id"]==componentsetId):
+                componentset = c
+                break
+        melement = convertToDatePicker(componentset,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
+        allpages[pagename].addVariable({melement.vmodel:'""'})
+        return melement
+    if(data["name"]=="Form" and data["type"]=="INSTANCE"):
+        return None
     # handling ImageElement
     elif(data["type"]=="RECTANGLE" and any(("imageRef" in x) for x in data["fills"])):
         

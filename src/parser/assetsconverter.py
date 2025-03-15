@@ -2,6 +2,8 @@ from parser.model.Vue3SelectComponent import Vue3SelectComponent
 from parser.model.Vue3SelectComponentStyle import Vue3SelectComponentStyle
 from parser.model.InputSearchFilter import InputSearchFilter
 from parser.model.InputSearchFilterStyle import InputSearchFilterStyle
+from parser.model.DatePicker import DatePicker
+from parser.model.DatePickerStyle import DatePickerStyle
 
 import re 
 
@@ -67,7 +69,6 @@ def convertToSearchInputFilter(data,nr_columnstart,nr_columnend,nr_rowstart,nr_r
     vmodel = "inputsearch"+str(elemid)
     backgroundcolor = str(data["backgroundColor"]["r"] * 255)+","+str(data["backgroundColor"]["g"] * 255)+","+str(data["backgroundColor"]["b"] * 255)+","+str(data["backgroundColor"]["a"])
     radius = str(data["cornerRadius"])
-    print(data)
     for e in data["children"]:
         if(e["type"]=="TEXT"):
             placeholder = e["characters"]
@@ -78,3 +79,24 @@ def convertToSearchInputFilter(data,nr_columnstart,nr_columnend,nr_rowstart,nr_r
     inputsearchfilter =  InputSearchFilter(id,"",name,"COMPONENT_ASSET",vmodel,placeholder,style)
 
     return inputsearchfilter
+
+def convertToDatePicker(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name):
+    pattern = "[:;]"
+    elemid = re.sub(pattern,"",str(id))
+    vmodel = "datepicker"+str(elemid)
+    dateinput = None
+    dropdowninput = None
+    dropdownbackgroundcolor = None
+    for d in data["children"]:
+        if(d["name"]=="DateInput"):
+            dateinput = d
+            if(len(dateinput["children"])>0):
+                dropdowninput = dateinput["children"][0]
+                dropdownbackgroundcolor = str(dropdowninput["backgroundColor"]["r"] * 255)+","+str(dropdowninput["backgroundColor"]["g"] * 255)+","+str(dropdowninput["backgroundColor"]["b"] * 255)+","+str(dropdowninput["backgroundColor"]["a"])
+    backgroundcolor = str(dateinput["backgroundColor"]["r"] * 255)+","+str(dateinput["backgroundColor"]["g"] * 255)+","+str(dateinput["backgroundColor"]["b"] * 255)+","+str(dateinput["backgroundColor"]["a"])
+    
+    style = DatePickerStyle(backgroundcolor,dropdownbackgroundcolor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
+
+    datepicker =  DatePicker(id,"",name,"COMPONENT_ASSET",vmodel,style)
+
+    return datepicker

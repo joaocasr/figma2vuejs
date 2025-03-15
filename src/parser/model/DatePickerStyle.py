@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 class DatePickerStyle(object):
 
-	def __init__(self,backgroundcolor,dropdownbackgroundcolor):
+	def __init__(self,backgroundcolor,dropdownbackgroundcolor,gridcolumnStart,gridcolumnEnd,gridrowStart,gridrowEnd):
 		self.backgroundcolor = backgroundcolor
 		self.dropdownbackgroundcolor = dropdownbackgroundcolor
 		self.gridcolumnStart = gridcolumnStart
