@@ -234,6 +234,30 @@ div:deep(.menu-option.selected){
   with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
     f.write(css)
 
+def generateInputSearchFilterCssProperties(projectname,pagename,cssclass,elem):
+  css ="""\n."""+ str(cssclass) + """ {
+    grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
+    grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
+    grid-row-start: """+  str(elem.style.gridrowStart)+""";
+    grid-row-end: """+  str(elem.style.gridrowEnd)+""";
+}
+."""+ str(cssclass) + """ .p-inputtext{
+   --p-inputtext-background: rgba("""+  str(elem.style.getbackgroundcolor())+""");
+   --p-inputtext-color: rgba("""+  str(elem.style.getcolor())+""");
+   --p-inputtext-border-radius:"""+  str(elem.style.getborderradius())+"""px;
+}
+
+."""+ str(cssclass) + """ .p-inputicon{
+   margin-top:calc(-1.4 * (var(--p-icon-size)));
+}
+  """
+  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  mode = "w"
+  if os.path.isfile(cssfile):
+    mode = "a"
+  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+    f.write(css)
+
 def generateShapeCSS(projectname,pagename,cssclass,type,elem):
   clippath=""
   if(type=="STAR"):

@@ -1,5 +1,8 @@
 from parser.model.Vue3SelectComponent import Vue3SelectComponent
 from parser.model.Vue3SelectComponentStyle import Vue3SelectComponentStyle
+from parser.model.InputSearchFilter import InputSearchFilter
+from parser.model.InputSearchFilterStyle import InputSearchFilterStyle
+
 import re 
 
 def convertToVueSelect(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name):
@@ -37,8 +40,6 @@ def convertToVueSelect(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id
                             selectedcolor = (str(selected["backgroundColor"]["r"] * 255) , str(selected["backgroundColor"]["g"] * 255) , str(selected["backgroundColor"]["b"] * 255) , str(selected["backgroundColor"]["a"]))
                             nonselectedcolor = (str(nonselected["backgroundColor"]["r"] * 255) , str(nonselected["backgroundColor"]["g"] * 255) , str(nonselected["backgroundColor"]["b"] * 255) , str(nonselected["backgroundColor"]["a"]))
                             break
-    print(placeholder)
-    print(alloptions)
 
     style = Vue3SelectComponentStyle(
         "rgba("+selectedcolor[0]+","+selectedcolor[1]+","+selectedcolor[2]+","+selectedcolor[3]+")",
@@ -58,3 +59,22 @@ def convertToVueSelect(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id
     melement = Vue3SelectComponent(id,"",name,"COMPONENT_ASSET","selectedOption"+elemid,alloptions,placeholder,False,style)
 
     return melement
+
+def convertToSearchInputFilter(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name):
+    placeholder = ""
+    pattern = "[:;]"
+    elemid = re.sub(pattern,"",str(id))
+    vmodel = "inputsearch"+str(elemid)
+    backgroundcolor = str(data["backgroundColor"]["r"] * 255)+","+str(data["backgroundColor"]["g"] * 255)+","+str(data["backgroundColor"]["b"] * 255)+","+str(data["backgroundColor"]["a"])
+    radius = str(data["cornerRadius"])
+    print(data)
+    for e in data["children"]:
+        if(e["type"]=="TEXT"):
+            placeholder = e["characters"]
+            color = e["fills"][0]["color"]
+            txtcolor = str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])
+    style = InputSearchFilterStyle(backgroundcolor,color,radius,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
+
+    inputsearchfilter =  InputSearchFilter(id,"",name,"COMPONENT_ASSET",vmodel,placeholder,style)
+
+    return inputsearchfilter

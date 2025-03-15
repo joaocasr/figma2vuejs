@@ -29,6 +29,7 @@ else:
   pagesInfo = dict()
   for page in allpages:
     pagesInfo[page] = {"path":allpages[page].pagepath, "name": page, "id": allpages[page].idpage, "components": allpages[page].components}
+    print(pagesInfo[page])
 
   mypages = allpages
   if(len(sys.argv)==3): mypages = generateGridTemplate(sys.argv[2],allpages)

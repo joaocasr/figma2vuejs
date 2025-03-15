@@ -1,4 +1,5 @@
-from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties
+from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties
+from setup.vueprojectsetup import installVue3select_dependency, useIconFieldPrimevuePlugin
 from engine.logicgenerator import handleBehaviour
 from parser.model.Mcomponent import Mcomponent
 from parser.model.TextElement import TextElement
@@ -6,7 +7,6 @@ from parser.model.Vue3SelectComponent import Vue3SelectComponent
 from parser.model.ShapeElement import ShapeElement
 from parser.model.ContainerElement import ContainerElement
 from parser.model.ImageElement import ImageElement
-from setup.vueprojectsetup import installVue3select_dependency
 
 from bs4 import BeautifulSoup
 import re
@@ -15,6 +15,7 @@ allhooks = dict()
 imports = dict()
 components = dict()
 componentAssets = dict()
+primeVueComponents = dict()
 allPagesInfo = dict()
 
 def buildpage(name,page,pagesInfo):
@@ -24,6 +25,7 @@ def buildpage(name,page,pagesInfo):
     imports[page.pagename] = []
     components[page.pagename] = []
     componentAssets[page.pagename] = []
+    primeVueComponents[page.pagename] = []
     allPagesInfo = pagesInfo
     output = ""  
     for element in page.elements:
@@ -74,6 +76,14 @@ def applytransformation(elem,projectname,page):
 
             generateVueSelectCssProperties(projectname,pagename,cssclass,elem)
             return ("<VueSelect class="+'"grid-item '+ cssclass  + '" '+vmodel+' '+ismulti+' '+options+' '+placeholder, "/>")
+        if(elem.getNameComponent()=="InputSearchFilter" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+            useIconFieldPrimevuePlugin(projectname)
+            cssclass= "searchinputfilter" + cssclass
+            vmodel = 'v-model="'+str(elem.vmodel)+'"'
+            placeholder = 'placeholder="'+str(elem.placeholder)+'"'
+            generateInputSearchFilterCssProperties(projectname,pagename,cssclass,elem)
+            primeVueComponents[pagename].extend([" IconField"," InputIcon"," InputText"])
+            return (f'<IconField class="{cssclass}"><InputIcon class="pi pi-search"/><InputText {vmodel} {placeholder} />','</IconField>')
 
     if(isinstance(elem, TextElement)):
         generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
@@ -161,16 +171,15 @@ def processTemplate(html_string,page):
 
     soup = BeautifulSoup(html_string, "html.parser")
     finalHtml = soup.prettify()
-    for p in components:
-        for c in components[p]:
-            pattern = "<"+c+r"([\s]*.*)"+">"+r"(\n[\s]*.*)*\n[\s]*"+r"<\/"+c+">"
-            processedTemplate = re.sub(pattern,"<"+c.capitalize()+ r'\1' +">"+"</"+c.capitalize()+">",finalHtml)
-            finalHtml = processedTemplate
-    for p in componentAssets:
-        for c in componentAssets[p]:
-            tag = c.split(" ")[1]
-            pattern = "<"+tag.lower()+r"([\s]*.*)"+">"+r"(\n[\s]*.*)*\n[\s]*"+r"<\/"+tag.lower()+">"
-            processedTemplate = re.sub(pattern,"<"+tag+ r'\1' +"/>",finalHtml)
-            finalHtml = processedTemplate
+    for c in components[page]:
+        pattern = "<"+c+r"([\s]*.*?)"+">"+r"(\n|.)*"+r"<\/"+c+">"
+        processedTemplate = re.sub(pattern,"<"+c.capitalize()+ r'\1' +">"+"</"+c.capitalize()+">",finalHtml)
+        finalHtml = processedTemplate
+    componentAssets[page].extend(primeVueComponents[page])
+    for c in componentAssets[page]:
+        tag = c.split(" ")[1]
+        pattern = "<"+tag.lower()+r"([\s]*.*?)"+">"+r"((\n|.)*?)"+r"<\/"+tag.lower()+">"
+        processedTemplate = re.sub(pattern,"<"+tag+ r'\1' +">"+r'\2'+"</"+tag+">",finalHtml)
+        finalHtml = processedTemplate
     return finalHtml
 

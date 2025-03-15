@@ -9,7 +9,12 @@
   </p>
  </div>
  <Iconi v-on:click="changeVisibility22238()"></Iconi>
- <VueSelect :is-multi="False" :options="allOptions22801349" class="grid-item vueselect22801349" placeholder="My Dropdown Filter" v-model="selectedOption22801349"/>
+ <IconField class="searchinputfilter23041263">
+  <InputIcon class="pi pi-search">
+  </InputIcon>
+  <InputText placeholder="Search . . ." v-model="inputsearch23041263">
+  </InputText>
+ </IconField>
  <Popup @close-from222310-to22238="show22238=false" v-if="show22238==true"></Popup>
 </div>
 
@@ -18,19 +23,16 @@
 <script>
 import Iconi from '@/components/Iconi.vue';
 import Popup from '@/components/Popup.vue';
-import VueSelect from "vue3-select-component";
 
 export default {
     components:{
         Iconi,
-        Popup,
-        VueSelect
+        Popup
     },
     data(){
         return {
             show22238:false,
-            selectedOption22801349:"",
-            allOptions22801349:[{'label': 'Option 1', 'value': 'Label1'}, {'label': 'Option 2', 'value': 'Label2'}, {'label': 'Option 3', 'value': 'Label3'}, {'label': 'Option 4', 'value': 'Label4'}, {'label': 'Option 5', 'value': 'Label5'}]    
+            inputsearch23041263:""    
         }
     },
     methods:{

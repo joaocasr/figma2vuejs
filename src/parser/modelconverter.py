@@ -22,7 +22,7 @@ from parser.model.NavigationAction import NavigationAction
 from parser.model.CloseAction import CloseAction
 from parser.model.OverlayAction import OverlayAction
 from engine.stylegenerator import calculate_gradientDegree
-from parser.assetsconverter import convertToVueSelect
+from parser.assetsconverter import convertToVueSelect, convertToSearchInputFilter
 
 allpages = {}
 
@@ -157,13 +157,21 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             if(c["id"]==componentsetId):
                 componentset = c
                 break
-        print(data["id"])
-        print(data["name"])
         melement = convertToVueSelect(componentset,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
         pattern = "[:;]"
         elemid = re.sub(pattern,"",str(data["id"]))
         allpages[pagename].addVariable({"selectedOption"+elemid:'""'})
         allpages[pagename].addVariable({"allOptions"+elemid:melement.options})
+        return melement
+    if(data["name"]=="InputSearchFilter" and data["type"]=="INSTANCE"):
+        componentsetId = data["componentId"]
+        componentset = None
+        for c in figmadata["document"]["children"][0]["children"]:
+            if(c["id"]==componentsetId):
+                componentset = c
+                break
+        melement = convertToSearchInputFilter(componentset,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
+        allpages[pagename].addVariable({melement.vmodel:'""'})
         return melement
     # handling ImageElement
     elif(data["type"]=="RECTANGLE" and any(("imageRef" in x) for x in data["fills"])):
