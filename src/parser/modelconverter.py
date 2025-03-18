@@ -2,9 +2,8 @@
 os ficheiros na pasta teste irão simular por enquanto os dados obtidos da api
 para nesta fase de development e debug nao atingir o limite da chamadas com o token obtido do figma
 """
-import math
-import json
-import re
+import math,json,re,os,time,requests,wget
+from dotenv import load_dotenv, find_dotenv
 from parser.model.Mpage import Mpage
 from parser.model.Melement import Melement
 from parser.model.ContainerElement import ContainerElement
@@ -22,9 +21,10 @@ from parser.model.NavigationAction import NavigationAction
 from parser.model.CloseAction import CloseAction
 from parser.model.OverlayAction import OverlayAction
 from engine.stylegenerator import calculate_gradientDegree
-from parser.assetsconverter import convertToVueSelect, convertToSearchInputFilter, convertToDatePicker
+from parser.assetsconverter import convertToDropdown, convertToSearchInput, convertToDatePicker, convertToSlider
 
 allpages = {}
+allimages = []
 
 # key: component_id ; value: MComponent
 allcomponents = {}
@@ -38,8 +38,8 @@ def getFigmaData(prototype):
     global allpages, allcomponents,pageComponents, figmadata
     prototype1 = "../tests/prototype"+str(prototype)+".json"
 
-    with open(prototype1,"r") as file1:
-        data = json.load(file1)
+    with open(prototype1,"r") as file:
+        data = json.load(file)
         figmadata = data
     project_name = figmadata["name"]
     parsePageEntities(figmadata)
@@ -57,6 +57,8 @@ def getFigmaData(prototype):
         if(p in allpages):
             allpages[p].components = pageComponents[p]
     #print(allpages['PrincipalPage'].elements)
+
+    extractImages(project_name)
     return (project_name, allpages)
 
 def parsePageEntities(data):
@@ -82,9 +84,12 @@ def iterate_nestedElements(data):
                 component_height = melement["absoluteRenderBounds"]["height"]
                 componentX = melement["absoluteRenderBounds"]["x"]
                 componentY = melement["absoluteRenderBounds"]["y"]
-                p = processElement(melement["name"],element["name"],element,component_width,component_height,componentX,componentY,melement)
-                elements.append(p)
-            
+                try:
+                    p = processElement(melement["name"],element["name"],element,component_width,component_height,componentX,componentY,melement)
+                    if(p!=None): elements.append(p)
+                except:
+                    raise Exception("Error while converting "+element["name"]+". Correct your prototype!")
+
             tag = getElementTag(melement)
             allcomponents[melement["id"]] = Mcomponent(melement["id"],melement["name"],tag,"",elements)
             setComponentStyle(melement)
@@ -98,9 +103,12 @@ def iterate_nestedElements(data):
                 page_height = page["absoluteRenderBounds"]["height"]
                 pageX = page["absoluteRenderBounds"]["x"]
                 pageY = page["absoluteRenderBounds"]["y"]
-                p = processElement(page["name"],element["name"],element,page_width,page_height,pageX,pageY,element)
+                try:
+                    p = processElement(page["name"],element["name"],element,page_width,page_height,pageX,pageY,element)
+                    if(p!=None): allpages[page["name"]].elements.append(p)
+                except:
+                    raise Exception("Error while converting "+element["name"]+". Correct your prototype!")
 
-                allpages[page["name"]].elements.append(p)
         else:
             continue
 
@@ -108,7 +116,7 @@ def iterate_nestedElements(data):
 
 
 def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstlevelelem,parent_data=None):
-    global allcomponents,pageComponents,allpages,pageWidth, figmadata
+    global allcomponents,pageComponents,allpages,pageWidth, figmadata, allimages
     children = []
     elementwidth = data["absoluteRenderBounds"]["width"]
     elementheight = data["absoluteRenderBounds"]["height"]
@@ -145,10 +153,10 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
 
     melement = None
     # handling assets from components created
-    if(data["name"]=="DropdownFilter" and data["type"]=="INSTANCE"):
+    if(data["name"]=="Dropdown" and data["type"]=="INSTANCE"):
         componentsetId = ""
         for id in figmadata["componentSets"]:
-            if(figmadata["componentSets"][id]["name"]=="DropdownFilter"):
+            if(figmadata["componentSets"][id]["name"]=="Dropdown"):
                 componentsetId = id
                 break
         componentset = None
@@ -156,23 +164,23 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             if(c["id"]==componentsetId):
                 componentset = c
                 break
-        melement = convertToVueSelect(componentset,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
+        melement = convertToDropdown(componentset,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
         pattern = "[:;]"
         elemid = re.sub(pattern,"",str(data["id"]))
         allpages[pagename].addVariable({"selectedOption"+elemid:'""'})
         allpages[pagename].addVariable({"allOptions"+elemid:melement.options})
         return melement
-    if(data["name"]=="InputSearchFilter" and data["type"]=="INSTANCE"):
+    elif(data["name"]=="InputSearch" and data["type"]=="INSTANCE"):
         componentsetId = data["componentId"]
         componentset = None
         for c in figmadata["document"]["children"][0]["children"]:
             if(c["id"]==componentsetId):
                 componentset = c
                 break
-        melement = convertToSearchInputFilter(componentset,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
+        melement = convertToSearchInput(componentset,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
         allpages[pagename].addVariable({melement.vmodel:'""'})
         return melement
-    if(data["name"]=="DatePicker" and data["type"]=="INSTANCE"):
+    elif(data["name"]=="DatePicker" and data["type"]=="INSTANCE"):
         componentsetId = data["componentId"]
         componentset = None
         for c in figmadata["document"]["children"][0]["children"]:
@@ -182,7 +190,21 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         melement = convertToDatePicker(componentset,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
         allpages[pagename].addVariable({melement.vmodel:'""'})
         return melement
-    if(data["name"]=="Form" and data["type"]=="INSTANCE"):
+    elif((data["name"]=="Slider" or data["name"]=="DualSlider") and data["type"]=="INSTANCE"):
+        componentsetId = figmadata["components"][data["componentId"]]["componentSetId"]
+        componentset = None
+        for c in figmadata["document"]["children"][0]["children"]:
+            if(c["id"]==componentsetId):
+                componentset = c
+                break
+        for c in figmadata["document"]["children"][0]["children"]:
+            if(c["id"]==componentsetId):
+                componentset = c
+                break
+        melement = convertToSlider(componentset,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
+        allpages[pagename].addVariable({melement.vmodel:'""'})
+        return melement        
+    elif(data["name"]=="Form" and data["type"]=="INSTANCE"):
         return None
     # handling ImageElement
     elif(data["type"]=="RECTANGLE" and any(("imageRef" in x) for x in data["fills"])):
@@ -209,7 +231,11 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                 boxshadow = shadowX+"px " + shadowY+"px " + shadowRadius + spread + "rgba("+','.join(str(val) for val in rgba_shadow)+")"
                 style.setBoxShadow(boxshadow)
         if(tag==""): tag = "img"
+        
+        imgpath = re.sub(r"[\s,@\.-]","",data["name"])
+        allimages.append({"id":data["id"],"name":data["name"]})
         mimagelement = ImageElement(data["id"],tag,data["name"],data["fills"][0]["imageRef"],style)
+        mimagelement.setimgpath("/"+imgpath+".png")
         melement = mimagelement
 
     # handles shape elements
@@ -299,7 +325,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         melement = componentelement
 
     # handles ContainerElement
-    elif(data["type"]=="FRAME"):
+    elif(data["type"]=="FRAME" or data["type"]=="GROUP"):
 
         lineargradient = None
         rgba = None
@@ -309,10 +335,10 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                 color = data["background"][0]["color"]
                 rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"])
             elif(background["type"] == "GRADIENT_LINEAR"):
-                lineargradient = calculate_gradientDegree(background["gradientHandlePositions"][0],
-                                                background["gradientHandlePositions"][1],
-                                                background["gradientStops"][0],
-                                                background["gradientStops"][1])
+                lineargradient = calculate_gradientDegree(background["gradientHandlePositions"][1],
+                                                background["gradientHandlePositions"][0],
+                                                background["gradientStops"][1],
+                                                background["gradientStops"][0])
         
         style = ContainerStyle()
         
@@ -336,7 +362,8 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                 rgba_shadow = (effect["color"]["r"]*255, effect["color"]["g"]*255, effect["color"]["b"]*255, effect["color"]["a"])
                 shadowX , shadowY = (str(round(effect["offset"]["x"])), str(round(effect["offset"]["y"])))
                 shadowRadius = str(round(effect["radius"]))+"px "
-                spread = str(round(effect["spread"]))+"px "
+                spread = "0px"
+                if("spread" in effect): spread = str(round(effect["spread"]))+"px "
 
                 boxshadow = shadowX+"px " + shadowY+"px " + shadowRadius + spread + "rgba("+','.join(str(val) for val in rgba_shadow)+")"
                 style.setBoxShadow(boxshadow)
@@ -398,7 +425,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
     myparent_data = data
     # Iterates for all nested children of each element
     if("children" in data):
-        if(data["type"]=="FRAME"):
+        if(data["type"]=="FRAME" or data["type"]=="GROUP"):
             style.setDisplay("grid")
             style.setGridTemplateColumns("repeat(64,1fr)")
             style.setGridTemplateRows("repeat(64,1fr)")
@@ -406,7 +433,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             nestedelem = processElement(pagename,element["name"],element,data["absoluteRenderBounds"]["width"],data["absoluteRenderBounds"]["height"],pageX,pageY,firstlevelelem,myparent_data)
             children.append(nestedelem)
 
-        melement.setChildren(children)
+        if(melement!=None): melement.setChildren(children)
     return melement
 
 # auxiliar funcion to calculate position 
@@ -418,10 +445,10 @@ def getPosition(xielem,yielem,elementwidth,elementheight,page_width,page_height,
     nr_rowstart = round((yielem / page_height) * nrrows ) + 1
     nr_rowend = min(round((elementheight / page_height) * nrrows) + nr_rowstart, nrrows)
 
-    if(nr_columnstart<0): nr_columnstart=max(abs(nr_columnstart),1)
-    if(nr_columnend<0): nr_columnend=min(abs(nr_columnend),65)
-    if(nr_rowstart<0): nr_rowstart=abs(nr_rowstart)
-    if(nr_rowend<0): nr_rowend=min(abs(nr_rowend),nrrows)
+    #if(nr_columnstart<0): nr_columnstart=max(abs(nr_columnstart),1)
+    #if(nr_columnend<0): nr_columnend=min(abs(nr_columnend),65)
+    #if(nr_rowstart<0): nr_rowstart=abs(nr_rowstart)
+    #if(nr_rowend<0): nr_rowend=min(abs(nr_rowend),nrrows)
     return (nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
 
 
@@ -457,17 +484,19 @@ def setComponentStyle(component):
     global allcomponents
     lineargradient = None
     rgba = None
-    for background in component["background"]:
+    if(len(component["background"])>0):
+        for background in component["background"]:
 
-        if("color" in background):
-            color = component["background"][0]["color"]
-            rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"])
-        elif(background["type"] == "GRADIENT_LINEAR"):
-            lineargradient = calculate_gradientDegree(background["gradientHandlePositions"][0],
-                                            background["gradientHandlePositions"][1],
-                                            background["gradientStops"][0],
-                                            background["gradientStops"][1])
-
+            if("color" in background):
+                color = component["background"][0]["color"]
+                rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"])
+            elif(background["type"] == "GRADIENT_LINEAR"):
+                lineargradient = calculate_gradientDegree(background["gradientHandlePositions"][0],
+                                                background["gradientHandlePositions"][1],
+                                                background["gradientStops"][0],
+                                                background["gradientStops"][1])
+    else:
+        rgba = (component["backgroundColor"]["r"] * 255 , component["backgroundColor"]["g"] * 255 , component["backgroundColor"]["b"] * 255 , component["backgroundColor"]["a"])
     id = component["id"]
 
     componentStyle = ComponentStyle()
@@ -540,3 +569,36 @@ def getElementTag(elem):
         if(ntag.lower() in tags):
             tag = ntag.lower()
     return tag
+
+def extractImages(projectname):
+    global allimages
+    load_dotenv(find_dotenv())
+    FIGMA_API_KEY = os.environ.get("FIGMA_API_KEY")
+    FILE_KEY = os.environ.get("FILE_KEY")
+    myimageids = ','.join(x["id"] for x in allimages)
+    
+    url = f"https://api.figma.com/v1/images/"+FILE_KEY+"/?ids="+myimageids+"&format=png"
+    headers = {"content-type": "application/json", "Accept-Charset": "UTF-8", 'X-FIGMA-TOKEN': FIGMA_API_KEY}
+
+    for mimage in allimages:
+        imgpath = re.sub(r"[\s,@\.-]","",mimage["name"])
+        destination = '../output/'+projectname+"/public/"+imgpath+".png"
+        if(os.path.isfile(destination)):
+            allimages = list(filter(lambda x: x["name"]==mimage["name"],allimages))
+
+    if(len(allimages)>0):
+        response = requests.get(url, headers=headers)
+        images = response.json()
+        print(images)
+        if("err" in images and images["err"]==None):
+            for mimage in allimages:
+                print(mimage)
+                imgurl = images["images"][str(mimage["id"])]
+                imgpath = re.sub(r"[\s,@\.-]","",mimage["name"])
+
+                destination = '../output/'+projectname+"/public/"+imgpath+".png"
+                print("\nDownloading image "+imgpath+"...")
+                if(not os.path.isfile(destination)):
+                    filename = wget.download(imgurl, out=destination)
+        elif(images["status"]==403):
+            print("something went wrong...")

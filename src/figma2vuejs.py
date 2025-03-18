@@ -13,7 +13,11 @@ if(len(sys.argv)!=2 and len(sys.argv)!=3):
 else:
   prototype = sys.argv[1]
   # extract figma data and build intern model
-  project_name, allpages = getFigmaData(prototype)
+  try:
+    project_name, allpages = getFigmaData(prototype)
+  except Exception as e:
+    print(e)
+    sys.exit()
 
   # project setup
   try:
@@ -29,7 +33,6 @@ else:
   pagesInfo = dict()
   for page in allpages:
     pagesInfo[page] = {"path":allpages[page].pagepath, "name": page, "id": allpages[page].idpage, "components": allpages[page].components}
-    print(pagesInfo[page])
 
   mypages = allpages
   if(len(sys.argv)==3): mypages = generateGridTemplate(sys.argv[2],allpages)

@@ -7,7 +7,7 @@ class ImageElement(Melement):
 
 		super().__init__(id,tag,name) 
 		self.src = src
-
+		self.imgpath = None
 		self.style = imageStyle
 	
 	def getSrc(self):
@@ -18,3 +18,12 @@ class ImageElement(Melement):
 		"""@ParamType src String
 		@ReturnType void"""
 		self.src = src
+
+	def getimgpath(self):
+		"""@ReturnType String"""
+		return self.imgpath
+
+	def setimgpath(self, imgpath):
+		"""@ParamType imgpath String
+		@ReturnType void"""
+		self.imgpath = imgpath

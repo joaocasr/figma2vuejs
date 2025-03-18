@@ -1,9 +1,9 @@
-from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties
-from setup.vueprojectsetup import installVue3select_dependency, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin
+from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties
+from setup.vueprojectsetup import installVue3select_dependency, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin
 from engine.logicgenerator import handleBehaviour
 from parser.model.Mcomponent import Mcomponent
 from parser.model.TextElement import TextElement
-from parser.model.Vue3SelectComponent import Vue3SelectComponent
+from parser.model.Dropdown import Dropdown
 from parser.model.ShapeElement import ShapeElement
 from parser.model.ContainerElement import ContainerElement
 from parser.model.ImageElement import ImageElement
@@ -65,7 +65,7 @@ def applytransformation(elem,projectname,page):
     if(elem.style.getgridArea()!=None):
         id = ' id="'+elem.style.getgridArea()+'"'
     if(isinstance(elem,Mcomponent)):
-        if(elem.getNameComponent()=="DropdownFilter" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+        if(elem.getNameComponent()=="Dropdown" and elem.getTypeComponent()=="COMPONENT_ASSET"):
             installVue3select_dependency(projectname)
             componentAssets[pagename].append('import VueSelect from "vue3-select-component";')
             options = ':options="allOptions'+str(cssclass)+'"'
@@ -76,7 +76,7 @@ def applytransformation(elem,projectname,page):
 
             generateVueSelectCssProperties(projectname,pagename,cssclass,elem)
             return ("<VueSelect class="+'"grid-item '+ cssclass  + '" '+vmodel+' '+ismulti+' '+options+' '+placeholder, "/>")
-        if(elem.getNameComponent()=="InputSearchFilter" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+        if(elem.getNameComponent()=="InputSearch" and elem.getTypeComponent()=="COMPONENT_ASSET"):
             useIconFieldPrimevuePlugin(projectname)
             cssclass= "ssearchinputfilter" + cssclass
             vmodel = 'v-model="'+str(elem.vmodel)+'"'
@@ -94,6 +94,13 @@ def applytransformation(elem,projectname,page):
             if(elem.style.getdropdownbackgroundcolor()!=None):
                 showicon = ":showOnFocus='false' showIcon='' fluid=''"
             return (f'<DatePicker {vmodel} class="{cssclass}" {showicon} >','</DatePicker>')
+        if(elem.getNameComponent()=="Slider" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+            useSliderPrimevuePlugin(projectname)
+            cssclass= "sslider" + cssclass
+            vmodel = 'v-model="'+str(elem.vmodel)+'"'
+            generateSliderCssProperties(projectname,pagename,cssclass,elem)
+            primeVueComponents[pagename].extend([" Slider"])
+            return (f'<Slider {vmodel} class="{cssclass}" >','</Slider>')
 
     if(isinstance(elem, TextElement)):
         generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
@@ -111,7 +118,7 @@ def applytransformation(elem,projectname,page):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         if(elem.tag==""):
             elem.tag = "img"
-        return ("<"+elem.tag+ id +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getSrc() + '"' + ' '.join(d for d in directives) , "/>")
+        return ("<"+elem.tag+ id +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getimgpath() + '"' + ' '.join(d for d in directives) , "/>")
     if(isinstance(elem, ShapeElement)):
         cssclassifier = ""
         cssclassifier = elem.getType().lower() + str(cssclass)
@@ -129,7 +136,7 @@ def applytransformation(elem,projectname,page):
         return (begintag,endtag)
     if isinstance(elem, Mcomponent):
         componentName = elem.componentName.capitalize()
-        components.setdefault(pagename, []).append(elem.componentName)
+        components.setdefault(pagename, []).append(elem.componentName.lower())
         return ("<"+componentName+" "+ ' '.join(d for d in directives) + ">","</"+componentName+">")
     return ("","")
 
@@ -182,7 +189,7 @@ def processTemplate(html_string,page):
     soup = BeautifulSoup(html_string, "html.parser")
     finalHtml = soup.prettify()
     for c in components[page]:
-        pattern = "<"+c+r"([\s]*.*?)"+">"+r"(\n|.)*"+r"<\/"+c+">"
+        pattern = "<"+c.lower()+r"([\s]*.*?)"+">"+r"(\n|.)*"+r"<\/"+c.lower()+">"
         processedTemplate = re.sub(pattern,"<"+c.capitalize()+ r'\1' +">"+"</"+c.capitalize()+">",finalHtml)
         finalHtml = processedTemplate
     componentAssets[page].extend(primeVueComponents[page])
@@ -192,7 +199,6 @@ def processTemplate(html_string,page):
         processedTemplate = re.sub(pattern,"<"+tag+ r'\1' +">"+r'\2'+"</"+tag+">",finalHtml)
         if(tag=="DatePicker"):
             processedTemplate = re.sub('<DatePicker'+r"([\s]*.*?)"+'fluid="" showicon=""'+r'([\s]*.*?)'+'>',"<DatePicker"+r"\1 showIcon fluid \2>",processedTemplate,)
-            print(processedTemplate)
         finalHtml = processedTemplate
     return finalHtml
 

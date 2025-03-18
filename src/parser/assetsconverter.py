@@ -1,14 +1,15 @@
-from parser.model.Vue3SelectComponent import Vue3SelectComponent
-from parser.model.Vue3SelectComponentStyle import Vue3SelectComponentStyle
-from parser.model.InputSearchFilter import InputSearchFilter
-from parser.model.InputSearchFilterStyle import InputSearchFilterStyle
+from parser.model.Dropdown import Dropdown
+from parser.model.DropdownStyle import DropdownStyle
+from parser.model.InputSearch import InputSearch
+from parser.model.InputSearchStyle import InputSearchStyle
 from parser.model.DatePicker import DatePicker
 from parser.model.DatePickerStyle import DatePickerStyle
+from parser.model.Slider import Slider
+from parser.model.SliderStyle import SliderStyle
 
 import re 
 
-def convertToVueSelect(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name):
-
+def convertToDropdown(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name):
     placeholder = ""
     selectedcolor = ""
     nonselectedcolor = ""
@@ -43,7 +44,7 @@ def convertToVueSelect(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id
                             nonselectedcolor = (str(nonselected["backgroundColor"]["r"] * 255) , str(nonselected["backgroundColor"]["g"] * 255) , str(nonselected["backgroundColor"]["b"] * 255) , str(nonselected["backgroundColor"]["a"]))
                             break
 
-    style = Vue3SelectComponentStyle(
+    style = DropdownStyle(
         "rgba("+selectedcolor[0]+","+selectedcolor[1]+","+selectedcolor[2]+","+selectedcolor[3]+")",
         "rgba("+selectedcolor[0]+","+selectedcolor[1]+","+selectedcolor[2]+","+selectedcolor[3]+")",
         "rgba("+nonselectedcolor[0]+","+nonselectedcolor[1]+","+nonselectedcolor[2]+","+nonselectedcolor[3]+")",
@@ -58,11 +59,11 @@ def convertToVueSelect(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id
     )
     pattern = "[:;]"
     elemid = re.sub(pattern,"",str(id))
-    melement = Vue3SelectComponent(id,"",name,"COMPONENT_ASSET","selectedOption"+elemid,alloptions,placeholder,False,style)
+    melement = Dropdown(id,"",name,"COMPONENT_ASSET","selectedOption"+elemid,alloptions,placeholder,False,style)
 
     return melement
 
-def convertToSearchInputFilter(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name):
+def convertToSearchInput(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name):
     placeholder = ""
     pattern = "[:;]"
     elemid = re.sub(pattern,"",str(id))
@@ -74,9 +75,9 @@ def convertToSearchInputFilter(data,nr_columnstart,nr_columnend,nr_rowstart,nr_r
             placeholder = e["characters"]
             color = e["fills"][0]["color"]
             txtcolor = str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])
-    style = InputSearchFilterStyle(backgroundcolor,color,radius,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
+    style = InputSearchStyle(backgroundcolor,color,radius,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
 
-    inputsearchfilter =  InputSearchFilter(id,"",name,"COMPONENT_ASSET",vmodel,placeholder,style)
+    inputsearchfilter =  InputSearch(id,"",name,"COMPONENT_ASSET",vmodel,placeholder,style)
 
     return inputsearchfilter
 
@@ -92,11 +93,37 @@ def convertToDatePicker(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,i
             dateinput = d
             if(len(dateinput["children"])>0):
                 dropdowninput = dateinput["children"][0]
-                dropdownbackgroundcolor = str(dropdowninput["backgroundColor"]["r"] * 255)+","+str(dropdowninput["backgroundColor"]["g"] * 255)+","+str(dropdowninput["backgroundColor"]["b"] * 255)+","+str(dropdowninput["backgroundColor"]["a"])
-    backgroundcolor = str(dateinput["backgroundColor"]["r"] * 255)+","+str(dateinput["backgroundColor"]["g"] * 255)+","+str(dateinput["backgroundColor"]["b"] * 255)+","+str(dateinput["backgroundColor"]["a"])
+                dropdownbackgroundcolor = "rgba("+str(dropdowninput["backgroundColor"]["r"] * 255)+","+str(dropdowninput["backgroundColor"]["g"] * 255)+","+str(dropdowninput["backgroundColor"]["b"] * 255)+","+str(dropdowninput["backgroundColor"]["a"])+")"
+    backgroundcolor = "rgba("+str(dateinput["backgroundColor"]["r"] * 255)+","+str(dateinput["backgroundColor"]["g"] * 255)+","+str(dateinput["backgroundColor"]["b"] * 255)+","+str(dateinput["backgroundColor"]["a"])+")"
     
     style = DatePickerStyle(backgroundcolor,dropdownbackgroundcolor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
 
     datepicker =  DatePicker(id,"",name,"COMPONENT_ASSET",vmodel,style)
 
     return datepicker
+
+def convertToSlider(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name):
+    pattern = "[:;]"
+    elemid = re.sub(pattern,"",str(id))
+    vmodel = "slider"+str(elemid)
+    backgroundtrack =""
+    backgroundrange =""
+    backgroundcontent =""
+    backgroundhover =""
+    for s in data["children"]:
+        if(s["name"]=="Percent=0, State=Default"):
+            for ns in s["children"]:
+                if(ns["name"]=="Slider"):
+                    backgroundtrack = "rgba("+str(ns["backgroundColor"]["r"] * 255)+","+str(ns["backgroundColor"]["g"] * 255)+","+str(ns["backgroundColor"]["b"] * 255)+","+str(ns["backgroundColor"]["a"])+")"
+        if(s["name"]=="Percent=100, State=Active"):
+            for ns in s["children"]:
+                if(ns["name"]=="Slider"):
+                    backgroundrange = "rgba("+str(ns["backgroundColor"]["r"] * 255)+","+str(ns["backgroundColor"]["g"] * 255)+","+str(ns["backgroundColor"]["b"] * 255)+","+str(ns["backgroundColor"]["a"])+")"
+                    backgroundcontentcolor = ns["children"][0]["children"][0]["children"][0]["fills"][0]["color"]
+                    backgroundcontent = "rgba("+str(backgroundcontentcolor["r"] * 255)+","+str(backgroundcontentcolor["g"] * 255)+","+str(backgroundcontentcolor["b"] * 255)+","+str(backgroundcontentcolor["a"])+")"
+                    backgroundhover = backgroundcontent                
+
+    style = SliderStyle(backgroundtrack,backgroundcontent,backgroundrange,backgroundhover,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
+
+    slider =  Slider(id,"",name,"COMPONENT_ASSET",vmodel,style)
+    return slider

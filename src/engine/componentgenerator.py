@@ -3,6 +3,7 @@ from engine.logicgenerator import handleBehaviour
 from parser.model.Mcomponent import Mcomponent
 from parser.model.TextElement import TextElement
 from parser.model.ContainerElement import ContainerElement
+from parser.model.ImageElement import ImageElement
 from parser.model.ShapeElement import ShapeElement
 
 import xml.etree.ElementTree as ET
@@ -76,6 +77,11 @@ def applytransformation(elem,projectname,pagename,idcomponent):
         #directives = []
         html = "<div class="+'"grid-item-'+ idcomponent +' '+ cssclassifier + '" '+ ' '.join(d for d in directives) +">"
         return (html, "</div>")
+    if(isinstance(elem, ImageElement)):
+        generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
+        if(elem.tag==""):
+            elem.tag = "img"
+        return ("<"+elem.tag +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getimgpath() + '"' + ' '.join(d for d in directives) , "/>")
 
 
         return (begintag,endtag)
@@ -86,7 +92,7 @@ def writeVueComponent(name,project_name,content,component,pagesInfo):
     global allhooks 
     pattern = "[:;]"
     idcomponent = re.sub(pattern,"",component.idComponent)
-    cssimport = "@import '../assets/"+name+".css';"
+    cssimport = "@import '../assets/"+name.lower()+".css';"
     pagehooks=""
 
     for hook in allhooks[name]:

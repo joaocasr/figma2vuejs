@@ -14,6 +14,10 @@ class ImageStyle(object):
 		self.boxShadow = None
 		self.opacity = None
 		self.cornerRadius = None
+		self.borderTopLeftRadius = None
+		self.borderTopRightRadius = None
+		self.borderBottomLeftRadius = None
+		self.borderBottomRightRadius = None
 		self.gridArea = None
 
 	def getX(self):

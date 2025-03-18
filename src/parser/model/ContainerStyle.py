@@ -27,6 +27,10 @@ class ContainerStyle(object):
 		self.gridTemplateArea = None
 		self.gridArea = None
 		self.boxShadow = None
+		self.borderTopLeftRadius = None
+		self.borderTopRightRadius = None
+		self.borderBottomLeftRadius = None
+		self.borderBottomRightRadius = None
 		self.gap = None
 
 	def getX(self):

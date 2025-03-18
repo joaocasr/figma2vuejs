@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import PrincipalPageView from '@/views/PrincipalPageView.vue';
-import SecondaryPageView from '@/views/SecondaryPageView.vue';
+import HomePageView from '@/views/HomePageView.vue';
+import MoviePageView from '@/views/MoviePageView.vue';
+import WatchlistPageView from '@/views/WatchlistPageView.vue';
+import ReviewPageView from '@/views/ReviewPageView.vue';
 import ErrorPageView from '@/views/ErrorPageView.vue';
 
 const router = createRouter({
@@ -10,14 +12,24 @@ const router = createRouter({
   },
   routes: [
   {
-    "path": "/principalpage",
-    "name": "PrincipalPage",
-    "component": PrincipalPageView
+    "path": "/homepage",
+    "name": "HomePage",
+    "component": HomePageView
 },
 {
-    "path": "/secondarypage",
-    "name": "SecondaryPage",
-    "component": SecondaryPageView
+    "path": "/moviepage",
+    "name": "MoviePage",
+    "component": MoviePageView
+},
+{
+    "path": "/watchlistpage",
+    "name": "WatchlistPage",
+    "component": WatchlistPageView
+},
+{
+    "path": "/reviewpage",
+    "name": "ReviewPage",
+    "component": ReviewPageView
 },
 {
     "path": "/:catchAll(.*)",

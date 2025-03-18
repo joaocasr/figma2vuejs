@@ -116,6 +116,7 @@ def generatePageStyle(name,page):
     background = """\n  background:"""+ page.style.background+";\n"
 
   gridtemplaterows = f"repeat(128, {str(row_height)}px);"+"\n"
+  #gridtemplaterows = f"repeat(128,minmax("+ str(row_height) +"px,1fr));"
   if(page.style.getGridTemplateArea()!=None):
     gridtemplaterows = page.style.getGridTemplateRows() + ";\n"
     
@@ -128,6 +129,7 @@ def generatePageStyle(name,page):
   margin:"""+ page.style.margin + """;
   padding:"""+ page.style.padding + """;
   """
+  #  gap:10px;
   if(page.style.getGridTemplateArea()!=None):
     cssgridcontainer+="grid-template-areas:\n    "+ '\n    '.join(page.style.getGridTemplateArea())+";\n  gap: "+page.style.getGap()+";\n"
 
@@ -166,24 +168,29 @@ def generateComponentStyle(name,component):
   height = component.style.height
 
   background = "background-color:white;"
+  if(component.style.backgroundColor!=None):
+    background = """\n  background-color:"""+ component.style.backgroundColor+";\n"
+  if(component.style.background!=None):
+    background = """\n  background:"""+ component.style.background+";\n"
+
   boxshadow = ""
   border = ""
-  if(component.style.backgroundColor!=None): background = """\n  background-color:"""+ component.style.backgroundColor+";"
   if(component.style.background!=None): background = """\n  background:"""+ component.style.background+";"
   if(component.style.boxShadow != None): boxshadow ="\n  "+f"box-shadow: {component.style.boxShadow};"
   if(component.style.borderStyle) != None: border ="\n  "+f"border: {component.style.borderStyle};"
+  if(component.style.borderRadius) != None: borderRadius ="\n  "+f"border-radius: {component.style.borderRadius}px;"
 
   css = """\n.component"""+ idcomponent +""" {
   display:"""+ component.style.display+ """;
   grid-template-columns:"""+ component.style.gridtemplatecolumns+""";
   grid-template-rows:"""+ component.style.gridtemplaterows+""";
-  grid-column-start:"""+ str(component.style.gridcolumnStart)+""";""" + background + """
+  grid-column-start:"""+ str(component.style.gridcolumnStart)+""";\n""" + background + """
   grid-column-end:"""+ str(component.style.gridcolumnEnd)+""";
   grid-row-start:"""+ str(component.style.gridrowStart)+""";"""+ border + boxshadow +"""
   grid-row-end:"""+ str(component.style.gridrowEnd)+""";
-  border-radius:"""+ str(component.style.borderRadius) + """px;
   margin:"""+ component.style.margin + """;
   padding:"""+ component.style.padding + """;
+  z-index: 2;
 }
   
 .grid-item-"""+ idcomponent + """ {
@@ -258,12 +265,45 @@ def generateInputSearchFilterCssProperties(projectname,pagename,cssclass,elem):
   with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
     f.write(css)
 
+def generateSliderCssProperties(projectname,pagename,cssclass,elem):
+  css ="""\n."""+ str(cssclass) + """ {
+    grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
+    grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
+    grid-row-start: """+  str(elem.style.gridrowStart)+""";
+    grid-row-end: """+  str(elem.style.gridrowEnd)+""";
+    --p-slider-track-background:  """+  str(elem.style.getbackgroundtrack())+""";
+}
+
+div:deep(."""+str(cssclass)+""" .p-slider-range){
+    --p-slider-range-background:  """+  str(elem.style.getbackgroundrange()) +""";
+}
+ 
+div:deep(."""+str(cssclass)+""" .p-slider-handle){
+    --p-slider-handle-content-background:  """+  str(elem.style.getbackgroundcontent()) +""";
+    --p-slider-handle-content-hover-background: """+  str(elem.style.getcolorhover()) +""";
+}
+"""
+  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  mode = "w"
+  if os.path.isfile(cssfile):
+    mode = "a"
+  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+    f.write(css)
+
 def generateDatePickerCssProperties(projectname,pagename,cssclass,elem):
   css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
     grid-row-start: """+  str(elem.style.gridrowStart)+""";
     grid-row-end: """+  str(elem.style.gridrowEnd)+""";
+}
+
+:deep(."""+str(cssclass)+""" .p-datepicker-input){
+	background-color: """+  str(elem.style.getbackgroundcolor())+""";
+}
+ 
+:deep(."""+str(cssclass)+""" .p-datepicker-dropdown){
+	background-color:"""+  str(elem.style.getdropdownbackgroundcolor())+""";
 }
   """
   cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
@@ -364,10 +404,10 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
 
     alignment = "stretch"
     if(elem.style.textHorizontalAlign.lower()=="center"): alignment = "center"
-    csskeyvalues +=f"width: 100%;{newline}display: flex;{newline}align-items: {alignment};{newline}justify-content: stretch;{newline}"
+    csskeyvalues +=f"z-index: 1;{newline}width: 100%;{newline}display: flex;{newline}align-items: {alignment};{newline}justify-content: stretch;{newline}"
     #height:auto
 
-    font = "//fonts.googleapis.com/css2?family="+elem.style.fontFamily+":wght@"+ str(elem.style.fontWeight) +"&display=swap"
+    font = "https://fonts.googleapis.com/css2?family="+elem.style.fontFamily+":wght@"+ str(elem.style.fontWeight) +"&display=swap"
     if((pagename in font_imports) and (font not in font_imports[pagename])):
       font_imports[pagename].append(font)
     if((pagename not in font_imports)):
@@ -382,6 +422,7 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     if elem.style.gridrowEnd != None: csskeyvalues+=f"grid-row-end: {str(elem.style.gridrowEnd)};{newline}"
     if elem.style.getCornerRadius() != None: csskeyvalues+=f"border-radius: {elem.style.getCornerRadius()}px;{newline}"
     if elem.style.boxShadow != None: csskeyvalues+=f"box-shadow: {elem.style.boxShadow};{newline}"
+    csskeyvalues +=f"width: 100%;{newline}height: 100%;{newline}display: block;{newline}object-fit: cover;{newline}"
 
     css = "."+cssclass+" {\n\t"+ csskeyvalues[:-1] +"}\n\n"
   
@@ -425,7 +466,7 @@ def calculate_gradientDegree(startPoint,endPoint,color1,color2):
     cosalpha = (a[0]*b[0] + a[1]*b[1]) / (norm_a * norm_b)
 
     x = math.acos(cosalpha)
-    degree = x  * (180.0 / math.pi)
+    degree = (x  * (180.0 / math.pi)) - 180
     
     rgba1 = (color1["color"]["r"]*255, color1["color"]["g"]*255, color1["color"]["b"]*255, color1["color"]["a"]*255)
     rgba2 = (color2["color"]["r"]*255, color2["color"]["g"]*255, color2["color"]["b"]*255, color2["color"]["a"]*255)

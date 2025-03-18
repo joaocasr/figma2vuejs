@@ -254,3 +254,29 @@ def useDatePickerPrimevuePlugin(name):
     allDependencies["datepicker"]=True
   else:
     print("DatePicker is already imported.")
+
+
+def useSliderPrimevuePlugin(name):
+  global allDependencies
+  content =""
+  if("slider" not in allDependencies):
+    filemain = "../output/"+name+"/src/main.js"
+    primeimport = """import Slider from 'primevue/slider';
+"""
+    primecomponent = """app.component('Slider',Slider)
+"""
+    f = open(filemain, "r")
+    for l in f.readlines():
+      l = l.strip()
+      content+=l+"\n"
+      if(l=="import 'primeicons/primeicons.css';"):
+        content+=primeimport
+      if(l=="});"):
+        content+=primecomponent
+    f.close()
+    f= open(filemain,"w")
+    f.write(content)
+    f.close()
+    allDependencies["slider"]=True
+  else:
+    print("Slider is already imported.")

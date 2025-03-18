@@ -11,6 +11,7 @@ class Mcomponent(object):
 		self.interactions = []
 		self.data = []
 		self.hasCloseAction = False
+		self.upperIdComponent = None
 
 	def getIdComponent(self):
 		"""@ReturnType String"""
@@ -57,6 +58,12 @@ class Mcomponent(object):
 		"""@ParamType type String
 		@ReturnType void"""
 		return self.style
+
+	def getupperIdComponent(self):
+		return self.upperIdComponent
+
+	def setupperIdComponent(self, id):
+		self.upperIdComponent = id
 
 	def getData(self):
 		return self.data
