@@ -1,6 +1,7 @@
 from engine.stylegenerator import generatePageStyle, generateComponentStyle, generateElemCssProperties, generateShapeCSS
 from engine.logicgenerator import handleBehaviour
 from parser.model.Mcomponent import Mcomponent
+from parser.model.Melement import Melement
 from parser.model.TextElement import TextElement
 from parser.model.VectorElement import VectorElement
 from parser.model.ContainerElement import ContainerElement
@@ -9,6 +10,7 @@ from parser.model.ShapeElement import ShapeElement
 
 import xml.etree.ElementTree as ET
 from lxml import etree, html
+import itertools
 import re
 
 allhooks = dict()
@@ -23,7 +25,11 @@ def buildcomponent(component,projectname,pagesInfo):
     output = ""
     pattern = "[:;]"
     idcomponent = re.sub(pattern,"",component.idComponent)
-    handleClipPathOverlaping(component)
+
+    (flattenElements,allShapes) = flattenAndShapes(component)
+    onstack = filterOverlapingElements(allShapes,flattenElements)
+    handleClipPathOverlaping(component,onstack)
+
     for element in component.children:
         output += processChildren(element,projectname,name,idcomponent)
 
@@ -133,30 +139,38 @@ def processTemplate(html_string):
     finalHtml = etree.tostring(myhtml, encoding='unicode', pretty_print=True)
     return finalHtml
 
-# checks the tree order. every element that comes before a shape element and its contained in it, is inserted as its child 
-#(figma doesnt allow nested elements inside shapes, even though it allows overlaping if the element comes first on the tree)
-def handleClipPathOverlaping(component):
-    if(any((isinstance(x,ShapeElement)) for x in component.children)):
-        component.children.reverse()
-        repeatedElements = []
-        for i in range(0,len(component.children)):
-            for j in range(0,len(component.children)):
-                if(i!=j and i<len(component.children) and j<len(component.children)):
-                    elem1 = component.children[j]
-                    elem2 = component.children[i]
-                    if(elem1.style.gridcolumnStart>=elem2.style.gridcolumnStart and
+def filterOverlapingElements(allShapes,allElements):
+    allElements.reverse()
+    onstack = []
+    for e in allElements:
+        if(not isinstance(e,ShapeElement)):
+            for s in allShapes:
+                elem1 = e
+                elem2 = s
+                if(elem1.style.gridcolumnStart>=elem2.style.gridcolumnStart and
                     elem1.style.gridcolumnEnd<=elem2.style.gridcolumnEnd and
                     elem1.style.gridrowStart>=elem2.style.gridrowStart and
                     elem1.style.gridrowEnd<=elem2.style.gridrowEnd and
                     (isinstance(elem2,ShapeElement))):
-                        elem2.children.append(elem1)
-                        elem2.style.setDisplay("grid")
-                        repeatedElements.append(j)
+                        onstack.append((elem1,elem2))
+    return onstack
 
-        for r in reversed(repeatedElements):
-            if(r<len(component.children)): del component.children[r]
+def handleClipPathOverlaping(component,onstack):
+    component.children.reverse()
+    toremove = set()
+    for i in component.children:
+        for s in onstack:
+            if(isinstance(i,Melement) and isinstance(s[0],Melement) and i.idElement==s[0].idElement):
+                toremove.add(i) 
+            if(isinstance(i,Melement) and isinstance(s[1],ShapeElement) and i.idElement==s[1].idElement):
+                i.style.setDisplay("grid")
+                i.children.append(s[0])
+        for c in i.children:
+            handleClipPathOverlaping(c,onstack)
+    component.children = [child for child in component.children if child not in toremove]
+    component.children.reverse()
 
-        for e in component.children:
-            if(len(e.children)>0):
-                handleClipPathOverlaping(e)
-        component.children.reverse()
+def flattenAndShapes(component):
+    flattenElements = list(itertools.chain(*([x] + x.children for x in component.children)))
+    allShapes = list(filter(lambda x: (isinstance(x,ShapeElement)),flattenElements))
+    return (flattenElements,allShapes)

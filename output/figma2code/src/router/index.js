@@ -1,8 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import HomePageView from '@/views/HomePageView.vue';
-import MoviePageView from '@/views/MoviePageView.vue';
-import WatchlistPageView from '@/views/WatchlistPageView.vue';
-import ReviewPageView from '@/views/ReviewPageView.vue';
+import BlogPageView from '@/views/BlogPageView.vue';
 import ErrorPageView from '@/views/ErrorPageView.vue';
 
 const router = createRouter({
@@ -12,24 +9,9 @@ const router = createRouter({
   },
   routes: [
   {
-    "path": "/homepage",
-    "name": "HomePage",
-    "component": HomePageView
-},
-{
-    "path": "/moviepage",
-    "name": "MoviePage",
-    "component": MoviePageView
-},
-{
-    "path": "/watchlistpage",
-    "name": "WatchlistPage",
-    "component": WatchlistPageView
-},
-{
-    "path": "/reviewpage",
-    "name": "ReviewPage",
-    "component": ReviewPageView
+    "path": "/blogpage",
+    "name": "BlogPage",
+    "component": BlogPageView
 },
 {
     "path": "/:catchAll(.*)",

@@ -12,6 +12,7 @@ from parser.model.ImageElement import ImageElement
 
 from bs4 import BeautifulSoup
 import re
+import itertools
 
 allhooks = dict()
 imports = dict()
@@ -30,7 +31,8 @@ def buildpage(name,page,pagesInfo):
     primeVueComponents[page.pagename] = []
     allPagesInfo = pagesInfo
     output = ""  
-    handleClipPathOverlaping(page.elements)
+
+    if(anyShapes(page.elements)==True): handleClipPathOverlaping(page.elements)
     for element in page.elements:
         output += processChildren(element,name,page)
     writeVue(name,page,output)
@@ -214,31 +216,29 @@ def processTemplate(html_string,page):
 
 
 def handleClipPathOverlaping(elementos):
-    if(any((isinstance(x,ShapeElement)) for x in elementos) or
-    any((isinstance(y,ShapeElement)) for x in elementos for y in x.children )): # so vou aplicar a retangulos ate nivel 2 para evitar maximum recursion
-        elementos.reverse()
-        repeatedElements = []
-        for i in range(0,len(elementos)):
-            for j in range(0,len(elementos)):
-                if(i!=j and i<len(elementos) and j<len(elementos)):
-                    elem1 = elementos[j]
-                    elem2 = elementos[i]
-                    if(getValue(elem1.style.gridcolumnStart)>=getValue(elem2.style.gridcolumnStart) and
+    elementos.reverse()
+    repeatedElements = []
+    for i in range(0,len(elementos)):
+        for j in range(0,len(elementos)):
+            if(i!=j and i<len(elementos) and j<len(elementos)):
+                elem1 = elementos[j]
+                elem2 = elementos[i]
+                if(getValue(elem1.style.gridcolumnStart)>=getValue(elem2.style.gridcolumnStart) and
                     getValue(elem1.style.gridcolumnEnd)<=getValue(elem2.style.gridcolumnEnd) and
                     getValue(elem1.style.gridrowStart)>=getValue(elem2.style.gridrowStart) and
                     getValue(elem1.style.gridrowEnd)<=getValue(elem2.style.gridrowEnd) and
                     (isinstance(elem2,ShapeElement))):
-                        elem2.children.append(elem1)
-                        elem2.style.setDisplay("grid")
-                        repeatedElements.append(j)
+                    elem2.children.append(elem1)
+                    elem2.style.setDisplay("grid")
+                    repeatedElements.append(j)
 
-        for r in reversed(repeatedElements):
-            if(r<len(elementos)): del elementos[r]
+    for r in reversed(repeatedElements):
+        if(r<len(elementos)): del elementos[r]
 
-        for c in elementos:
-            if(len(c.children)>0):
-                handleClipPathOverlaping(c.children)
-        elementos.reverse()
+    for c in elementos:
+        if(len(c.children)>0):
+            handleClipPathOverlaping(c.children)
+    elementos.reverse()
 
 def getValue(value):
     if " span " in str(value):
@@ -246,3 +246,7 @@ def getValue(value):
         return int(realvalue)
     else:
         return int(value) 
+
+def anyShapes(elementos):
+    allShapes = list(filter(lambda x: (isinstance(x,ShapeElement)),list(itertools.chain(*([x] + x.children for x in elementos)))))
+    return len(allShapes) > 0

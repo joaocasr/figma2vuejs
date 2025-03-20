@@ -352,9 +352,10 @@ def generateShapeCSS(projectname,pagename,cssclass,type,elem):
     aspect-ratio: 1;
     background: """+  str(elem.style.background)+""";
     clip-path: """+  str(clippath)+ """;
-    height: """+  str(elem.style.height) + """px;
-    width:  """+  str(elem.style.width) + """px;
     """
+  #height: """+  str(elem.style.height) + """px;
+  #width:  """+  str(elem.style.width) + """px;
+
   if(type=="LINE"):
     css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
