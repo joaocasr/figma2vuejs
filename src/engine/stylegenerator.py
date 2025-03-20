@@ -1,5 +1,6 @@
 from parser.model.ContainerElement import ContainerElement
 from parser.model.ImageElement import ImageElement
+from parser.model.VectorElement import VectorElement
 from parser.model.TextElement import TextElement
 from parser.model.Mpage import Mpage
 from parser.model.Mcomponent import Mcomponent
@@ -109,7 +110,7 @@ def generatePageStyle(name,page):
 
   row_height = max(height / 128, 8)
 
-  background = "background-color:white;"
+  background = "background-color:rgba(0,0,0,0);"
   if(page.style.backgroundColor!=None):
     background = """\n  background-color:"""+ page.style.backgroundColor+";\n"
   if(page.style.background!=None):
@@ -159,15 +160,13 @@ def generatePageStyle(name,page):
     f.writelines(lines)
 
 def generateComponentStyle(name,component):
-
   global font_imports
   pattern = "[:;]"
   idcomponent = re.sub(pattern,"",component.idComponent)
 
   width = component.style.width
   height = component.style.height
-
-  background = "background-color:white;"
+  background = "background-color:rgba(0,0,0,0);"
   if(component.style.backgroundColor!=None):
     background = """\n  background-color:"""+ component.style.backgroundColor+";\n"
   if(component.style.background!=None):
@@ -175,6 +174,7 @@ def generateComponentStyle(name,component):
 
   boxshadow = ""
   border = ""
+  borderRadius=""
   if(component.style.background!=None): background = """\n  background:"""+ component.style.background+";"
   if(component.style.boxShadow != None): boxshadow ="\n  "+f"box-shadow: {component.style.boxShadow};"
   if(component.style.borderStyle) != None: border ="\n  "+f"border: {component.style.borderStyle};"
@@ -184,13 +184,12 @@ def generateComponentStyle(name,component):
   display:"""+ component.style.display+ """;
   grid-template-columns:"""+ component.style.gridtemplatecolumns+""";
   grid-template-rows:"""+ component.style.gridtemplaterows+""";
-  grid-column-start:"""+ str(component.style.gridcolumnStart)+""";\n""" + background + """
+  grid-column-start:"""+ str(component.style.gridcolumnStart)+""";
   grid-column-end:"""+ str(component.style.gridcolumnEnd)+""";
-  grid-row-start:"""+ str(component.style.gridrowStart)+""";"""+ border + boxshadow +"""
+  grid-row-start:"""+ str(component.style.gridrowStart)+""";
   grid-row-end:"""+ str(component.style.gridrowEnd)+""";
   margin:"""+ component.style.margin + """;
-  padding:"""+ component.style.padding + """;
-  z-index: 2;
+  padding:"""+ component.style.padding + """;"""+ border + boxshadow + background + borderRadius + """
 }
   
 .grid-item-"""+ idcomponent + """ {
@@ -201,7 +200,6 @@ def generateComponentStyle(name,component):
   height: 100%;
 }
   """
-
   newcsscontent=""
   if component.componentName in font_imports:
     for font in font_imports[component.componentName]:
@@ -213,6 +211,26 @@ def generateComponentStyle(name,component):
     lines.insert(0, newcsscontent)
     f.seek(0)   
     f.writelines(lines)
+
+def setComponentPositionCSS(projectname,pagename,componentName,elem):
+  top="0%"
+  left="0%"
+  if(elem.style.gridrowStart>=2):
+    top = str(round(elem.style.gridrowStart/128)*100)+"%"
+  if(elem.style.gridcolumnStart>=2):
+    left = str(round(elem.style.gridcolumnStart/64)*100)+"%"
+  css ="""\n."""+ str(componentName) + """ {
+  position:"""+  str(elem.style.getPosition()) +""";
+  top:"""+ top +""";
+  left:"""+ left +""";
+}
+"""
+  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  mode = "w"
+  if os.path.isfile(cssfile):
+    mode = "a"
+  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+    f.write(css)
 
 def generateVueSelectCssProperties(projectname,pagename,cssclass,elem):
   css ="""\n."""+ str(cssclass) + """ {
@@ -350,7 +368,12 @@ def generateShapeCSS(projectname,pagename,cssclass,type,elem):
     border: 0;
     padding: 0;
     """
-  if(elem.style.transform!=None): css+="transform: rotate("+elem.style.getTransform()+");\n"
+  if(elem.style.transform!=None): css+="transform: rotate("+elem.style.getTransform()+");\n\t"
+  if(elem.style.getBorderTopLeftRadius() != None and elem.style.getBorderTopLeftRadius()!="0.0"): css+=f"border-top-left-radius: {elem.style.getBorderTopLeftRadius()}px;"+'\n\t'
+  if(elem.style.getBorderTopRightRadius() != None and elem.style.getBorderTopRightRadius()!="0.0"): css+=f"border-top-right-radius: {elem.style.getBorderTopRightRadius()}px;"+'\n\t'
+  if(elem.style.getBorderBottomLeftRadius() != None and elem.style.getBorderBottomLeftRadius()!="0.0"): css+=f"border-bottom-left-radius: {elem.style.getBorderBottomLeftRadius()}px;"+'\n\t'
+  if(elem.style.getBorderBottomRightRadius() != None and elem.style.getBorderBottomRightRadius()!="0.0"): css+=f"border-bottom-right-radius: {elem.style.getBorderBottomRightRadius()}px;"+'\n\t'
+  if(elem.style.getDisplay() != None): css+=f"display: {elem.style.getDisplay()};"+'\n\t'
 
   css = css + "}"
   cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
@@ -404,15 +427,13 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
 
     alignment = "stretch"
     if(elem.style.textHorizontalAlign.lower()=="center"): alignment = "center"
-    csskeyvalues +=f"z-index: 1;{newline}width: 100%;{newline}display: flex;{newline}align-items: {alignment};{newline}justify-content: stretch;{newline}"
+    csskeyvalues +=f"width: 100%;{newline}display: flex;{newline}align-items: {alignment};{newline}justify-content: stretch;{newline}"
     #height:auto
-
     font = "https://fonts.googleapis.com/css2?family="+elem.style.fontFamily+":wght@"+ str(elem.style.fontWeight) +"&display=swap"
     if((pagename in font_imports) and (font not in font_imports[pagename])):
       font_imports[pagename].append(font)
-    if((pagename not in font_imports)):
+    elif((pagename not in font_imports)):
       font_imports[pagename] = [font]
-
     css = "\n."+cssclass+" {\n\t"+ csskeyvalues[:-1] +"}\n\n"
 
   if isinstance(elem,ImageElement) : 
@@ -422,9 +443,24 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     if elem.style.gridrowEnd != None: csskeyvalues+=f"grid-row-end: {str(elem.style.gridrowEnd)};{newline}"
     if elem.style.getCornerRadius() != None: csskeyvalues+=f"border-radius: {elem.style.getCornerRadius()}px;{newline}"
     if elem.style.boxShadow != None: csskeyvalues+=f"box-shadow: {elem.style.boxShadow};{newline}"
-    csskeyvalues +=f"width: 100%;{newline}height: 100%;{newline}display: block;{newline}object-fit: cover;{newline}"
+    if(elem.style.getBorderTopLeftRadius() != None and elem.style.getBorderTopLeftRadius()!="0.0"): csskeyvalues+=f"border-top-left-radius: {elem.style.getBorderTopLeftRadius()}px;{newline}"
+    if(elem.style.getBorderTopRightRadius() != None and elem.style.getBorderTopRightRadius()!="0.0"): csskeyvalues+=f"border-top-right-radius: {elem.style.getBorderTopRightRadius()}px;{newline}"
+    if(elem.style.getBorderBottomLeftRadius() != None and elem.style.getBorderBottomLeftRadius()!="0.0"): csskeyvalues+=f"border-bottom-left-radius: {elem.style.getBorderBottomLeftRadius()}px;{newline}"
+    if(elem.style.getBorderBottomRightRadius() != None and elem.style.getBorderBottomRightRadius()!="0.0"): csskeyvalues+=f"border-bottom-right-radius: {elem.style.getBorderBottomRightRadius()}px;{newline}"
+
+    if(elem.style.gridcolumnEnd-elem.style.gridcolumnStart>60 or elem.style.gridrowEnd-elem.style.gridrowStart>60): csskeyvalues +=f"width: 100%;{newline}height: 100%;{newline}display: block;{newline}object-fit: cover;{newline}"
 
     css = "."+cssclass+" {\n\t"+ csskeyvalues[:-1] +"}\n\n"
+
+  if isinstance(elem,VectorElement) : 
+    if elem.style.gridcolumnStart != None: csskeyvalues+=f"grid-column-start: {str(elem.style.gridcolumnStart)};{newline}"
+    if elem.style.gridcolumnEnd != None: csskeyvalues+=f"grid-column-end: {str(elem.style.gridcolumnEnd)};{newline}"
+    if elem.style.gridrowStart != None: csskeyvalues+=f"grid-row-start: {str(elem.style.gridrowStart)};{newline}"
+    if elem.style.gridrowEnd != None: csskeyvalues+=f"grid-row-end: {str(elem.style.gridrowEnd)};{newline}"
+    if elem.style.boxShadow != None: csskeyvalues+=f"box-shadow: {elem.style.boxShadow};{newline}"
+    if(elem.style.gridcolumnEnd-elem.style.gridcolumnStart>60 or elem.style.gridrowEnd-elem.style.gridrowStart>60): csskeyvalues +=f"width: 100%;{newline}height: 100%;{newline}display: block;{newline}object-fit: cover;{newline}"
+
+    css = "."+cssclass+" {\n\t"+"min-width: 100%;\n\tmin-height: 100%;"+ csskeyvalues[:-1] +"}\n\n"
   
   if isinstance(elem,ContainerElement): 
 
@@ -437,6 +473,11 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     if elem.style.gridcolumnEnd != None: csskeyvalues+=f"grid-column-end: {str(elem.style.gridcolumnEnd)};{newline}"
     if elem.style.gridrowStart != None: csskeyvalues+=f"grid-row-start: {str(elem.style.gridrowStart)};{newline}"
     if elem.style.gridrowEnd != None: csskeyvalues+=f"grid-row-end: {str(elem.style.gridrowEnd)};{newline}"
+    if(elem.style.getBorderTopLeftRadius() != None and elem.style.getBorderTopLeftRadius()!="0.0"): csskeyvalues+=f"border-top-left-radius: {elem.style.getBorderTopLeftRadius()}px;{newline}"
+    if(elem.style.getBorderTopRightRadius() != None and elem.style.getBorderTopRightRadius()!="0.0"): csskeyvalues+=f"border-top-right-radius: {elem.style.getBorderTopRightRadius()}px;{newline}"
+    if(elem.style.getBorderBottomLeftRadius() != None and elem.style.getBorderBottomLeftRadius()!="0.0"): csskeyvalues+=f"border-bottom-left-radius: {elem.style.getBorderBottomLeftRadius()}px;{newline}"
+    if(elem.style.getBorderBottomRightRadius() != None and elem.style.getBorderBottomRightRadius()!="0.0"): csskeyvalues+=f"border-bottom-right-radius: {elem.style.getBorderBottomRightRadius()}px;{newline}"
+    if(elem.style.getPosition() != None): csskeyvalues+=f"position: {elem.style.getPosition()};{newline}"
 
     if elem.style.display != None: csskeyvalues+=f"display: {str(elem.style.display)};{newline}"
     if elem.style.gridtemplatecolumns != None: csskeyvalues+=f"grid-template-columns: {str(elem.style.gridtemplatecolumns)};{newline}"

@@ -32,6 +32,12 @@ export default {
     methods:{
 		gotoHomePage(){
             this.$router.push({path:"/homepage"});
+        },
+		gotoWatchlistPage(){
+            this.$router.push({path:"/watchlistpage"});
+        },
+		goto(){
+            this.$router.push({path:"/"});
         }
 	}
 }

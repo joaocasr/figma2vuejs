@@ -1,22 +1,19 @@
 <template>
 <div class="grid-container">
  <img class="grid-item container2362397" src="/image11.png"/>
+ <img class="grid-item container2416472" src="/Rectangle30.svg"/>
  <p class="grid-item text2362398">
   Avatar (2022)
  </p>
  <p class="grid-item text2362399">
   Jake Sully lives with his newfound family formed on the extrasolar moon  Pandora. Once a familiar threat returns to finish what was previously  started, Jake must work with Neytiri and the army of the Na'vi race to  protect their home.
  </p>
- <div class="grid-item container2362400">
-  <div class="grid-item rectangle2362401">
-  </div>
-  <p class="grid-item text2362402">
-   Score
-  </p>
-  <p class="grid-item text2362403">
-   4.5
-  </p>
- </div>
+ <p class="grid-item text2362403">
+  4.5
+ </p>
+ <p class="grid-item text2362402">
+  Score
+ </p>
  <div class="grid-item container2362404" v-on:click="changeVisibility2362620()">
   <p class="grid-item text2362405">
    Add to Watchlist
@@ -71,7 +68,7 @@
   <Related3></Related3>
  </div>
  <Review></Review>
- <Navbar></Navbar>
+ <Navbar class="posnavbar"></Navbar>
  <Confirmationwatchlistmodal @close-from2362622-to2362620="show2362620=false" @close-from2362624-to2362620="show2362620=false" v-if="show2362620==true"></Confirmationwatchlistmodal>
 </div>
 
@@ -110,6 +107,12 @@ export default {
         },
 		gotoHomePage(){
             this.$router.push({path:"/homepage"});
+        },
+		gotoWatchlistPage(){
+            this.$router.push({path:"/watchlistpage"});
+        },
+		goto(){
+            this.$router.push({path:"/"});
         }
 	}
 }

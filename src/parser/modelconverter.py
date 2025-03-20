@@ -7,6 +7,8 @@ from dotenv import load_dotenv, find_dotenv
 from parser.model.Mpage import Mpage
 from parser.model.Melement import Melement
 from parser.model.ContainerElement import ContainerElement
+from parser.model.VectorElement import VectorElement
+from parser.model.VectorStyle import VectorStyle
 from parser.model.ImageElement import ImageElement
 from parser.model.ShapeElement import ShapeElement
 from parser.model.ShapeStyle import ShapeStyle
@@ -25,7 +27,7 @@ from parser.assetsconverter import convertToDropdown, convertToSearchInput, conv
 
 allpages = {}
 allimages = []
-
+allsvgs = []
 # key: component_id ; value: MComponent
 allcomponents = {}
 pageComponents = {}
@@ -59,6 +61,7 @@ def getFigmaData(prototype):
     #print(allpages['PrincipalPage'].elements)
 
     extractImages(project_name)
+    extractSVGs(project_name)
     return (project_name, allpages)
 
 def parsePageEntities(data):
@@ -84,11 +87,11 @@ def iterate_nestedElements(data):
                 component_height = melement["absoluteRenderBounds"]["height"]
                 componentX = melement["absoluteRenderBounds"]["x"]
                 componentY = melement["absoluteRenderBounds"]["y"]
-                try:
-                    p = processElement(melement["name"],element["name"],element,component_width,component_height,componentX,componentY,melement)
-                    if(p!=None): elements.append(p)
-                except:
-                    raise Exception("Error while converting "+element["name"]+". Correct your prototype!")
+                #try:
+                p = processElement(melement["name"],element["name"],element,component_width,component_height,componentX,componentY,melement)
+                if(p!=None): elements.append(p)
+                #except:
+                    #raise Exception("Error while converting "+element["name"]+". Correct your prototype!")
 
             tag = getElementTag(melement)
             allcomponents[melement["id"]] = Mcomponent(melement["id"],melement["name"],tag,"",elements)
@@ -103,11 +106,11 @@ def iterate_nestedElements(data):
                 page_height = page["absoluteRenderBounds"]["height"]
                 pageX = page["absoluteRenderBounds"]["x"]
                 pageY = page["absoluteRenderBounds"]["y"]
-                try:
-                    p = processElement(page["name"],element["name"],element,page_width,page_height,pageX,pageY,element)
-                    if(p!=None): allpages[page["name"]].elements.append(p)
-                except:
-                    raise Exception("Error while converting "+element["name"]+". Correct your prototype!")
+                #try:
+                p = processElement(page["name"],element["name"],element,page_width,page_height,pageX,pageY,element)
+                if(p!=None): allpages[page["name"]].elements.append(p)
+                #except:
+                    #raise Exception("Error while converting "+element["name"]+". Correct your prototype!")
 
         else:
             continue
@@ -116,7 +119,7 @@ def iterate_nestedElements(data):
 
 
 def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstlevelelem,parent_data=None):
-    global allcomponents,pageComponents,allpages,pageWidth, figmadata, allimages
+    global allcomponents,pageComponents,allpages,pageWidth, figmadata, allimages, allsvgs
     children = []
     elementwidth = data["absoluteRenderBounds"]["width"]
     elementheight = data["absoluteRenderBounds"]["height"]
@@ -150,6 +153,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         nr_rowend = " span "+ str(nrrow)
 
     tag = getElementTag(data)
+    scrollBehaviour = None
 
     melement = None
     # handling assets from components created
@@ -206,6 +210,23 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         return melement        
     elif(data["name"]=="Form" and data["type"]=="INSTANCE"):
         return None
+    # handling VectorElements
+    elif(data["type"]=="VECTOR"):
+        style = VectorStyle(data["absoluteRenderBounds"]["x"],
+                        data["absoluteRenderBounds"]["y"],
+                        elementwidth,
+                        elementheight,
+                        nr_columnstart,
+                        nr_columnend,
+                        nr_rowstart,
+                        nr_rowend)
+        name = data["name"]
+        if("#" in data["name"]): name = data["name"].split("#")[0]
+        svgpath = re.sub(r"[\s,@\.-]","",name)
+
+        allsvgs.append({"id":data["id"],"name":name})
+        mvectorelement = VectorElement(data["id"],"img",data["name"],"/"+svgpath+".svg",style)
+        melement = mvectorelement
     # handling ImageElement
     elif(data["type"]=="RECTANGLE" and any(("imageRef" in x) for x in data["fills"])):
         
@@ -220,6 +241,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                         nr_rowend
                         )
         if("cornerRadius" in data): style.setCornerRadius(data["cornerRadius"])
+        if("rectangleCornerRadii" in data): setCornerRadius(style,data["rectangleCornerRadii"])
         for effect in data["effects"]:
             if effect["type"] == "DROP_SHADOW":
                 rgba_shadow = (effect["color"]["r"]*255, effect["color"]["g"]*255, effect["color"]["b"]*255, effect["color"]["a"])
@@ -232,8 +254,10 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                 style.setBoxShadow(boxshadow)
         if(tag==""): tag = "img"
         
-        imgpath = re.sub(r"[\s,@\.-]","",data["name"])
-        allimages.append({"id":data["id"],"name":data["name"]})
+        name = data["name"]
+        if("#" in data["name"]): name = data["name"].split("#")[0]
+        imgpath = re.sub(r"[\s,@\.-]","",name)
+        allimages.append({"id":data["id"],"name":name})
         mimagelement = ImageElement(data["id"],tag,data["name"],data["fills"][0]["imageRef"],style)
         mimagelement.setimgpath("/"+imgpath+".png")
         melement = mimagelement
@@ -254,7 +278,9 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
 
             if("color" in fill):
                 color = fill["color"]
-                rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"])
+                a = color["a"]
+                if("opacity" in fill): a = fill["opacity"]
+                rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , a)
 
         shapestyle = ShapeStyle(data["absoluteRenderBounds"]["x"],
                         data["absoluteRenderBounds"]["y"],
@@ -278,6 +304,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                 boxshadow = shadowX+"px " + shadowY+"px " + shadowRadius + spread + "rgba("+','.join(str(val) for val in rgba_shadow)+")"
                 shapestyle.setBoxShadow(boxshadow)
 
+        if(data["type"]=="RECTANGLE" and "rectangleCornerRadii" in data): setCornerRadius(shapestyle,data["rectangleCornerRadii"])
         mshapeelement = ShapeElement(data["id"],tag,data["name"],data["type"],shapestyle)
         melement = mshapeelement
                   
@@ -312,12 +339,17 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         melement = mtextelement
     
     elif(data["type"]=="INSTANCE"):
+
+        scrollBehaviour = None
+        if(data["scrollBehavior"]=="FIXED"): scrollBehaviour = "sticky"
         componentelement = Mcomponent(data["id"],data["name"],tag,"")
         componentStyle = setComponentStyle(data)
+        componentStyle.setPosition(scrollBehaviour)
         componentStyle.setGridcolumnStart(nr_columnstart)
         componentStyle.setGridcolumnEnd(nr_columnend)
         componentStyle.setGridrowStart(nr_rowstart)
         componentStyle.setGridrowEnd(nr_rowend)
+        componentStyle.setPosition(scrollBehaviour)
         componentStyle.setinstanceFromComponentId(data["componentId"])
 
         componentelement.setComponentStyle(componentStyle)
@@ -339,7 +371,8 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                                                 background["gradientHandlePositions"][0],
                                                 background["gradientStops"][1],
                                                 background["gradientStops"][0])
-        
+            if("color" in background and "visible" in data["background"][0] and data["background"][0]["visible"]==False): rgba=None
+            if(background["type"] == "GRADIENT_LINEAR" and "visible" in background and background["visible"]==False): lineargradient=None
         style = ContainerStyle()
         
         if(rgba!=None): style.setBackgroundColor("rgba("+','.join(str(val) for val in rgba)+")")
@@ -353,9 +386,12 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         style.setGridcolumnEnd(nr_columnend)
         style.setGridrowStart(nr_rowstart)
         style.setGridrowEnd(nr_rowend)
+        if(data["scrollBehavior"]=="FIXED"): scrollBehaviour = "sticky"
+        style.setPosition(scrollBehaviour)
 
         if("cornerRadius" in data):
             style.setBorderRadius(data["cornerRadius"])
+        if("rectangleCornerRadii" in data): setCornerRadius(style,data["rectangleCornerRadii"])
 
         for effect in data["effects"]:
             if effect["type"] == "DROP_SHADOW":
@@ -561,6 +597,12 @@ def updateOverlayPosition(component, vx, vy, page_width, page_height):
         for element in component.children:
             updateOverlayPosition(element, vx, vy, page_width, page_height)
 
+def setCornerRadius(style,corners):
+    style.setBorderTopLeftRadius(str(corners[0]))
+    style.setBorderTopRightRadius(str(corners[1]))
+    style.setBorderBottomRightRadius(str(corners[2]))
+    style.setBorderBottomLeftRadius(str(corners[3]))
+
 def getElementTag(elem):
     global tags
     tag = ""
@@ -592,13 +634,46 @@ def extractImages(projectname):
         print(images)
         if("err" in images and images["err"]==None):
             for mimage in allimages:
-                print(mimage)
                 imgurl = images["images"][str(mimage["id"])]
                 imgpath = re.sub(r"[\s,@\.-]","",mimage["name"])
+                if(imgurl!=None):
+                    destination = '../output/'+projectname+"/public/"+imgpath+".png"
+                    print("\nDownloading image "+imgpath+"...")
+                    if(not os.path.isfile(destination)):
+                        filename = wget.download(imgurl, out=destination)
+                else:
+                    destination = '../output/'+projectname+"/public/"+imgpath+".png"
+                    wget.download("https://demofree.sirv.com/nope-not-here.jpg",out=destination)
+        elif(images["status"]==403):
+            print("something went wrong...")
 
-                destination = '../output/'+projectname+"/public/"+imgpath+".png"
-                print("\nDownloading image "+imgpath+"...")
+def extractSVGs(projectname):
+    global allsvgs
+    load_dotenv(find_dotenv())
+    FIGMA_API_KEY = os.environ.get("FIGMA_API_KEY")
+    FILE_KEY = os.environ.get("FILE_KEY")
+    mysvgsids = ','.join(x["id"] for x in allsvgs)
+    
+    url = f"https://api.figma.com/v1/images/"+FILE_KEY+"/?ids="+mysvgsids+"&format=svg"
+    headers = {"content-type": "application/json", "Accept-Charset": "UTF-8", 'X-FIGMA-TOKEN': FIGMA_API_KEY}
+
+    for msvg in allsvgs:
+        svgpath = re.sub(r"[\s,@\.-]","",msvg["name"])
+        destination = '../output/'+projectname+"/public/"+svgpath+".svg"
+        if(os.path.isfile(destination)):
+            allsvgs = list(filter(lambda x: x["name"]==msvg["name"],allsvgs))
+
+    if(len(allsvgs)>0):
+        response = requests.get(url, headers=headers)
+        svgs = response.json()
+        if("err" in svgs and svgs["err"]==None):
+            for msvg in allsvgs:
+                svgurl = svgs["images"][str(msvg["id"])]
+                svgpath = re.sub(r"[\s,@\.-]","",msvg["name"])
+
+                destination = '../output/'+projectname+"/public/"+svgpath+".svg"
+                print("\nDownloading image "+svgpath+"...")
                 if(not os.path.isfile(destination)):
-                    filename = wget.download(imgurl, out=destination)
+                    filename = wget.download(svgurl, out=destination)
         elif(images["status"]==403):
             print("something went wrong...")

@@ -15,6 +15,12 @@ class ShapeStyle(object):
 		self.transform = None
 		self.gridArea = None
 		self.boxShadow = None
+		self.display = None
+		self.borderTopLeftRadius = None
+		self.borderTopRightRadius = None
+		self.borderBottomLeftRadius = None
+		self.borderBottomRightRadius = None
+		self.borderColor = None
 		self.gap = None
 
 	def getX(self):
@@ -52,6 +58,15 @@ class ShapeStyle(object):
 		"""@ParamType height int
 		@ReturnType void"""
 		self.height = height
+
+	def getDisplay(self):
+		"""@ReturnType String"""
+		return self.display
+
+	def setDisplay(self, display):
+		"""@ParamType display String
+		@ReturnType void"""
+		self.display = display
 
 	def getBackground(self):
 		"""@ReturnType String"""
@@ -106,6 +121,39 @@ class ShapeStyle(object):
 		"""@ParamType boxShadow String
 		@ReturnType void"""
 		self.boxShadow = boxShadow
+
+	def getBorderColor(self):
+		"""@ReturnType String"""
+		return self.borderColor
+
+	def setBorderColor(self, borderColor):
+		"""@ParamType borderColor String
+		@ReturnType void"""
+		self.borderColor = borderColor
+
+	def getBorderTopLeftRadius(self):
+		return self.borderTopLeftRadius
+
+	def getBorderTopRightRadius(self):
+		return self.borderTopRightRadius
+
+	def getBorderBottomLeftRadius(self):
+		return self.borderBottomLeftRadius
+
+	def getBorderBottomRightRadius(self):
+		return self.borderBottomRightRadius
+		
+	def setBorderTopLeftRadius(self,borderTopLeftRadius):
+		self.borderTopLeftRadius = borderTopLeftRadius
+
+	def setBorderTopRightRadius(self,borderTopRightRadius):
+		self.borderTopRightRadius = borderTopRightRadius
+
+	def setBorderBottomLeftRadius(self,borderBottomLeftRadius):
+		self.borderBottomLeftRadius = borderBottomLeftRadius
+
+	def setBorderBottomRightRadius(self,borderBottomRightRadius):
+		self.borderBottomRightRadius = borderBottomRightRadius
 
 	def getgridArea(self):
 		return self.gridArea

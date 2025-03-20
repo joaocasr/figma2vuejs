@@ -1,8 +1,10 @@
-from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties
+from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS
 from setup.vueprojectsetup import installVue3select_dependency, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin
 from engine.logicgenerator import handleBehaviour
 from parser.model.Mcomponent import Mcomponent
+from parser.model.Melement import Melement
 from parser.model.TextElement import TextElement
+from parser.model.VectorElement import VectorElement
 from parser.model.Dropdown import Dropdown
 from parser.model.ShapeElement import ShapeElement
 from parser.model.ContainerElement import ContainerElement
@@ -28,6 +30,7 @@ def buildpage(name,page,pagesInfo):
     primeVueComponents[page.pagename] = []
     allPagesInfo = pagesInfo
     output = ""  
+    handleClipPathOverlaping(page.elements)
     for element in page.elements:
         output += processChildren(element,name,page)
     writeVue(name,page,output)
@@ -119,6 +122,9 @@ def applytransformation(elem,projectname,page):
         if(elem.tag==""):
             elem.tag = "img"
         return ("<"+elem.tag+ id +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getimgpath() + '"' + ' '.join(d for d in directives) , "/>")
+    if(isinstance(elem, VectorElement)):
+        generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
+        return ("<"+elem.tag+ id +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getsvgpath() + '"' + ' '.join(d for d in directives) , "/>")
     if(isinstance(elem, ShapeElement)):
         cssclassifier = ""
         cssclassifier = elem.getType().lower() + str(cssclass)
@@ -136,8 +142,12 @@ def applytransformation(elem,projectname,page):
         return (begintag,endtag)
     if isinstance(elem, Mcomponent):
         componentName = elem.componentName.capitalize()
+        classname=""
+        if(elem.style.getPosition()!=None):
+            classname = 'class="'+"pos"+componentName.lower()+'" '
+            setComponentPositionCSS(projectname,pagename,"pos"+componentName.lower(),elem)
         components.setdefault(pagename, []).append(elem.componentName.lower())
-        return ("<"+componentName+" "+ ' '.join(d for d in directives) + ">","</"+componentName+">")
+        return ("<"+componentName+f" {classname}"+ ' '.join(d for d in directives) + ">","</"+componentName+">")
     return ("","")
 
 def writeVue(name,page,content):
@@ -202,3 +212,37 @@ def processTemplate(html_string,page):
         finalHtml = processedTemplate
     return finalHtml
 
+
+def handleClipPathOverlaping(elementos):
+    if(any((isinstance(x,ShapeElement)) for x in elementos) or
+    any((isinstance(y,ShapeElement)) for x in elementos for y in x.children )): # so vou aplicar a retangulos ate nivel 2 para evitar maximum recursion
+        elementos.reverse()
+        repeatedElements = []
+        for i in range(0,len(elementos)):
+            for j in range(0,len(elementos)):
+                if(i!=j and i<len(elementos) and j<len(elementos)):
+                    elem1 = elementos[j]
+                    elem2 = elementos[i]
+                    if(getValue(elem1.style.gridcolumnStart)>=getValue(elem2.style.gridcolumnStart) and
+                    getValue(elem1.style.gridcolumnEnd)<=getValue(elem2.style.gridcolumnEnd) and
+                    getValue(elem1.style.gridrowStart)>=getValue(elem2.style.gridrowStart) and
+                    getValue(elem1.style.gridrowEnd)<=getValue(elem2.style.gridrowEnd) and
+                    (isinstance(elem2,ShapeElement))):
+                        elem2.children.append(elem1)
+                        elem2.style.setDisplay("grid")
+                        repeatedElements.append(j)
+
+        for r in reversed(repeatedElements):
+            if(r<len(elementos)): del elementos[r]
+
+        for c in elementos:
+            if(len(c.children)>0):
+                handleClipPathOverlaping(c.children)
+        elementos.reverse()
+
+def getValue(value):
+    if " span " in str(value):
+        realvalue = value.split(" span ")[1] 
+        return int(realvalue)
+    else:
+        return int(value) 

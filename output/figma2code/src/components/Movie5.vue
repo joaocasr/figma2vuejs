@@ -6,8 +6,9 @@
         <p class="grid-item-2362323 textI23623232362568">1h,34min</p>
         <p class="grid-item-2362323 textI23623232362569">10 Oct 2021</p>
     </div>
-    <div class="grid-item-2362323 rectangleI23623232362577"/>
-    <p class="grid-item-2362323 textI23623232362578">4.5</p>
+    <div class="grid-item-2362323 rectangleI23623232362577">
+        <p class="grid-item-2362323 textI23623232362578">4.5</p>
+    </div>
 </div>
 
 </template>

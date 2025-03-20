@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-class ImageStyle(object):
+class VectorStyle(object):
 
 	def __init__(self,x,y,height,width,gridcolumnstart,gridcolumnend,gridrowstart,gridrowend):
 		self.x = x
@@ -13,12 +13,6 @@ class ImageStyle(object):
 		self.gridrowEnd = gridrowend
 		self.boxShadow = None
 		self.opacity = None
-		self.cornerRadius = None
-		self.display = None
-		self.borderTopLeftRadius = None
-		self.borderTopRightRadius = None
-		self.borderBottomLeftRadius = None
-		self.borderBottomRightRadius = None
 		self.gridArea = None
 
 	def getX(self):
@@ -56,15 +50,6 @@ class ImageStyle(object):
 		"""@ParamType width String
 		@ReturnType void"""
 		self.width = width
-
-	def getDisplay(self):
-		"""@ReturnType String"""
-		return self.display
-
-	def setDisplay(self, display):
-		"""@ParamType display String
-		@ReturnType void"""
-		self.display = display
 
 	def getGridcolumnStart(self):
 		"""@ReturnType String"""
@@ -119,39 +104,6 @@ class ImageStyle(object):
 		"""@ParamType boxShadow String
 		@ReturnType void"""
 		self.boxShadow = boxShadow
-
-	def getCornerRadius(self):
-		"""@ReturnType String"""
-		return self.cornerRadius
-
-	def setCornerRadius(self, cornerRadius):
-		"""@ParamType cornerRadius String
-		@ReturnType void"""
-		self.cornerRadius = cornerRadius
-
-	def getBorderTopLeftRadius(self):
-		return self.borderTopLeftRadius
-
-	def getBorderTopRightRadius(self):
-		return self.borderTopRightRadius
-
-	def getBorderBottomLeftRadius(self):
-		return self.borderBottomLeftRadius
-
-	def getBorderBottomRightRadius(self):
-		return self.borderBottomRightRadius
-
-	def setBorderTopLeftRadius(self,borderTopLeftRadius):
-		self.borderTopLeftRadius = borderTopLeftRadius
-
-	def setBorderTopRightRadius(self,borderTopRightRadius):
-		self.borderTopRightRadius = borderTopRightRadius
-
-	def setBorderBottomLeftRadius(self,borderBottomLeftRadius):
-		self.borderBottomLeftRadius = borderBottomLeftRadius
-
-	def setBorderBottomRightRadius(self,borderBottomRightRadius):
-		self.borderBottomRightRadius = borderBottomRightRadius
 
 	def getgridArea(self):
 		return self.gridArea

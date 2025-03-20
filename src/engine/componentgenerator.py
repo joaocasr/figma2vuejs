@@ -2,6 +2,7 @@ from engine.stylegenerator import generatePageStyle, generateComponentStyle, gen
 from engine.logicgenerator import handleBehaviour
 from parser.model.Mcomponent import Mcomponent
 from parser.model.TextElement import TextElement
+from parser.model.VectorElement import VectorElement
 from parser.model.ContainerElement import ContainerElement
 from parser.model.ImageElement import ImageElement
 from parser.model.ShapeElement import ShapeElement
@@ -22,6 +23,7 @@ def buildcomponent(component,projectname,pagesInfo):
     output = ""
     pattern = "[:;]"
     idcomponent = re.sub(pattern,"",component.idComponent)
+    handleClipPathOverlaping(component)
     for element in component.children:
         output += processChildren(element,projectname,name,idcomponent)
 
@@ -82,7 +84,10 @@ def applytransformation(elem,projectname,pagename,idcomponent):
         if(elem.tag==""):
             elem.tag = "img"
         return ("<"+elem.tag +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getimgpath() + '"' + ' '.join(d for d in directives) , "/>")
-
+    
+    if(isinstance(elem, VectorElement)):
+        generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
+        return ("<"+elem.tag +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getsvgpath() + '"' + ' '.join(d for d in directives) , "/>")
 
         return (begintag,endtag)
 
@@ -128,3 +133,30 @@ def processTemplate(html_string):
     finalHtml = etree.tostring(myhtml, encoding='unicode', pretty_print=True)
     return finalHtml
 
+# checks the tree order. every element that comes before a shape element and its contained in it, is inserted as its child 
+#(figma doesnt allow nested elements inside shapes, even though it allows overlaping if the element comes first on the tree)
+def handleClipPathOverlaping(component):
+    if(any((isinstance(x,ShapeElement)) for x in component.children)):
+        component.children.reverse()
+        repeatedElements = []
+        for i in range(0,len(component.children)):
+            for j in range(0,len(component.children)):
+                if(i!=j and i<len(component.children) and j<len(component.children)):
+                    elem1 = component.children[j]
+                    elem2 = component.children[i]
+                    if(elem1.style.gridcolumnStart>=elem2.style.gridcolumnStart and
+                    elem1.style.gridcolumnEnd<=elem2.style.gridcolumnEnd and
+                    elem1.style.gridrowStart>=elem2.style.gridrowStart and
+                    elem1.style.gridrowEnd<=elem2.style.gridrowEnd and
+                    (isinstance(elem2,ShapeElement))):
+                        elem2.children.append(elem1)
+                        elem2.style.setDisplay("grid")
+                        repeatedElements.append(j)
+
+        for r in reversed(repeatedElements):
+            if(r<len(component.children)): del component.children[r]
+
+        for e in component.children:
+            if(len(e.children)>0):
+                handleClipPathOverlaping(e)
+        component.children.reverse()

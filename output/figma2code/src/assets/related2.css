@@ -5,15 +5,13 @@
   grid-template-columns:repeat(64,1fr);
   grid-template-rows:repeat(64,1fr);
   grid-column-start:24;
-
-  background-color:rgba(0.0,0.0,0.0,0.0);
-
   grid-column-end:42;
   grid-row-start:3;
   grid-row-end:59;
   margin:0;
   padding:0;
-  z-index: 2;
+  background-color:rgba(0.0,0.0,0.0,0.0);
+
 }
   
 .grid-item-2362436 {
@@ -50,7 +48,6 @@
 	grid-row-end: 64;
 	overflow-wrap: break-word;
 	white-space: normal;
-	z-index: 1;
 	width: 100%;
 	display: flex;
 	align-items: stretch;

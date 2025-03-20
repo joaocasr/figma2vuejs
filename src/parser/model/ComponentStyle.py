@@ -11,6 +11,7 @@ class ComponentStyle(object):
 		self.background = None
 		self.backgroundImage = None
 		self.display = None
+		self.position = None
 		self.gridtemplatecolumns = None
 		self.gridtemplaterows = None
 		self.margin = None
@@ -91,7 +92,15 @@ class ComponentStyle(object):
 		"""@ParamType background String
 		@ReturnType void"""
 		self.background = background
+	
+	def setPosition(self, position):
+		"""@ParamType position String
+		@ReturnType void"""
+		self.position = position
 
+	def getPosition(self):
+		"""@ReturnType String"""
+		return self.position
 
 	def getDisplay(self):
 		"""@ReturnType String"""
@@ -241,7 +250,7 @@ class ComponentStyle(object):
 		return self.overlayVector
 
 	def __str__(self):
-		return "grid-row-start:"+ str(self.gridrowStart)+"width:" + str(self.width) +",\n"+"height:" + str(self.height) +",\n"+ "backgroundColor:" + str(self.backgroundColor) +",\n"+ "display:" + str(self.display) +",\n"+ "gridtemplatecolumns:" + str(self.gridtemplatecolumns) +",\n"+ "gridtemplaterows:" + str(self.gridtemplaterows) +",\n"+ "margin:" + str(self.margin) +",\n"+ "margin:" + str(self.margin) +",\n"+ "padding:" + str(self.padding)
+		return "position:"+ str(self.getPosition())+"\nwidth:" + str(self.width) +",\n"+"height:" + str(self.height) +",\n"+ "backgroundColor:" + str(self.backgroundColor) +",\n"+ "display:" + str(self.display) +",\n"+ "gridtemplatecolumns:" + str(self.gridtemplatecolumns) +",\n"+ "gridtemplaterows:" + str(self.gridtemplaterows) +",\n"+ "margin:" + str(self.margin) +",\n"+ "margin:" + str(self.margin) +",\n"+ "padding:" + str(self.padding)
 
 
 

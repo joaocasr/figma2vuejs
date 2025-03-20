@@ -7,15 +7,13 @@
   grid-template-columns:repeat(64,1fr);
   grid-template-rows:repeat(64,1fr);
   grid-column-start:1;
-
-  background-color:rgba(0.0,0.0,0.0,0.0);
-
   grid-column-end:65;
   grid-row-start:5;
   grid-row-end:29;
   margin:0;
   padding:0;
-  z-index: 2;
+  background-color:rgba(0.0,0.0,0.0,0.0);
+
 }
   
 .grid-item-2362316 {
@@ -38,7 +36,7 @@
 
 
 .containerI23623162362371 {
-	background: linear-gradient(-179.95909022202775deg, rgba(153.00000607967377,153.00000607967377,153.00000607967377,0.0), rgba(0.0,0.0,0.0,255.0));
+	background: linear-gradient(-179.99999879258172deg, rgba(153.00000607967377,153.00000607967377,153.00000607967377,0.0), rgba(0.0,0.0,0.0,255.0));
 	grid-column-start: 1;
 	grid-column-end: 65;
 	grid-row-start: 1;
@@ -64,7 +62,6 @@
 	grid-row-end: 21;
 	overflow-wrap: break-word;
 	white-space: normal;
-	z-index: 1;
 	width: 100%;
 	display: flex;
 	align-items: stretch;
@@ -86,7 +83,6 @@
 	grid-row-end: 17;
 	overflow-wrap: break-word;
 	white-space: normal;
-	z-index: 1;
 	width: 100%;
 	display: flex;
 	align-items: stretch;
@@ -108,7 +104,6 @@
 	grid-row-end: 22;
 	overflow-wrap: break-word;
 	white-space: normal;
-	z-index: 1;
 	width: 100%;
 	display: flex;
 	align-items: stretch;
@@ -119,8 +114,8 @@
 .containerI23623162362375 {
 	background-color: rgba(6.000000117346644,7.000000057742,27.000000290572643,1.0);
 	border-radius: 40.0px;
-	grid-column-start: 12;
-	grid-column-end: 20;
+	grid-column-start: 13;
+	grid-column-end: 21;
 	grid-row-start: 37;
 	grid-row-end: 43;
 	display: grid;
@@ -144,7 +139,6 @@
 	grid-row-end: 38;
 	overflow-wrap: break-word;
 	white-space: normal;
-	z-index: 1;
 	width: 100%;
 	display: flex;
 	align-items: stretch;
@@ -163,7 +157,7 @@
     height: 12.1243896484375px;
     width:  10.5px;
     transform: rotate(1.5707963267948966rad);
-}
+	}
 .containerI23623162362378 {
 	background-color: rgba(5.644531091675162,6.690428769215941,26.56249936670065,1.0);
 	box-shadow: 0px 4px 4px 0pxrgba(0.0,0.0,0.0,0.25);
@@ -193,7 +187,6 @@
 	grid-row-end: 34;
 	overflow-wrap: break-word;
 	white-space: normal;
-	z-index: 1;
 	width: 100%;
 	display: flex;
 	align-items: stretch;
@@ -212,7 +205,7 @@
     height: 12.1243896484375px;
     width:  10.5px;
     transform: rotate(1.5707963267948966rad);
-}
+	}
 .textI23623162362381 {
 	font-style: Medium;
 	font-weight: 500;
@@ -227,7 +220,6 @@
 	grid-row-end: 35;
 	overflow-wrap: break-word;
 	word-wrap: break-word;
-	z-index: 1;
 	width: 100%;
 	display: flex;
 	align-items: stretch;
@@ -249,7 +241,6 @@
 	grid-row-end: 29;
 	overflow-wrap: break-word;
 	white-space: normal;
-	z-index: 1;
 	width: 100%;
 	display: flex;
 	align-items: center;

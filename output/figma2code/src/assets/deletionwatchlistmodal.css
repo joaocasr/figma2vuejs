@@ -6,15 +6,14 @@
   grid-template-columns:repeat(64,1fr);
   grid-template-rows:repeat(64,1fr);
   grid-column-start:26;
-
-  background-color:rgba(58.75625096261501,68.2855050265789,89.24999848008156,1.0);
-
   grid-column-end:50;
   grid-row-start:16;
   grid-row-end:24;
   margin:0;
   padding:0;
-  z-index: 2;
+  background-color:rgba(58.75625096261501,68.2855050265789,89.24999848008156,1.0);
+
+  border-radius: 22.0px;
 }
   
 .grid-item-2362634 {
@@ -67,7 +66,6 @@
 	grid-row-end: 11;
 	overflow-wrap: break-word;
 	white-space: normal;
-	z-index: 1;
 	width: 100%;
 	display: flex;
 	align-items: stretch;
@@ -104,7 +102,6 @@
 	grid-row-end: 11;
 	overflow-wrap: break-word;
 	white-space: normal;
-	z-index: 1;
 	width: 100%;
 	display: flex;
 	align-items: stretch;
@@ -126,7 +123,6 @@
 	grid-row-end: 10;
 	overflow-wrap: break-word;
 	white-space: normal;
-	z-index: 1;
 	width: 100%;
 	display: flex;
 	align-items: stretch;
@@ -148,7 +144,6 @@
 	grid-row-end: 9;
 	overflow-wrap: break-word;
 	white-space: normal;
-	z-index: 1;
 	width: 100%;
 	display: flex;
 	align-items: stretch;

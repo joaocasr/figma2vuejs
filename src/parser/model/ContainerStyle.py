@@ -11,6 +11,7 @@ class ContainerStyle(object):
 		self.background = None
 		self.backgroundImage = None
 		self.display = None
+		self.position = None
 		self.gridtemplatecolumns = None
 		self.gridtemplaterows = None
 		self.margin = None
@@ -109,6 +110,15 @@ class ContainerStyle(object):
 	def getMargin(self):
 		"""@ReturnType String"""
 		return self.margin
+
+	def setPosition(self, position):
+		"""@ParamType position String
+		@ReturnType void"""
+		self.position = position
+
+	def getPosition(self):
+		"""@ReturnType String"""
+		return self.position
 
 	def setMargin(self, margin):
 		"""@ParamType margin String
@@ -237,6 +247,30 @@ class ContainerStyle(object):
 
 	def setGap(self, gap):
 		self.gap = gap
+
+	def getBorderTopLeftRadius(self):
+		return self.borderTopLeftRadius
+
+	def getBorderTopRightRadius(self):
+		return self.borderTopRightRadius
+
+	def getBorderBottomLeftRadius(self):
+		return self.borderBottomLeftRadius
+
+	def getBorderBottomRightRadius(self):
+		return self.borderBottomRightRadius
+
+	def setBorderTopLeftRadius(self,borderTopLeftRadius):
+		self.borderTopLeftRadius = borderTopLeftRadius
+
+	def setBorderTopRightRadius(self,borderTopRightRadius):
+		self.borderTopRightRadius = borderTopRightRadius
+
+	def setBorderBottomLeftRadius(self,borderBottomLeftRadius):
+		self.borderBottomLeftRadius = borderBottomLeftRadius
+
+	def setBorderBottomRightRadius(self,borderBottomRightRadius):
+		self.borderBottomRightRadius = borderBottomRightRadius
 
 	def getgridArea(self):
 		return self.gridArea
