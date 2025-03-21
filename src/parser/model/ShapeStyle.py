@@ -8,6 +8,7 @@ class ShapeStyle(object):
 		self.width = width
 		self.height = height
 		self.background = None
+		self.backgroundColor = None
 		self.gridcolumnStart = gridcolumnStart
 		self.gridcolumnEnd = gridcolumnEnd
 		self.gridrowStart = gridrowStart
@@ -21,6 +22,8 @@ class ShapeStyle(object):
 		self.borderBottomLeftRadius = None
 		self.borderBottomRightRadius = None
 		self.borderColor = None
+		self.borderWidth = None
+		self.borderRadius = None
 		self.gap = None
 
 	def getX(self):
@@ -77,6 +80,15 @@ class ShapeStyle(object):
 		@ReturnType void"""
 		self.background = background
 
+	def getBackgroundColor(self):
+		"""@ReturnType String"""
+		return self.backgroundColor
+
+	def setBackgroundColor(self, backgroundColor):
+		"""@ParamType backgroundColor String
+		@ReturnType void"""
+		self.backgroundColor = backgroundColor
+
 	def getGridcolumnStart(self):
 		"""@ReturnType String"""
 		return self.gridcolumnStart
@@ -130,6 +142,24 @@ class ShapeStyle(object):
 		"""@ParamType borderColor String
 		@ReturnType void"""
 		self.borderColor = borderColor
+
+	def getborderWidth(self):
+		"""@ReturnType String"""
+		return self.borderWidth
+
+	def setborderWidth(self, borderWidth):
+		"""@ParamType borderWidth String
+		@ReturnType void"""
+		self.borderWidth = borderWidth
+
+	def getborderRadius(self):
+		"""@ReturnType String"""
+		return self.borderRadius
+
+	def setborderRadius(self, borderRadius):
+		"""@ParamType borderRadius String
+		@ReturnType void"""
+		self.borderRadius = borderRadius
 
 	def getBorderTopLeftRadius(self):
 		return self.borderTopLeftRadius

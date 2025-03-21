@@ -350,7 +350,6 @@ def generateShapeCSS(projectname,pagename,cssclass,type,elem):
     grid-row-start: """+  str(elem.style.gridrowStart)+""";
     grid-row-end: """+  str(elem.style.gridrowEnd)+""";
     aspect-ratio: 1;
-    background: """+  str(elem.style.background)+""";
     clip-path: """+  str(clippath)+ """;
     """
   #height: """+  str(elem.style.height) + """px;
@@ -369,13 +368,17 @@ def generateShapeCSS(projectname,pagename,cssclass,type,elem):
     border: 0;
     padding: 0;
     """
+  if(elem.style.getBackground()!=None): css+="background:"+elem.style.getBackground()+";\n\t"
+  if(elem.style.getBackgroundColor()!=None): css+="background-color:"+elem.style.getBackgroundColor()+";\n\t"
+  if(elem.style.getborderRadius()!=None): css+="border-radius:"+elem.style.getborderRadius()+"px;\n\t"
   if(elem.style.transform!=None): css+="transform: rotate("+elem.style.getTransform()+");\n\t"
   if(elem.style.getBorderTopLeftRadius() != None and elem.style.getBorderTopLeftRadius()!="0.0"): css+=f"border-top-left-radius: {elem.style.getBorderTopLeftRadius()}px;"+'\n\t'
   if(elem.style.getBorderTopRightRadius() != None and elem.style.getBorderTopRightRadius()!="0.0"): css+=f"border-top-right-radius: {elem.style.getBorderTopRightRadius()}px;"+'\n\t'
   if(elem.style.getBorderBottomLeftRadius() != None and elem.style.getBorderBottomLeftRadius()!="0.0"): css+=f"border-bottom-left-radius: {elem.style.getBorderBottomLeftRadius()}px;"+'\n\t'
   if(elem.style.getBorderBottomRightRadius() != None and elem.style.getBorderBottomRightRadius()!="0.0"): css+=f"border-bottom-right-radius: {elem.style.getBorderBottomRightRadius()}px;"+'\n\t'
   if(elem.style.getDisplay() != None): css+=f"display: {elem.style.getDisplay()};"+'\n\t'
-
+  if(elem.style.getBorderColor()!=None):
+    css+="    border: solid;\n"+'    '+ f"border-color: {elem.style.getBorderColor()};"+'    '+ f"border-radius: {elem.style.getborderRadius()}px;"+'    '+ f"border-width: {elem.style.getborderWidth()}px;"+'\n'
   css = css + "}"
   cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
   mode = "w"

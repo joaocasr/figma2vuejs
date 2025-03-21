@@ -68,7 +68,7 @@ def applytransformation(elem,projectname,pagename,idcomponent):
         #iterate the list of interactions (logicgenerator.py)
         if(elem.tag==""):
             elem.tag = "p"
-        return ("<"+elem.tag+" class="+'"grid-item-'+ idcomponent +' text'+ cssclass +'">'+elem.text, "</"+elem.tag+">")
+        return ("<"+elem.tag+" class="+'"grid-item-'+ idcomponent +' text'+ cssclass +'" '+' '.join(d for d in directives)+'>'+elem.text, "</"+elem.tag+">")
     if(isinstance(elem, ContainerElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         if(elem.tag==""):

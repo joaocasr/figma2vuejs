@@ -274,13 +274,19 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             colorData= "strokes"
         else:
             colorData= "fills"
+        lineargradient=None    
         for fill in data[colorData]:
-
-            if("color" in fill):
-                color = fill["color"]
-                a = color["a"]
-                if("opacity" in fill): a = fill["opacity"]
-                rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , a)
+            if(fill["type"]=="SOLID"):
+                if("color" in fill):
+                    color = fill["color"]
+                    a = color["a"]
+                    if("opacity" in fill): a = fill["opacity"]
+                    rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , a)
+            if(fill["type"]=="GRADIENT_LINEAR"):
+                lineargradient = calculate_gradientDegree(fill["gradientHandlePositions"][1],
+                                                fill["gradientHandlePositions"][0],
+                                                fill["gradientStops"][1],
+                                                fill["gradientStops"][0])
 
         shapestyle = ShapeStyle(data["absoluteRenderBounds"]["x"],
                         data["absoluteRenderBounds"]["y"],
@@ -290,7 +296,8 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                         nr_columnend,
                         nr_rowstart,
                         nr_rowend)
-        if(rgba!=None): shapestyle.setBackground("rgba("+','.join(str(val) for val in rgba)+")")
+        if(rgba!=None): shapestyle.setBackgroundColor("rgba("+','.join(str(val) for val in rgba)+")")
+        if(lineargradient!=None): shapestyle.setBackground(lineargradient)
         if(rotation!=None): shapestyle.setTransform(rotation)
 
         for effect in data["effects"]:
@@ -303,6 +310,17 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
 
                 boxshadow = shadowX+"px " + shadowY+"px " + shadowRadius + spread + "rgba("+','.join(str(val) for val in rgba_shadow)+")"
                 shapestyle.setBoxShadow(boxshadow)
+
+        if("strokes" in data):
+            for s in data["strokes"]:
+                if("color" in s):
+                    color = s["color"]
+                    a = color["a"]
+                    if("visible" in s and s["visible"]==False): a = 0
+                    rgbaborder = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , a)
+                    shapestyle.setBorderColor("rgba("+','.join(str(val) for val in rgbaborder)+")")
+        if("strokeWeight" in data): shapestyle.setborderWidth(str(data["strokeWeight"]))
+        if("cornerRadius" in data): shapestyle.setborderRadius(str(data["cornerRadius"]))
 
         if(data["type"]=="RECTANGLE" and "rectangleCornerRadii" in data): setCornerRadius(shapestyle,data["rectangleCornerRadii"])
         mshapeelement = ShapeElement(data["id"],tag,data["name"],data["type"],shapestyle)
@@ -622,18 +640,20 @@ def extractImages(projectname):
     url = f"https://api.figma.com/v1/images/"+FILE_KEY+"/?ids="+myimageids+"&format=png"
     headers = {"content-type": "application/json", "Accept-Charset": "UTF-8", 'X-FIGMA-TOKEN': FIGMA_API_KEY}
 
+    resultingImages = []
     for mimage in allimages:
         imgpath = re.sub(r"[\s,@\.-]","",mimage["name"])
         destination = '../output/'+projectname+"/public/"+imgpath+".png"
-        if(os.path.isfile(destination)):
-            allimages = list(filter(lambda x: x["name"]==mimage["name"],allimages))
 
-    if(len(allimages)>0):
+        if(not os.path.isfile(destination)):
+            filteredImages = list(filter(lambda x: x["name"]==mimage["name"],allimages))
+            resultingImages.extend(filteredImages)
+
+    if(len(resultingImages)>0):
         response = requests.get(url, headers=headers)
         images = response.json()
-        print(images)
         if("err" in images and images["err"]==None):
-            for mimage in allimages:
+            for mimage in resultingImages:
                 imgurl = images["images"][str(mimage["id"])]
                 imgpath = re.sub(r"[\s,@\.-]","",mimage["name"])
                 if(imgurl!=None):
@@ -657,17 +677,19 @@ def extractSVGs(projectname):
     url = f"https://api.figma.com/v1/images/"+FILE_KEY+"/?ids="+mysvgsids+"&format=svg"
     headers = {"content-type": "application/json", "Accept-Charset": "UTF-8", 'X-FIGMA-TOKEN': FIGMA_API_KEY}
 
+    resultingSvgs = []
     for msvg in allsvgs:
         svgpath = re.sub(r"[\s,@\.-]","",msvg["name"])
         destination = '../output/'+projectname+"/public/"+svgpath+".svg"
-        if(os.path.isfile(destination)):
-            allsvgs = list(filter(lambda x: x["name"]==msvg["name"],allsvgs))
+        if(not os.path.isfile(destination)):
+            filteredSvgs = list(filter(lambda x: x["name"]==msvg["name"],allsvgs))
+            resultingSvgs.extend(filteredSvgs)
 
-    if(len(allsvgs)>0):
+    if(len(resultingSvgs)>0):
         response = requests.get(url, headers=headers)
         svgs = response.json()
         if("err" in svgs and svgs["err"]==None):
-            for msvg in allsvgs:
+            for msvg in resultingSvgs:
                 svgurl = svgs["images"][str(msvg["id"])]
                 svgpath = re.sub(r"[\s,@\.-]","",msvg["name"])
 

@@ -13,11 +13,11 @@ if(len(sys.argv)!=2 and len(sys.argv)!=3):
 else:
   prototype = sys.argv[1]
   # extract figma data and build intern model
-  try:
-    project_name, allpages = getFigmaData(prototype)
-  except Exception as e:
-    print(e)
-    sys.exit()
+  #try:
+  project_name, allpages = getFigmaData(prototype)
+  #except Exception as e:
+  #  print(e)
+  #  sys.exit()
 
   # project setup
   try:

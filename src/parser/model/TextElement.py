@@ -9,3 +9,6 @@ class TextElement(Melement):
 
 		self.text = text
 		self.style = textstyle
+
+	def setInteractions(self, interactions):
+		super().setInteractions(interactions)
