@@ -238,18 +238,14 @@ def generateVueSelectCssProperties(projectname,pagename,cssclass,elem):
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
     grid-row-start: """+  str(elem.style.gridrowStart)+""";
     grid-row-end: """+  str(elem.style.gridrowEnd)+""";
-    --vs-option-hover-background-color:"""+  str(elem.style.option_hover_background_color)+""";
-    --vs-option-focused-background-color:"""+  str(elem.style.option_focused_background_color)+""";
-    --vs-menu-background-color:"""+  str(elem.style.menu_background_color)+""";
-    --vs-placeholder-color:"""+  str(elem.style.placeholder_color)+""";
-    --vs-background-color:"""+  str(elem.style.background_color)+""";
 }
-div:deep(.menu){
-  margin-top:235px;
-}
-div:deep(.menu-option.selected){
-  background-color:"""+  str(elem.style.menu_option_selected_background_color)+""";
-  color:"""+  str(elem.style.menu_option_selected_color)+""";
+
+div:deep(."""+ str(cssclass) + """ .v-input__control) {
+  display: flex;
+  grid-area: control;
+  min-width: 300px;
+  background-color:"""+  str(elem.style.background_color)+""";
+  color: """+ str(elem.style.placeholder_color) +"""
 }
   """
   cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"

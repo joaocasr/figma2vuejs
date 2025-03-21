@@ -10,6 +10,8 @@ def setup_project(name):
     updateAppVue(name)
     viteconfig(name)
     install_dependencies(name)
+    updateMainJSfile(name)
+    createPluginFiles(name)
 
 
 def create_project(name):
@@ -24,8 +26,11 @@ def create_project(name):
         remove_boilerview(name)
         print("Removing the component files from previous generation...")
         remove_boilercomponents(name,1)
-        print("Updating main.js file")
+        print("Updating main.js file...")
         updateMainJSfile(name)
+        print("Injecting plugin files...")
+        createPluginFiles(name)
+
         raise Exception("The Vue Project "+name+" already exists.")
     else:
         print("Creating Vue project named: "+name+" ...")
@@ -120,6 +125,7 @@ def install_dependencies(name):
                     'install'],
                     cwd='../output/'+name,capture_output=True, text=True)
     installPrimeVueDependencies(name)
+    installVuetifyDependencies(name)
     if rm.returncode != 0:
       raise Exception("Error while installing dependencies!")  
 
@@ -128,23 +134,20 @@ def updateMainJSfile(name):
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import PrimeVue from 'primevue/config';
-import Material from '@primevue/themes/material';
-import 'primeicons/primeicons.css';
-
 
 import App from './App.vue'
 import router from './router'
+import vuetify from './plugins/vuetify';
+import usePrimeVue from './plugins/primevue';
 
 const app = createApp(App)
 
 app.use(createPinia())
+app.use(vuetify)
 app.use(router)
-app.use(PrimeVue, {
-      theme: {
-          preset: Material
-      }
-});
+
+usePrimeVue(app)
+
 
 app.mount('#app')
 """
@@ -153,16 +156,55 @@ app.mount('#app')
   f.write(content)
   f.close()
 
+def createPluginFiles(name):
+  print("creating plugin files...")
+  primevue="""import PrimeVue from 'primevue/config';
+import Material from '@primevue/themes/material';
+import 'primeicons/primeicons.css';
 
-def installVue3select_dependency(name):
-  c =  subprocess.run(['npm','ls','vue3-select-component'],cwd='../output/'+name,capture_output=True, text=True)
-  if("vue3-select-component" in c.stdout):
-    print("Vue3-select-component already installed.")
+
+export default function usePrimeVue(app){
+    
+    app.use(PrimeVue, {
+      theme: {
+        preset: Material
+    }
+    });
+  
+}
+"""
+  vuetify="""import 'vuetify/styles'
+import { createVuetify } from 'vuetify'
+import '@mdi/font/css/materialdesignicons.css';
+
+const vuetify = createVuetify({
+    components: {},
+    icons: {
+        defaultSet: 'mdi',
+    }
+})
+
+export default vuetify;
+"""
+  plugins = "../output/"+name+"/src/plugins/"
+  fileprimevue = "../output/"+name+"/src/plugins/primevue.js"
+  if not os.path.exists(plugins):
+    os.makedirs(plugins)
+  with open(fileprimevue,"w") as f:
+    f.write(primevue)
+  filevuetify = "../output/"+name+"/src/plugins/vuetify.js"
+  with open(filevuetify,"w") as f:
+    f.write(vuetify)
+
+def installVuetifyDependencies(name):
+  vuetify =  subprocess.run(['npm','ls','vuetify'],cwd='../output/'+name,capture_output=True, text=True)
+  if("vuetify" not in vuetify.stdout):
+    print("Installing Vuetify Dependencies...")
+    vuetify =  subprocess.run(['npm','install','vuetify'],cwd='../output/'+name,capture_output=True, text=True)
+    mdifont =  subprocess.run(['npm','install','@mdi/font'],cwd='../output/'+name,capture_output=True, text=True)
   else:
-    i =  subprocess.run(['npm','install','vue3-select-component'],cwd='../output/'+name,capture_output=True, text=True)
-    print("Installing Vue3-select-component...")
-    if(c.returncode != 0 or i.returncode != 0):
-      raise Exception("Error while installing Vue3-select-component")  
+    print("Vuetify is already installed.")
+
 
 def installPrimeVueDependencies(name):
   primevue =  subprocess.run(['npm','ls','primevue'],cwd='../output/'+name,capture_output=True, text=True)
@@ -171,39 +213,42 @@ def installPrimeVueDependencies(name):
     primevue =  subprocess.run(['npm','install','primevue'],cwd='../output/'+name,capture_output=True, text=True)
     primeicons =  subprocess.run(['npm','install','primeicons'],cwd='../output/'+name,capture_output=True, text=True)
     primevuethemes =  subprocess.run(['npm','install','@primevue/themes'],cwd='../output/'+name,capture_output=True, text=True)
-    filemain = "../output/"+name+"/src/main.js"
-    content = ""
-    primevueimports = """import PrimeVue from 'primevue/config';
-import Material from '@primevue/themes/material';
-import 'primeicons/primeicons.css';
-"""
-    primevueuse = """app.use(PrimeVue, {
-      theme: {
-          preset: Material
-      }
-});"""
-    f = open(filemain, "r")
-    for l in f.readlines():
-      l = l.strip()
-      content+=l+"\n"
-      if(l=="import { createPinia } from 'pinia'"):
-        content+=primevueimports+"\n"
-      if(l=="app.use(router)"):
-        content+=primevueuse+"\n"
-    print(content)
-    f.close()
-    f= open(filemain,"w")
-    f.write(content)
-    f.close()
     allDependencies["primevue"]=True
   else:
     print("PrimeVue is already installed.")
+
+def useSelectVuetifyPlugin(name):
+  global allDependencies
+  content =""
+  filevuetify = "../output/"+name+"/src/plugins/vuetify.js"
+  if("vselect" not in allDependencies):
+    selectimport = "import { VSelect } from 'vuetify/components';\n"
+    componentname ="\tVSelect"
+    f = open(filevuetify, "r")
+    for l in f.readlines():
+      l = l.strip()
+      content+=l+"\n"
+      if(l=="import '@mdi/font/css/materialdesignicons.css';"):
+        content+=selectimport
+      if(l=="components: {},"):
+        content=content[:-3] +"\n"+ componentname + "\n},\n"
+      if(l=="components: {"):
+        content+= componentname + ",\n"
+    f.close()
+    f= open(filevuetify,"w")
+    f.write(content)
+    f.close()
+    allDependencies["vselect"]=True
+  else:
+    print("VSelect is already imported.")
+
+  
 
 def useIconFieldPrimevuePlugin(name):
   global allDependencies
   content =""
   if("inputtext" not in allDependencies or "inputicon" not in allDependencies or "iconfield" not in allDependencies==False):
-    filemain = "../output/"+name+"/src/main.js"
+    filemain = "../output/"+name+"/src/plugins/primevue.js"
     primeimport = """import InputText from 'primevue/inputtext';
 import InputIcon from 'primevue/inputicon';
 import IconField from 'primevue/iconfield';
@@ -234,7 +279,7 @@ def useDatePickerPrimevuePlugin(name):
   global allDependencies
   content =""
   if("datepicker" not in allDependencies):
-    filemain = "../output/"+name+"/src/main.js"
+    filemain = "../output/"+name+"/src/plugins/primevue.js"
     primeimport = """import DatePicker from 'primevue/datepicker';
 """
     primecomponent = """app.component('DatePicker',DatePicker)
@@ -260,7 +305,7 @@ def useSliderPrimevuePlugin(name):
   global allDependencies
   content =""
   if("slider" not in allDependencies):
-    filemain = "../output/"+name+"/src/main.js"
+    filemain = "../output/"+name+"/src/plugins/primevue.js"
     primeimport = """import Slider from 'primevue/slider';
 """
     primecomponent = """app.component('Slider',Slider)

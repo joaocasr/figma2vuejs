@@ -85,3 +85,9 @@ def closeOverlay(name,event):
             this.$emit('""" + event +  """');
         }""" 
     return function
+
+def getpopulateDropdownFunction(name,listname):
+    function = """\t\t""" + name + "(){" + f"""
+            return this.{listname}.map(x => x.value);
+        """+"""}""" 
+    return function

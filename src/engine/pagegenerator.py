@@ -1,6 +1,6 @@
 from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS
-from setup.vueprojectsetup import installVue3select_dependency, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin
-from engine.logicgenerator import handleBehaviour
+from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin
+from engine.logicgenerator import handleBehaviour,getpopulateDropdownFunction
 from parser.model.Mcomponent import Mcomponent
 from parser.model.Melement import Melement
 from parser.model.TextElement import TextElement
@@ -18,7 +18,6 @@ allhooks = dict()
 imports = dict()
 components = dict()
 componentAssets = dict()
-primeVueComponents = dict()
 allPagesInfo = dict()
 
 def buildpage(name,page,pagesInfo):
@@ -28,7 +27,6 @@ def buildpage(name,page,pagesInfo):
     imports[page.pagename] = []
     components[page.pagename] = []
     componentAssets[page.pagename] = []
-    primeVueComponents[page.pagename] = []
     allPagesInfo = pagesInfo
     output = ""  
 
@@ -71,30 +69,30 @@ def applytransformation(elem,projectname,page):
         id = ' id="'+elem.style.getgridArea()+'"'
     if(isinstance(elem,Mcomponent)):
         if(elem.getNameComponent()=="Dropdown" and elem.getTypeComponent()=="COMPONENT_ASSET"):
-            installVue3select_dependency(projectname)
-            componentAssets[pagename].append('import VueSelect from "vue3-select-component";')
-            options = ':options="allOptions'+str(cssclass)+'"'
+            useSelectVuetifyPlugin(projectname)
+            options = ':items="getItems'+str(cssclass)+'()"'
+            allhooks[pagename].setdefault("methods", []).extend([('getItems'+str(cssclass),getpopulateDropdownFunction('getItems'+str(cssclass),'allOptions'+str(cssclass)))])
+
             cssclass= "svueselect" + cssclass
-            vmodel = 'v-model="'+str(elem.vmodel)+'"'
-            ismulti = ':is-multi="'+str(elem.ismulti)+'"'
-            placeholder = 'placeholder="'+str(elem.placeholder)+'"'
+            vmodel = 'v-model"'+str(elem.vmodel)+'"'
+            placeholder = 'label="'+str(elem.placeholder)+'"'
 
             generateVueSelectCssProperties(projectname,pagename,cssclass,elem)
-            return ("<VueSelect class="+'"grid-item '+ cssclass  + '" '+vmodel+' '+ismulti+' '+options+' '+placeholder, "/>")
+            return ("<v-select class="+'"grid-item '+ cssclass  + '" '+vmodel+' '+options+' '+placeholder, "/>")
         if(elem.getNameComponent()=="InputSearch" and elem.getTypeComponent()=="COMPONENT_ASSET"):
             useIconFieldPrimevuePlugin(projectname)
             cssclass= "ssearchinputfilter" + cssclass
             vmodel = 'v-model="'+str(elem.vmodel)+'"'
             placeholder = 'placeholder="'+str(elem.placeholder)+'"'
             generateInputSearchFilterCssProperties(projectname,pagename,cssclass,elem)
-            primeVueComponents[pagename].extend([" IconField"," InputIcon"," InputText"])
+            componentAssets[pagename].extend([" IconField"," InputIcon"," InputText"])
             return (f'<IconField class="{cssclass}"><InputIcon class="pi pi-search"/><InputText {vmodel} {placeholder} />','</IconField>')
         if(elem.getNameComponent()=="DatePicker" and elem.getTypeComponent()=="COMPONENT_ASSET"):
             useDatePickerPrimevuePlugin(projectname)
             cssclass= "sdatepicker" + cssclass
             vmodel = 'v-model="'+str(elem.vmodel)+'"'
             generateDatePickerCssProperties(projectname,pagename,cssclass,elem)
-            primeVueComponents[pagename].extend([" DatePicker"])
+            componentAssets[pagename].extend([" DatePicker"])
             showicon = ""
             if(elem.style.getdropdownbackgroundcolor()!=None):
                 showicon = ":showOnFocus='false' showIcon='' fluid=''"
@@ -104,7 +102,7 @@ def applytransformation(elem,projectname,page):
             cssclass= "sslider" + cssclass
             vmodel = 'v-model="'+str(elem.vmodel)+'"'
             generateSliderCssProperties(projectname,pagename,cssclass,elem)
-            primeVueComponents[pagename].extend([" Slider"])
+            componentAssets[pagename].extend([" Slider"])
             return (f'<Slider {vmodel} class="{cssclass}" >','</Slider>')
 
     if(isinstance(elem, TextElement)):
@@ -153,19 +151,15 @@ def applytransformation(elem,projectname,page):
     return ("","")
 
 def writeVue(name,page,content):
-    global allhooks, components, componentAssets
+    global allhooks, components
     componentsimports=""
     for comp in components[page.getPagename()]:
         componentsimports += "import "+str(comp).capitalize()+" from '@/components/"+str(comp).capitalize()+".vue';\n" 
-    for comp in componentAssets[page.getPagename()]:
-        componentsimports += comp + "\n"
     cssimport = "@import '../assets/"+page.getPagename().lower()+".css';"
     template = '<div class="grid-container">'+ content + '</div>'
     pagehooks=""
     allcomponents = (x.capitalize() for x in components[page.getPagename()])
     allcomponents = list(allcomponents)
-    for x in componentAssets[page.getPagename()]:
-        allcomponents.append(x.split(" ")[1])
     pagecomponents="""\n    components:{\n        """+ ',\n        '.join(allcomponents) +"""\n    },"""
     for hook in allhooks[page.getPagename()]:
         pagehooks = hook + ":{\n"
@@ -204,7 +198,6 @@ def processTemplate(html_string,page):
         pattern = "<"+c.lower()+r"([\s]*.*?)"+">"+r"(\n|.)*"+r"<\/"+c.lower()+">"
         processedTemplate = re.sub(pattern,"<"+c.capitalize()+ r'\1' +">"+"</"+c.capitalize()+">",finalHtml)
         finalHtml = processedTemplate
-    componentAssets[page].extend(primeVueComponents[page])
     for c in componentAssets[page]:
         tag = c.split(" ")[1]
         pattern = "<"+tag.lower()+r"([\s]*.*?)"+">"+r"((\n|.)*?)"+r"<\/"+tag.lower()+">"
