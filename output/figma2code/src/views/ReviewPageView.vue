@@ -40,6 +40,9 @@ export default {
 		gotoHomePage(){
             this.$router.push({path:"/homepage"});
         },
+		gotoHomePage(){
+            this.$router.push({path:"/homepage"});
+        },
 		gotoWatchlistPage(){
             this.$router.push({path:"/watchlistpage"});
         }

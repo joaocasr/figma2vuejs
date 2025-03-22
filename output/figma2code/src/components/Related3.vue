@@ -1,7 +1,9 @@
 <template>
 <div class="grid-item-2362437 component2362437">
-    <img class="grid-item containerI23624372362678" src="/boyheron.png"/>
-    <p class="grid-item-2362437 textI23624372362679">Furiosa: A Mad Max Saga</p>
+ <img class="grid-item container2362678" src="/boyheron.png"/>
+ <p class="grid-item-2362437 text2362679">
+  Furiosa: A Mad Max Saga
+ </p>
 </div>
 
 </template>
@@ -10,6 +12,7 @@
 export default {
     data(){
         return {
+           
         }
     }
 }

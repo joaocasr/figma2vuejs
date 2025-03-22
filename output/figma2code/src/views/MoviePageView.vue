@@ -12,7 +12,7 @@
    Score
   </p>
   <p class="grid-item text2362403">
-   4.5
+   3.0
   </p>
  </div>
  <div class="grid-item container2362404" v-on:click="changeVisibility2362620()">
@@ -69,6 +69,8 @@
   <Related3></Related3>
  </div>
  <Review></Review>
+ <v-rating :length="5" :model-value="starsSeletec2465472" :size="25" class="srating2465472"  half-increments hover readonly >
+ </v-rating>
  <Navbar class="posnavbar"></Navbar>
  <Confirmationwatchlistmodal @close-from2362622-to2362620="show2362620=false" @close-from2362624-to2362620="show2362620=false" v-if="show2362620==true"></Confirmationwatchlistmodal>
 </div>
@@ -96,7 +98,8 @@ export default {
     },
     data(){
         return {
-            show2362620:false    
+            show2362620:false,
+            starsSeletec2465472:"3"    
         }
     },
     methods:{
@@ -105,6 +108,9 @@ export default {
         },
 		gotoReviewPage(){
             this.$router.push({path:"/reviewpage"});
+        },
+		gotoHomePage(){
+            this.$router.push({path:"/homepage"});
         },
 		gotoHomePage(){
             this.$router.push({path:"/homepage"});

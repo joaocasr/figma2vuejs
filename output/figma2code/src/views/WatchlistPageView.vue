@@ -33,6 +33,8 @@
  </p>
  <div class="grid-item container2362489">
   <div class="grid-item rectangle2362490">
+   <v-rating :length="5" :model-value="starsSeletec2465466" :size="25" class="srating2465466"  half-increments hover readonly >
+   </v-rating>
    <p class="grid-item text2362492">
     Fantastic Beasts: The Secrets of Dumbledore
     <br/>
@@ -61,12 +63,16 @@ export default {
     },
     data(){
         return {
-            show2362634:false    
+            show2362634:false,
+            starsSeletec2465466:"3"    
         }
     },
     methods:{
 		changeVisibility2362634(){
             this.show2362634 = true;
+        },
+		gotoHomePage(){
+            this.$router.push({path:"/homepage"});
         },
 		gotoHomePage(){
             this.$router.push({path:"/homepage"});

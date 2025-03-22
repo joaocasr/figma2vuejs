@@ -4,6 +4,8 @@ from parser.model.InputSearch import InputSearch
 from parser.model.InputSearchStyle import InputSearchStyle
 from parser.model.DatePicker import DatePicker
 from parser.model.DatePickerStyle import DatePickerStyle
+from parser.model.Rating import Rating
+from parser.model.RatingStyle import RatingStyle
 from parser.model.Slider import Slider
 from parser.model.SliderStyle import SliderStyle
 
@@ -57,16 +59,14 @@ def convertToDropdown(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,
         nr_rowstart,
         nr_rowend
     )
-    pattern = "[:;]"
-    elemid = re.sub(pattern,"",str(id))
+    elemid = getElemId(id)
     melement = Dropdown(id,"",name,"COMPONENT_ASSET","selectedOption"+elemid,alloptions,placeholder,False,style)
 
     return melement
 
 def convertToSearchInput(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name):
     placeholder = ""
-    pattern = "[:;]"
-    elemid = re.sub(pattern,"",str(id))
+    elemid = getElemId(id)
     vmodel = "inputsearch"+str(elemid)
     backgroundcolor = str(data["backgroundColor"]["r"] * 255)+","+str(data["backgroundColor"]["g"] * 255)+","+str(data["backgroundColor"]["b"] * 255)+","+str(data["backgroundColor"]["a"])
     radius = str(data["cornerRadius"])
@@ -82,8 +82,7 @@ def convertToSearchInput(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,
     return inputsearchfilter
 
 def convertToDatePicker(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name):
-    pattern = "[:;]"
-    elemid = re.sub(pattern,"",str(id))
+    elemid = getElemId(id)
     vmodel = "datepicker"+str(elemid)
     dateinput = None
     dropdowninput = None
@@ -103,8 +102,7 @@ def convertToDatePicker(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,i
     return datepicker
 
 def convertToSlider(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name):
-    pattern = "[:;]"
-    elemid = re.sub(pattern,"",str(id))
+    elemid = getElemId(id)
     vmodel = "slider"+str(elemid)
     backgroundtrack =""
     backgroundrange =""
@@ -127,3 +125,37 @@ def convertToSlider(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,na
 
     slider =  Slider(id,"",name,"COMPONENT_ASSET",vmodel,style)
     return slider
+
+def convertToRating(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name,readOnly):
+    elemid = getElemId(id)
+    vmodel = "starsSeletec"+str(elemid)
+    nrstars = len(data["children"])
+    colorStar = ""
+    unselectedStarColor = ""
+    selected = 0
+    for i in range(0,len(data["children"])):        
+        star = data["children"][i]
+        if(len(star["fills"])>0):
+            star = data["children"][i]
+            color = star["fills"][0]["color"]
+            colorStar = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
+            selected = i + 1
+        if(i<len(data["children"])-2):
+            star = data["children"][i+1]
+            if(len(star["fills"])>0): 
+                color = star["fills"][0]["color"]
+                unselectedStarColor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
+                if(colorStar!=unselectedStarColor): break
+    style = RatingStyle(colorStar,unselectedStarColor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
+
+    rating =  Rating(id,"",name,"COMPONENT_ASSET",nrstars,readOnly,vmodel,selected,style)
+    return rating
+
+def getElemId(id):
+    elemid = id
+    if(str(id).startswith("I")):
+        ids = id.split(";")
+        elemid = str(ids[len(ids)-1])
+    pattern = "[:;]"
+    elemid = re.sub(pattern,"",elemid)
+    return elemid

@@ -1,4 +1,5 @@
-from engine.stylegenerator import generatePageStyle, generateComponentStyle, generateElemCssProperties, generateShapeCSS
+from engine.stylegenerator import generatePageStyle, generateComponentStyle, generateElemCssProperties, generateShapeCSS, generateRatingCssProperties
+from setup.vueprojectsetup import useRatingVuetifyPlugin
 from engine.logicgenerator import handleBehaviour
 from parser.model.Mcomponent import Mcomponent
 from parser.model.Melement import Melement
@@ -7,24 +8,26 @@ from parser.model.VectorElement import VectorElement
 from parser.model.ContainerElement import ContainerElement
 from parser.model.ImageElement import ImageElement
 from parser.model.ShapeElement import ShapeElement
+from parser.model.Rating import Rating
+from parser.model.RatingStyle import RatingStyle
 
-import xml.etree.ElementTree as ET
-from lxml import etree, html
+from bs4 import BeautifulSoup
 import itertools
 import re
 
 allhooks = dict()
 allpagesInfo = {}
+componentAssets = dict()
 
 def buildcomponent(component,projectname,pagesInfo):
     global allhooks,allpagesInfo
     name = component.componentName
     allhooks[name] = {}
+    componentAssets[name] = []
     # build elements from the component  
     allpagesInfo = pagesInfo
     output = ""
-    pattern = "[:;]"
-    idcomponent = re.sub(pattern,"",component.idComponent)
+    idcomponent = getElemId(component.idComponent)
 
     (flattenElements,allShapes) = flattenAndShapes(component)
     onstack = filterOverlapingElements(allShapes,flattenElements)
@@ -54,9 +57,8 @@ def processChildren(data,projectname,name,idcomponent):
 def applytransformation(elem,projectname,pagename,idcomponent):
     global allhooks, allpagesInfo
     cssclass = ""
-    pattern = "[:;]"
-    if(not isinstance(elem,Mcomponent)): cssclass = re.sub(pattern,"",elem.idElement)
-    else: cssclass = re.sub(pattern,"",elem.idComponent)
+    if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.idElement)
+    else: cssclass = getElemId(elem.idComponent)
     
     directives, hooks = handleBehaviour(elem,allpagesInfo,False)
     if(hooks!=None): 
@@ -97,15 +99,27 @@ def applytransformation(elem,projectname,pagename,idcomponent):
 
         return (begintag,endtag)
 
+    if(isinstance(elem, Mcomponent) and elem.getNameComponent()=="ReadOnlyRating"):
+        useRatingVuetifyPlugin(projectname)
+        cssclass= "srating" + cssclass
+        vmodel = str(elem.vmodel)
+        size = str(elem.nrstars)
+        readonly = elem.readonly
+        generateRatingCssProperties(projectname,pagename,cssclass,elem)
+        readonlyconf =""
+        if(readonly==True):
+            readonlyconf = "readonly=''"
+            componentAssets[pagename].extend([" v-rating readonly"])
+        return (f'<v-rating class="{cssclass}" '+ f':length="{size}" :size="25" :model-value="{vmodel}" '+f" half-increments='' hover='' {readonlyconf} >",'</v-rating>')
+
     return ("","")
 
 def writeVueComponent(name,project_name,content,component,pagesInfo):
     global allhooks 
     pattern = "[:;]"
-    idcomponent = re.sub(pattern,"",component.idComponent)
+    idcomponent = getElemId(component.idComponent)
     cssimport = "@import '../assets/"+name.lower()+".css';"
     pagehooks=""
-
     for hook in allhooks[name]:
         pagehooks = hook + ":{\n"
         for chook in allhooks[name][hook]:
@@ -114,13 +128,14 @@ def writeVueComponent(name,project_name,content,component,pagesInfo):
         pagehooks +="\n\t}"
     if(len(pagehooks)>0): pagehooks = ",\n    "+pagehooks
     template = '<div class="grid-item-'+idcomponent+' component'+ idcomponent +'"'+ ">"+ content + '</div>'
-    componentpage = """<template>\n""" + processTemplate(template) + """
+    componentpage = """<template>\n""" + processTemplate(template,name) + """
 </template>
 
 <script>
 export default {
     data(){
         return {
+        """ + ',\n            '.join(str(key)+":"+str(value) for variables in component.getData() for key, value in variables.items()) + """   
         }
     }""" + pagehooks + """
 }
@@ -133,10 +148,19 @@ export default {
     generateComponentStyle(project_name,component)
 
 
-def processTemplate(html_string):
-    myhtml = html.fromstring(html_string)
-    etree.indent(myhtml, space="    ")
-    finalHtml = etree.tostring(myhtml, encoding='unicode', pretty_print=True)
+def processTemplate(html_string,name):
+    soup = BeautifulSoup(html_string, "html.parser")
+    finalHtml = soup.prettify()
+    for c in componentAssets[name]:
+        tag = c.split(" ")[1]
+        pattern = "<"+tag.lower()+r"([\s]*.*?)"+">"+r"((\n|.)*?)"+r"<\/"+tag.lower()+">"
+        processedTemplate = re.sub(pattern,"<"+tag+ r'\1' +">"+r'\2'+"</"+tag+">",finalHtml)
+        if(tag=="DatePicker"):
+            processedTemplate = re.sub('<DatePicker'+r"([\s]*.*?)"+'fluid="" showicon=""'+r'([\s]*.*?)'+'>',"<DatePicker"+r"\1 showIcon fluid \2>",processedTemplate)
+        if(tag=="v-rating"):
+            if(c.split(" ")[2]=="readonly"):
+                processedTemplate = re.sub('<v-rating'+r"([\s]*.*?)"+'half-increments="" hover="" readonly=""'+r'([\s]*.*?)'+'>',"<v-rating"+r"\1 half-increments hover readonly \2>",processedTemplate)
+        finalHtml = processedTemplate
     return finalHtml
 
 def filterOverlapingElements(allShapes,allElements):
@@ -174,3 +198,13 @@ def flattenAndShapes(component):
     flattenElements = list(itertools.chain(*([x] + x.children for x in component.children)))
     allShapes = list(filter(lambda x: (isinstance(x,ShapeElement)),flattenElements))
     return (flattenElements,allShapes)
+
+
+def getElemId(id):
+    elemid = id
+    if(str(id).startswith("I")):
+        ids = id.split(";")
+        elemid = str(ids[len(ids)-1])
+    pattern = "[:;]"
+    elemid = re.sub(pattern,"",elemid)
+    return elemid

@@ -23,15 +23,16 @@ from parser.model.NavigationAction import NavigationAction
 from parser.model.CloseAction import CloseAction
 from parser.model.OverlayAction import OverlayAction
 from engine.stylegenerator import calculate_gradientDegree
-from parser.assetsconverter import convertToDropdown, convertToSearchInput, convertToDatePicker, convertToSlider
+from parser.assetsconverter import convertToDropdown, convertToSearchInput, convertToDatePicker, convertToSlider, convertToRating
 
 allpages = {}
 allimages = []
 allsvgs = []
+componentVariables = {}
 # key: component_id ; value: MComponent
 allcomponents = {}
 pageComponents = {}
-primeVueComponents = ["InputSearchFilter","DatePicker","DropdownFilter"]
+assetComponents = ["InputSearch","DatePicker","Dropdown","ReadOnlyRating"]
 pageWidth = -1
 tags = ["nav","footer","main","section","aside","article","p","header","h1","h2","h3","h4","h5","h6","ul","li"]
 figmadata = {}
@@ -80,7 +81,7 @@ def iterate_nestedElements(data):
     #iterate first for all the components nodes (except primevue components)
     for melement in data["document"]["children"][0]["children"]:
         elements = []
-        if(melement["type"]=="COMPONENT" and "children" in melement and melement["name"] not in primeVueComponents):
+        if(melement["type"]=="COMPONENT" and "children" in melement and melement["name"] not in assetComponents):
             pageWidth = melement["absoluteRenderBounds"]["width"]*1.2
             for element in melement["children"]:
                 component_width = melement["absoluteRenderBounds"]["width"]
@@ -169,10 +170,22 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                 componentset = c
                 break
         melement = convertToDropdown(componentset,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
-        pattern = "[:;]"
-        elemid = re.sub(pattern,"",str(data["id"]))
-        allpages[pagename].addVariable({"selectedOption"+elemid:'""'})
-        allpages[pagename].addVariable({"allOptions"+elemid:melement.options})
+        elemid = getElemId(data["id"])
+        if(not pagename in allpages):
+            addComponentVariable(pagename,{"selectedOption"+elemid:'""'})
+            addComponentVariable(pagename,{"allOptions"+elemid:melement.options})
+            addComponentVariable(pagename,{"allOptionValues"+elemid:[]})
+        else:
+            allpages[pagename].addVariable({"selectedOption"+elemid:'""'})
+            allpages[pagename].addVariable({"allOptions"+elemid:melement.options})
+            allpages[pagename].addVariable({"allOptionValues"+elemid:[]})
+        return melement
+    elif(data["name"]=="ReadOnlyRating" and data["type"]=="INSTANCE"):
+        melement = convertToRating(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"],True)
+        if(not pagename in allpages):
+            addComponentVariable(pagename,{melement.vmodel:'"'+str(melement.selected)+'"'})
+        else:
+            allpages[pagename].addVariable({melement.vmodel:'"'+str(melement.selected)+'"'})
         return melement
     elif(data["name"]=="InputSearch" and data["type"]=="INSTANCE"):
         componentsetId = data["componentId"]
@@ -357,7 +370,6 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         melement = mtextelement
     
     elif(data["type"]=="INSTANCE"):
-
         scrollBehaviour = None
         if(data["scrollBehavior"]=="FIXED"): scrollBehaviour = "sticky"
         componentelement = Mcomponent(data["id"],data["name"],tag,"")
@@ -370,6 +382,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         componentStyle.setPosition(scrollBehaviour)
         componentStyle.setinstanceFromComponentId(data["componentId"])
 
+        assignComponentData(componentelement)
         componentelement.setComponentStyle(componentStyle)
         pageComponents.setdefault(pagename, []).append(componentelement)
         melement = componentelement
@@ -460,8 +473,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                         #allpages[pagename].addElement(allcomponents[data["transitionNodeID"]])
 
                         #adicionar variavel na pagina visto que o componente não estará visivel no imediato
-                        pattern = "[:;]"
-                        idcomponent = re.sub(pattern,"",action["destinationId"])
+                        idcomponent = getElemId(action["destinationId"])
                         allpages[pagename].addVariable({"show"+idcomponent:"false"})
 
                         overlayAction = OverlayAction(action["destinationId"])
@@ -699,3 +711,26 @@ def extractSVGs(projectname):
                     filename = wget.download(svgurl, out=destination)
         elif(images["status"]==403):
             print("something went wrong...")
+
+def addComponentVariable(componentName,var):
+    global pageComponents, componentVariables
+    for idp in pageComponents:
+        for compp in pageComponents[idp]:
+            if(compp.getNameComponent()==componentName):
+                if(not var in pageComponents[idp]): 
+                    pageComponents[idp].addVariable(var)
+    componentVariables.setdefault(componentName, []).append(var)
+
+def assignComponentData(component):
+    if(component.getNameComponent() in componentVariables):
+        for v in componentVariables[component.getNameComponent()]:
+            component.addVariable(v)
+
+def getElemId(id):
+    elemid = id
+    if(str(id).startswith("I")):
+        ids = id.split(";")
+        elemid = str(ids[len(ids)-1])
+    pattern = "[:;]"
+    elemid = re.sub(pattern,"",elemid)
+    return elemid

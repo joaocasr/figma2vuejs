@@ -86,8 +86,7 @@ def closeOverlay(name,event):
         }""" 
     return function
 
-def getpopulateDropdownFunction(name,listname):
-    function = """\t\t""" + name + "(){" + f"""
-            return this.{listname}.map(x => x.value);
-        """+"""}""" 
+def getpopulateDropdownFunction(values,options):
+    function =f"""      /*Here you can adapt to fetch the data from an API*/
+        this.{values} = this.{options}.map(x => x.value);""" 
     return function

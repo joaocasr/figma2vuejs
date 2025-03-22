@@ -1,5 +1,5 @@
-from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS
-from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin
+from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties
+from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin, useRatingVuetifyPlugin
 from engine.logicgenerator import handleBehaviour,getpopulateDropdownFunction
 from parser.model.Mcomponent import Mcomponent
 from parser.model.Melement import Melement
@@ -55,9 +55,8 @@ def applytransformation(elem,projectname,page):
     global allPagesInfo, allhooks, components, componentAssets
     pagename = page.pagename
     cssclass = ""
-    pattern = "[:;]"
-    if(not isinstance(elem,Mcomponent)): cssclass = re.sub(pattern,"",elem.idElement)
-    else: cssclass = re.sub(pattern,"",elem.idComponent)
+    if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.idElement)
+    else: cssclass = getElemId(elem.idComponent)
     
     # insert directives and functions if there is some behaviour
     directives, hooks = handleBehaviour(elem,allPagesInfo,True)
@@ -70,11 +69,11 @@ def applytransformation(elem,projectname,page):
     if(isinstance(elem,Mcomponent)):
         if(elem.getNameComponent()=="Dropdown" and elem.getTypeComponent()=="COMPONENT_ASSET"):
             useSelectVuetifyPlugin(projectname)
-            options = ':items="getItems'+str(cssclass)+'()"'
-            allhooks[pagename].setdefault("methods", []).extend([('getItems'+str(cssclass),getpopulateDropdownFunction('getItems'+str(cssclass),'allOptions'+str(cssclass)))])
+            options = ':items="allOptionValues'+str(cssclass)+'"'
+            allhooks[pagename].setdefault("mounted", []).extend([('getItems'+str(cssclass),getpopulateDropdownFunction('allOptionValues'+str(cssclass),'allOptions'+str(cssclass)))])
 
             cssclass= "svueselect" + cssclass
-            vmodel = 'v-model"'+str(elem.vmodel)+'"'
+            vmodel = 'v-model="'+str(elem.vmodel)+'"'
             placeholder = 'label="'+str(elem.placeholder)+'"'
 
             generateVueSelectCssProperties(projectname,pagename,cssclass,elem)
@@ -97,6 +96,19 @@ def applytransformation(elem,projectname,page):
             if(elem.style.getdropdownbackgroundcolor()!=None):
                 showicon = ":showOnFocus='false' showIcon='' fluid=''"
             return (f'<DatePicker {vmodel} class="{cssclass}" {showicon} >','</DatePicker>')
+        if(elem.getNameComponent()=="ReadOnlyRating" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+            useRatingVuetifyPlugin(projectname)
+            cssclass= "srating" + cssclass
+            vmodel = str(elem.vmodel)
+            size = str(elem.nrstars)
+            readonly = elem.readonly
+            generateRatingCssProperties(projectname,pagename,cssclass,elem)
+            readonlyconf =""
+            if(readonly==True):
+                readonlyconf = "readonly=''"
+                componentAssets[pagename].extend([" v-rating readonly"])
+            return (f'<v-rating class="{cssclass}" '+ f':length="{size}" :size="25" :model-value="{vmodel}" '+f" half-increments='' hover='' {readonlyconf} >",'</v-rating>')
+
         if(elem.getNameComponent()=="Slider" and elem.getTypeComponent()=="COMPONENT_ASSET"):
             useSliderPrimevuePlugin(projectname)
             cssclass= "sslider" + cssclass
@@ -162,11 +174,16 @@ def writeVue(name,page,content):
     allcomponents = list(allcomponents)
     pagecomponents="""\n    components:{\n        """+ ',\n        '.join(allcomponents) +"""\n    },"""
     for hook in allhooks[page.getPagename()]:
-        pagehooks = hook + ":{\n"
+        if("methods" in hook): pagehooks += hook + ":{\n"
+        if("mounted" in hook): pagehooks += hook + "(){\n"
         for content in allhooks[page.getPagename()][hook]:
-            pagehooks += content[1] + ",\n"
+            if("methods" in hook): 
+                pagehooks += content[1] + ",\n"
+            if("mounted" in hook): 
+                pagehooks += content[1] + "\n\n"
         pagehooks = pagehooks[:-2]
-        pagehooks +="\n\t}"
+        pagehooks +="\n\t},"
+    pagehooks = pagehooks[:-1]
     if(len(pagehooks)>0): pagehooks= ",\n    "+pagehooks
     vuepage = """<template>\n""" + processTemplate(template,page.getPagename()) + """
 </template>
@@ -203,7 +220,10 @@ def processTemplate(html_string,page):
         pattern = "<"+tag.lower()+r"([\s]*.*?)"+">"+r"((\n|.)*?)"+r"<\/"+tag.lower()+">"
         processedTemplate = re.sub(pattern,"<"+tag+ r'\1' +">"+r'\2'+"</"+tag+">",finalHtml)
         if(tag=="DatePicker"):
-            processedTemplate = re.sub('<DatePicker'+r"([\s]*.*?)"+'fluid="" showicon=""'+r'([\s]*.*?)'+'>',"<DatePicker"+r"\1 showIcon fluid \2>",processedTemplate,)
+            processedTemplate = re.sub('<DatePicker'+r"([\s]*.*?)"+'fluid="" showicon=""'+r'([\s]*.*?)'+'>',"<DatePicker"+r"\1 showIcon fluid \2>",processedTemplate)
+        if(tag=="v-rating"):
+            if(c.split(" ")[2]=="readonly"):
+                processedTemplate = re.sub('<v-rating'+r"([\s]*.*?)"+'half-increments="" hover="" readonly=""'+r'([\s]*.*?)'+'>',"<v-rating"+r"\1 half-increments hover readonly \2>",processedTemplate)
         finalHtml = processedTemplate
     return finalHtml
 
@@ -243,3 +263,12 @@ def getValue(value):
 def anyShapes(elementos):
     allShapes = list(filter(lambda x: (isinstance(x,ShapeElement)),list(itertools.chain(*([x] + x.children for x in elementos)))))
     return len(allShapes) > 0
+
+def getElemId(id):
+    elemid = id
+    if(str(id).startswith("I")):
+        ids = id.split(";")
+        elemid = str(ids[len(ids)-1])
+    pattern = "[:;]"
+    elemid = re.sub(pattern,"",elemid)
+    return elemid

@@ -1,7 +1,9 @@
 <template>
 <div class="grid-item-2362436 component2362436">
-    <img class="grid-item containerI23624362362681" src="/insideout.png"/>
-    <p class="grid-item-2362436 textI23624362362682">Inside Out 2</p>
+ <img class="grid-item container2362681" src="/insideout.png"/>
+ <p class="grid-item-2362436 text2362682">
+  Inside Out 2
+ </p>
 </div>
 
 </template>
@@ -10,6 +12,7 @@
 export default {
     data(){
         return {
+           
         }
     }
 }

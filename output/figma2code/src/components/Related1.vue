@@ -1,9 +1,11 @@
 <template>
 <div class="grid-item-2362435 component2362435">
-    <div class="grid-item-2362435 containerI23624352362684">
-        <img class="grid-item containerI23624352362685" src="/boyheron.png"/>
-        <p class="grid-item-2362435 textI23624352362686">The Boy and the Heron</p>
-    </div>
+ <div class="grid-item-2362435 container2362684">
+  <img class="grid-item container2362685" src="/boyheron.png"/>
+  <p class="grid-item-2362435 text2362686">
+   The Boy and the Heron
+  </p>
+ </div>
 </div>
 
 </template>
@@ -12,6 +14,7 @@
 export default {
     data(){
         return {
+           
         }
     }
 }

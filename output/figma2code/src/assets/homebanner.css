@@ -23,7 +23,7 @@
   width: 100%;
   height: 100%;
 }
-  .containerI23623162362370 {
+  .container2362370 {
 	grid-column-start: 1;
 	grid-column-end: 65;
 	grid-row-start: 1;
@@ -35,7 +35,7 @@
 }
 
 
-.containerI23623162362371 {
+.container2362371 {
 	background: linear-gradient(-179.99999879258172deg, rgba(153.00000607967377,153.00000607967377,153.00000607967377,0.0), rgba(0.0,0.0,0.0,255.0));
 	grid-column-start: 1;
 	grid-column-end: 65;
@@ -48,7 +48,7 @@
 }
 
 
-.textI23623162362372 {
+.text2362372 {
 	font-style: Regular;
 	font-weight: 400;
 	font-size: 1.0389610389610389vw;
@@ -69,7 +69,7 @@
 }
 
 
-.textI23623162362373 {
+.text2362373 {
 	font-style: Regular;
 	font-weight: 400;
 	font-size: 0.974025974025974vw;
@@ -90,7 +90,7 @@
 }
 
 
-.textI23623162362374 {
+.text2362374 {
 	font-style: Regular;
 	font-weight: 400;
 	font-size: 1.0389610389610389vw;
@@ -111,7 +111,7 @@
 }
 
 
-.containerI23623162362375 {
+.container2362375 {
 	background-color: rgba(6.000000117346644,7.000000057742,27.000000290572643,1.0);
 	border-radius: 40.0px;
 	grid-column-start: 13;
@@ -125,7 +125,7 @@
 }
 
 
-.textI23623162362376 {
+.text2362376 {
 	font-style: Medium;
 	font-weight: 500;
 	font-size: 1.0389610389610389vw;
@@ -146,7 +146,7 @@
 }
 
 
-.regular_polygonI23623162362377 {
+.regular_polygon2362377 {
     grid-column-start: 11;
     grid-column-end: 16;
     grid-row-start: 27;
@@ -156,7 +156,7 @@
     background-color:rgba(217.0000022649765,217.0000022649765,217.0000022649765,1.0);
 	transform: rotate(1.5707963267948966rad);
 	}
-.containerI23623162362378 {
+.container2362378 {
 	background-color: rgba(5.644531091675162,6.690428769215941,26.56249936670065,1.0);
 	box-shadow: 0px 4px 4px 0pxrgba(0.0,0.0,0.0,0.25);
 	border-radius: 40.0px;
@@ -171,7 +171,7 @@
 }
 
 
-.textI23623162362379 {
+.text2362379 {
 	font-style: Medium;
 	font-weight: 500;
 	font-size: 1.0389610389610389vw;
@@ -192,7 +192,7 @@
 }
 
 
-.regular_polygonI23623162362380 {
+.regular_polygon2362380 {
     grid-column-start: 9;
     grid-column-end: 14;
     grid-row-start: 24;
@@ -202,7 +202,7 @@
     background-color:rgba(217.0000022649765,217.0000022649765,217.0000022649765,1.0);
 	transform: rotate(1.5707963267948966rad);
 	}
-.textI23623162362381 {
+.text2362381 {
 	font-style: Medium;
 	font-weight: 500;
 	font-size: 1.1688311688311688vw;
@@ -223,7 +223,7 @@
 }
 
 
-.textI23623162362382 {
+.text2362382 {
 	font-style: Medium;
 	font-weight: 500;
 	font-size: 4.285714285714286vw;

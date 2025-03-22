@@ -99,6 +99,14 @@ export default {
     },
     data(){
         return {
+            starsSeletec2465436:"3",
+            starsSeletec2465418:"3",
+            starsSeletec2473415:"3",
+            starsSeletec2473395:"3",
+            starsSeletec2473435:"3",
+            starsSeletec2473303:"3",
+            starsSeletec2473375:"3",
+            starsSeletec2473355:"3",
             inputsearch2377217:""    
         }
     },
@@ -108,6 +116,9 @@ export default {
         },
 		gotoMoviePage(){
             this.$router.push({path:"/moviepage"});
+        },
+		gotoHomePage(){
+            this.$router.push({path:"/homepage"});
         },
 		gotoHomePage(){
             this.$router.push({path:"/homepage"});

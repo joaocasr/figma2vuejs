@@ -1,14 +1,24 @@
 <template>
 <div class="grid-item-2362320 component2362320">
-    <img class="grid-item containerI23623202362608" src="/cloverfieldi75321.png"/>
-    <div class="grid-item-2362320 containerI23623202362609">
-        <p class="grid-item-2362320 textI23623202362610">Cloverfield</p>
-        <p class="grid-item-2362320 textI23623202362611">1h,34min</p>
-        <p class="grid-item-2362320 textI23623202362612">10 Oct 2021</p>
-    </div>
-    <div class="grid-item-2362320 rectangleI23623202362618">
-        <p class="grid-item-2362320 textI23623202362619">4.0</p>
-    </div>
+ <img class="grid-item container2362608" src="/cloverfieldi75321.png"/>
+ <div class="grid-item-2362320 container2362609">
+  <p class="grid-item-2362320 text2362610">
+   Cloverfield
+  </p>
+  <p class="grid-item-2362320 text2362611">
+   1h,34min
+  </p>
+  <p class="grid-item-2362320 text2362612">
+   10 Oct 2021
+  </p>
+ </div>
+ <div class="grid-item-2362320 rectangle2362618">
+  <p class="grid-item-2362320 text2362619">
+   4.0
+  </p>
+ </div>
+ <v-rating :length="5" :model-value="starsSeletec2465418" :size="25" class="srating2465418"  half-increments hover readonly >
+ </v-rating>
 </div>
 
 </template>
@@ -17,6 +27,7 @@
 export default {
     data(){
         return {
+        starsSeletec2465418:"3"   
         }
     }
 }
