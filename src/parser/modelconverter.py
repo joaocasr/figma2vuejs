@@ -32,7 +32,7 @@ componentVariables = {}
 # key: component_id ; value: MComponent
 allcomponents = {}
 pageComponents = {}
-assetComponents = ["InputSearch","DatePicker","Dropdown","ReadOnlyRating"]
+assetComponents = ["InputSearch","DatePicker","Dropdown","ReadOnlyRating","InteractiveRating","Paginator"]
 pageWidth = -1
 tags = ["nav","footer","main","section","aside","article","p","header","h1","h2","h3","h4","h5","h6","ul","li"]
 figmadata = {}
@@ -88,11 +88,11 @@ def iterate_nestedElements(data):
                 component_height = melement["absoluteRenderBounds"]["height"]
                 componentX = melement["absoluteRenderBounds"]["x"]
                 componentY = melement["absoluteRenderBounds"]["y"]
-                #try:
-                p = processElement(melement["name"],element["name"],element,component_width,component_height,componentX,componentY,melement)
-                if(p!=None): elements.append(p)
-                #except:
-                    #raise Exception("Error while converting "+element["name"]+". Correct your prototype!")
+                try:
+                    p = processElement(melement["name"],element["name"],element,component_width,component_height,componentX,componentY,melement)
+                    if(p!=None): elements.append(p)
+                except:
+                    raise Exception("Error while converting "+element["name"]+". Correct your prototype!")
 
             tag = getElementTag(melement)
             allcomponents[melement["id"]] = Mcomponent(melement["id"],melement["name"],tag,"",elements)
@@ -107,11 +107,11 @@ def iterate_nestedElements(data):
                 page_height = page["absoluteRenderBounds"]["height"]
                 pageX = page["absoluteRenderBounds"]["x"]
                 pageY = page["absoluteRenderBounds"]["y"]
-                #try:
-                p = processElement(page["name"],element["name"],element,page_width,page_height,pageX,pageY,element)
-                if(p!=None): allpages[page["name"]].elements.append(p)
-                #except:
-                    #raise Exception("Error while converting "+element["name"]+". Correct your prototype!")
+                try:
+                    p = processElement(page["name"],element["name"],element,page_width,page_height,pageX,pageY,element)
+                    if(p!=None): allpages[page["name"]].elements.append(p)
+                except:
+                    raise Exception("Error while converting "+element["name"]+". Correct your prototype!")
 
         else:
             continue
@@ -143,7 +143,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             yielem -= pageY
               
         nrrows = 128 #if it is first level element, then position it in the grid of 48 rows
-
+    if(firstlevelelem!=None and firstlevelelem["type"]=="COMPONENT"): nrrows=64
     (nr_columnstart,nr_columnend,nr_rowstart,nr_rowend) = getPosition(xielem,yielem,elementwidth,elementheight,page_width,page_height,nrrows)
 
     if(parent_data==None and nr_columnend==64):
@@ -180,8 +180,10 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             allpages[pagename].addVariable({"allOptions"+elemid:melement.options})
             allpages[pagename].addVariable({"allOptionValues"+elemid:[]})
         return melement
-    elif(data["name"]=="ReadOnlyRating" and data["type"]=="INSTANCE"):
-        melement = convertToRating(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"],True)
+    elif((data["name"]=="ReadOnlyRating" or data["name"]=="InteractiveRating") and data["type"]=="INSTANCE"):
+        readOnly = False
+        if(data["name"]=="ReadOnlyRating"): readOnly = True
+        melement = convertToRating(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"],readOnly)
         if(not pagename in allpages):
             addComponentVariable(pagename,{melement.vmodel:'"'+str(melement.selected)+'"'})
         else:
@@ -341,8 +343,12 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                   
     # handles TextElement
     elif(data["type"]=="TEXT"):
-
+        if(firstlevelelem["type"]=="COMPONENT"): pageWidth = firstlevelelem["absoluteRenderBounds"]["width"] * 3
         fontsize = ((data["style"]["fontSize"]) / (pageWidth / 100))
+        #if(data["name"]=="Are you sure you want to delete all the movies from your watchlist?"):
+        #    print(firstlevelelem)
+        #    print(pageWidth)
+        #    print(fontsize) #2.4vw
         #lineheight = ((round(data["style"]["lineHeightPx"])) / (pageWidth / 100))
         lineheight = (round(data["style"]["lineHeightPx"])) 
         color = data["fills"][0]["color"]
@@ -429,7 +435,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                 rgba_shadow = (effect["color"]["r"]*255, effect["color"]["g"]*255, effect["color"]["b"]*255, effect["color"]["a"])
                 shadowX , shadowY = (str(round(effect["offset"]["x"])), str(round(effect["offset"]["y"])))
                 shadowRadius = str(round(effect["radius"]))+"px "
-                spread = "0px"
+                spread = "0px "
                 if("spread" in effect): spread = str(round(effect["spread"]))+"px "
 
                 boxshadow = shadowX+"px " + shadowY+"px " + shadowRadius + spread + "rgba("+','.join(str(val) for val in rgba_shadow)+")"
@@ -603,29 +609,51 @@ def setComponentStyle(component):
 
     return componentStyle
 
-
+overlayComponent=None
 def updateOverlayPosition(component, vx, vy, page_width, page_height):
-    if isinstance(component, (Mcomponent, TextElement, ContainerElement )):
+    global overlayComponent
+    if isinstance(component, (Mcomponent, Melement )):
         if isinstance(component, Mcomponent):
             nrrows = 128 
         else:
             nrrows = 64
-        (columnstart, columnend, rowstart, rowend) = getPosition(component.style.getX() + vx,
-                                                                component.style.getY() + vy,
-                                                                component.style.getWidth(),
-                                                                component.style.getHeight(),
-                                                                page_width,
-                                                                page_height,
-                                                                nrrows
-                                                            )
+
+        if isinstance(component, Mcomponent):
+            (columnstart, columnend, rowstart, rowend) = getPosition(component.style.getX() + vx,
+                                                                            component.style.getY() + vy,
+                                                                            component.style.getWidth(),
+                                                                            component.style.getHeight(),
+                                                                            page_width,
+                                                                            page_height,
+                                                                            nrrows
+                                                                        )
+
+        if(isinstance(component,Mcomponent)):
+            page_width=component.style.getWidth()
+            page_height=component.style.getHeight()
+            overlayComponent = component
+            print(component.style.getX())            
+            print(component.style.getY())            
+            print(component.style.getOverlayVector())            
+
+        if isinstance(component, Melement):
+            (columnstart, columnend, rowstart, rowend) = getPosition(component.style.getX() ,
+                                                                            component.style.getY() ,
+                                                                            component.style.getWidth(),
+                                                                            component.style.getHeight(),
+                                                                            page_width,
+                                                                            page_height,
+                                                                            64
+                                                                        )
+
         component.style.setGridcolumnStart(columnstart)
         component.style.setGridcolumnEnd(columnend)
         component.style.setGridrowStart(rowstart)
         component.style.setGridrowEnd(rowend)
 
-    if(component!=None and component.children):
-        for element in component.children:
-            updateOverlayPosition(element, vx, vy, page_width, page_height)
+    #if(component!=None and component.children):
+    #    for element in component.children:
+    #        updateOverlayPosition(element, vx, vy, page_width, page_height)
 
 def setCornerRadius(style,corners):
     style.setBorderTopLeftRadius(str(corners[0]))

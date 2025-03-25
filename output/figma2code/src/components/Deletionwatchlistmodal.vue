@@ -1,5 +1,5 @@
 <template>
-<div class="grid-item-2362634 component2362634">
+<div>
  <div class="grid-item-2362634 container2362636" v-on:click="close2362634()">
   <p class="grid-item-2362634 text2362637">
    No, Cancel

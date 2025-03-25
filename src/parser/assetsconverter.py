@@ -133,23 +133,37 @@ def convertToRating(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,na
     colorStar = ""
     unselectedStarColor = ""
     selected = 0
-    for i in range(0,len(data["children"])):        
-        star = data["children"][i]
-        if(len(star["fills"])>0):
+    if(readOnly==True):
+        for i in range(0,len(data["children"])):        
             star = data["children"][i]
-            color = star["fills"][0]["color"]
-            colorStar = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
-            selected = i + 1
-        if(i<len(data["children"])-2):
-            star = data["children"][i+1]
-            if(len(star["fills"])>0): 
+            if(len(star["fills"])>0):
                 color = star["fills"][0]["color"]
-                unselectedStarColor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
-                if(colorStar!=unselectedStarColor): break
+                colorStar = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
+                selected = i + 1
+            if(i<len(data["children"])-2):
+                star = data["children"][i+1]
+                if(len(star["fills"])>0): 
+                    color = star["fills"][0]["color"]
+                    unselectedStarColor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
+                    if(colorStar!=unselectedStarColor): break
+    else:
+        for i in range(0,len(data["children"])):        
+            star = data["children"][i]["children"][0]["children"][0]["children"][0]
+            if(len(star["fills"])>0):
+                color = star["fills"][0]["color"]
+                colorStar = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
+                selected = i + 1
+            if(i<len(data["children"])-2):
+                star = data["children"][i+1]["children"][0]["children"][0]["children"][0]
+                if(len(star["fills"])>0): 
+                    color = star["fills"][0]["color"]
+                    unselectedStarColor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
+                    if(colorStar!=unselectedStarColor): break
     style = RatingStyle(colorStar,unselectedStarColor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
 
     rating =  Rating(id,"",name,"COMPONENT_ASSET",nrstars,readOnly,vmodel,selected,style)
     return rating
+
 
 def getElemId(id):
     elemid = id

@@ -223,6 +223,7 @@ def setComponentPositionCSS(projectname,pagename,componentName,elem):
   position:"""+  str(elem.style.getPosition()) +""";
   top:"""+ top +""";
   left:"""+ left +""";
+  z-index: 5;
 }
 """
   cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"

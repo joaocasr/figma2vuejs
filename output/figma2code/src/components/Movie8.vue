@@ -1,5 +1,5 @@
 <template>
-<div class="grid-item-2362326 component2362326">
+<div>
  <img class="grid-item container2362529" src="/Joker2019FinalStylestepsPosterbuyoriginalmoviepostersatstarstills__625181.png"/>
  <div class="grid-item-2362326 container2362530">
   <p class="grid-item-2362326 text2362531">

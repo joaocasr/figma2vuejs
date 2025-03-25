@@ -1,5 +1,5 @@
 <template>
-<div class="grid-item-2362323 component2362323">
+<div>
  <img class="grid-item container2362565" src="/MV5BMTg5MjMzNDczM15BMl5BanBnXkFtZTgwMjMwMjM5MTE_V1_FMjpg_UX1000_1.png"/>
  <div class="grid-item-2362323 container2362566">
   <p class="grid-item-2362323 text2362567">

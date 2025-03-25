@@ -37,7 +37,7 @@
 	grid-column-start: 1;
 	grid-column-end: 65;
 	grid-row-start: 1;
-	grid-row-end: 54;
+	grid-row-end: 53;
 	border-radius: 8.0px;
 	width: 100%;
 	height: 100%;
@@ -56,8 +56,8 @@
 	color: rgba(224.000001847744,224.000001847744,224.000001847744,1.0);
 	grid-column-start: 1;
 	grid-column-end: 47;
-	grid-row-start: 57;
-	grid-row-end: 64;
+	grid-row-start: 56;
+	grid-row-end: 63;
 	overflow-wrap: break-word;
 	width: 100%;
 	display: flex;

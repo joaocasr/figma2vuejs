@@ -1,23 +1,16 @@
 <template>
 <div class="grid-container">
- <div class="grid-item container2362312">
-  <div class="grid-item rectangle2362313">
-  </div>
-  <p class="grid-item text2362314">
-   1
-  </p>
- </div>
- <Homebanner></Homebanner>
- <Footer></Footer>
+ <Homebanner class="grid-item-2362316 component2362316"></Homebanner>
+ <Footer class="grid-item-2362317 component2362317"></Footer>
  <div class="grid-item container2362318">
-  <Movie1></Movie1>
-  <Movie2></Movie2>
-  <Movie3></Movie3>
-  <Movie4></Movie4>
-  <Movie5></Movie5>
-  <Movie6></Movie6>
-  <Movie7></Movie7>
-  <Movie8></Movie8>
+  <Movie1 class="grid-item-2362319 component2362319"></Movie1>
+  <Movie2 class="grid-item-2362320 component2362320"></Movie2>
+  <Movie3 class="grid-item-2362321 component2362321"></Movie3>
+  <Movie4 class="grid-item-2362322 component2362322"></Movie4>
+  <Movie5 class="grid-item-2362323 component2362323"></Movie5>
+  <Movie6 class="grid-item-2362324 component2362324"></Movie6>
+  <Movie7 class="grid-item-2362325 component2362325"></Movie7>
+  <Movie8 class="grid-item-2362326 component2362326"></Movie8>
  </div>
  <IconField class="ssearchinputfilter2377217">
   <InputIcon class="pi pi-search">
@@ -25,7 +18,6 @@
   <InputText placeholder="Search . . ." v-model="inputsearch2377217">
   </InputText>
  </IconField>
- <Navbar></Navbar>
  <div class="grid-item container2442234">
   <p class="grid-item text2442235">
    Upcoming Movies
@@ -66,36 +58,37 @@
    <img class="grid-item container2442250" src="/govector.svg"/>
   </div>
  </div>
+ <Navbar class="grid-item-2362346 component2362346 posnavbar"></Navbar>
 </div>
 
 </template>
 
 <script>
 import Homebanner from '@/components/Homebanner.vue';
+import Movie5 from '@/components/Movie5.vue';
+import Movie3 from '@/components/Movie3.vue';
+import Navbar from '@/components/Navbar.vue';
+import Movie4 from '@/components/Movie4.vue';
+import Movie2 from '@/components/Movie2.vue';
 import Footer from '@/components/Footer.vue';
 import Movie1 from '@/components/Movie1.vue';
-import Movie2 from '@/components/Movie2.vue';
-import Movie3 from '@/components/Movie3.vue';
-import Movie4 from '@/components/Movie4.vue';
-import Movie5 from '@/components/Movie5.vue';
+import Movie8 from '@/components/Movie8.vue';
 import Movie6 from '@/components/Movie6.vue';
 import Movie7 from '@/components/Movie7.vue';
-import Movie8 from '@/components/Movie8.vue';
-import Navbar from '@/components/Navbar.vue';
 
 export default {
     components:{
         Homebanner,
+        Movie5,
+        Movie3,
+        Navbar,
+        Movie4,
+        Movie2,
         Footer,
         Movie1,
-        Movie2,
-        Movie3,
-        Movie4,
-        Movie5,
-        Movie6,
-        Movie7,
         Movie8,
-        Navbar
+        Movie6,
+        Movie7
     },
     data(){
         return {

@@ -25,7 +25,7 @@ def buildpage(name,page,pagesInfo):
     #setup a page
     allhooks[page.pagename] = {}
     imports[page.pagename] = []
-    components[page.pagename] = []
+    components[page.pagename] = set()
     componentAssets[page.pagename] = []
     allPagesInfo = pagesInfo
     output = ""  
@@ -96,7 +96,7 @@ def applytransformation(elem,projectname,page):
             if(elem.style.getdropdownbackgroundcolor()!=None):
                 showicon = ":showOnFocus='false' showIcon='' fluid=''"
             return (f'<DatePicker {vmodel} class="{cssclass}" {showicon} >','</DatePicker>')
-        if(elem.getNameComponent()=="ReadOnlyRating" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+        if((elem.getNameComponent()=="ReadOnlyRating" or elem.getNameComponent()=="InteractiveRating") and elem.getTypeComponent()=="COMPONENT_ASSET"):
             useRatingVuetifyPlugin(projectname)
             cssclass= "srating" + cssclass
             vmodel = str(elem.vmodel)
@@ -154,12 +154,12 @@ def applytransformation(elem,projectname,page):
         return (begintag,endtag)
     if isinstance(elem, Mcomponent):
         componentName = elem.componentName.capitalize()
-        classname=""
+        classname = 'class="'+"grid-item-"+getElemId(elem.idComponent)+' component'+ getElemId(elem.idComponent)     
         if(elem.style.getPosition()!=None):
-            classname = 'class="'+"pos"+componentName.lower()+'" '
+            classname += " pos"+componentName.lower()
             setComponentPositionCSS(projectname,pagename,"pos"+componentName.lower(),elem)
-        components.setdefault(pagename, []).append(elem.componentName.lower())
-        return ("<"+componentName+f" {classname}"+ ' '.join(d for d in directives) + ">","</"+componentName+">")
+        components.setdefault(pagename, {}).add(elem.componentName.lower())
+        return ("<"+componentName+f" {classname}"+'" '+ ' '.join(d for d in directives) + ">","</"+componentName+">")
     return ("","")
 
 def writeVue(name,page,content):
@@ -212,7 +212,7 @@ def processTemplate(html_string,page):
     soup = BeautifulSoup(html_string, "html.parser")
     finalHtml = soup.prettify()
     for c in components[page]:
-        pattern = "<"+c.lower()+r"([\s]*.*?)"+">"+r"(\n|.)*"+r"<\/"+c.lower()+">"
+        pattern = "<"+c.lower()+r"([\s]*.*?)"+">"+r"(\n|.)*?"+r"<\/"+c.lower()+">"
         processedTemplate = re.sub(pattern,"<"+c.capitalize()+ r'\1' +">"+"</"+c.capitalize()+">",finalHtml)
         finalHtml = processedTemplate
     for c in componentAssets[page]:

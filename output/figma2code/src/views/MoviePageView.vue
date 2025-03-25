@@ -55,50 +55,46 @@
  </div>
  <div class="grid-item line2362428">
  </div>
- <div class="grid-item container2362429">
-  <div class="grid-item rectangle2362430">
-  </div>
-  <p class="grid-item text2362431">
-   1
-  </p>
- </div>
- <Footer></Footer>
+ <Footer class="grid-item-2362433 component2362433"></Footer>
  <div class="grid-item container2362434">
-  <Related1></Related1>
-  <Related2></Related2>
-  <Related3></Related3>
+  <Related1 class="grid-item-2362435 component2362435"></Related1>
+  <Related2 class="grid-item-2362436 component2362436"></Related2>
+  <Related3 class="grid-item-2362437 component2362437"></Related3>
  </div>
- <Review></Review>
+ <Review class="grid-item-23641380 component23641380"></Review>
+ <Review class="grid-item-2488518 component2488518"></Review>
  <v-rating :length="5" :model-value="starsSeletec2465472" :size="25" class="srating2465472"  half-increments hover readonly >
  </v-rating>
- <Navbar class="posnavbar"></Navbar>
- <Confirmationwatchlistmodal @close-from2362622-to2362620="show2362620=false" @close-from2362624-to2362620="show2362620=false" v-if="show2362620==true"></Confirmationwatchlistmodal>
+ <Navbar class="grid-item-2362441 component2362441 posnavbar"></Navbar>
+ <Confirmationwatchlistmodal @close-from2362622-to2362620="show2362620=false" @close-from2362624-to2362620="show2362620=false" class="grid-item-2362620 component2362620" v-if="show2362620==true"></Confirmationwatchlistmodal>
 </div>
 
 </template>
 
 <script>
-import Footer from '@/components/Footer.vue';
-import Related1 from '@/components/Related1.vue';
-import Related2 from '@/components/Related2.vue';
-import Related3 from '@/components/Related3.vue';
 import Review from '@/components/Review.vue';
+import Related1 from '@/components/Related1.vue';
 import Navbar from '@/components/Navbar.vue';
+import Related2 from '@/components/Related2.vue';
 import Confirmationwatchlistmodal from '@/components/Confirmationwatchlistmodal.vue';
+import Footer from '@/components/Footer.vue';
+import Related3 from '@/components/Related3.vue';
 
 export default {
     components:{
-        Footer,
-        Related1,
-        Related2,
-        Related3,
         Review,
+        Related1,
         Navbar,
-        Confirmationwatchlistmodal
+        Related2,
+        Confirmationwatchlistmodal,
+        Footer,
+        Related3
     },
     data(){
         return {
             show2362620:false,
+            starsSeletec2480470:"5",
+            starsSeletec2480470:"5",
             starsSeletec2465472:"3"    
         }
     },

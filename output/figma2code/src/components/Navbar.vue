@@ -1,5 +1,5 @@
 <template>
-<div class="grid-item-2362644 component2362644">
+<div>
  <img class="grid-item container2362353" src="/48311921.png"/>
  <p class="grid-item-2362644 text2362354" v-on:click="gotoHomePage()">
   MOVIESTV

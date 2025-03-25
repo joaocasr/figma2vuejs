@@ -1,5 +1,5 @@
 <template>
-<div class="grid-item-2362319 component2362319">
+<div>
  <img class="grid-item container2362514" src="/image10.png" v-on:click="gotoMoviePage()"/>
  <div class="grid-item-2362319 container2362515">
   <p class="grid-item-2362319 text2362516" v-on:click="gotoMoviePage()">

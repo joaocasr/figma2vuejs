@@ -1,6 +1,6 @@
 <template>
-<div class="grid-item-2362437 component2362437">
- <img class="grid-item container2362678" src="/boyheron.png"/>
+<div>
+ <img class="grid-item container2362678" src="/furiosa.png"/>
  <p class="grid-item-2362437 text2362679">
   Furiosa: A Mad Max Saga
  </p>

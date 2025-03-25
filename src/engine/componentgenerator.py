@@ -99,7 +99,7 @@ def applytransformation(elem,projectname,pagename,idcomponent):
 
         return (begintag,endtag)
 
-    if(isinstance(elem, Mcomponent) and elem.getNameComponent()=="ReadOnlyRating"):
+    if(isinstance(elem, Mcomponent) and (elem.getNameComponent()=="ReadOnlyRating" or elem.getNameComponent()=="InteractiveRating")):
         useRatingVuetifyPlugin(projectname)
         cssclass= "srating" + cssclass
         vmodel = str(elem.vmodel)
@@ -127,7 +127,7 @@ def writeVueComponent(name,project_name,content,component,pagesInfo):
         pagehooks = pagehooks[:-2]
         pagehooks +="\n\t}"
     if(len(pagehooks)>0): pagehooks = ",\n    "+pagehooks
-    template = '<div class="grid-item-'+idcomponent+' component'+ idcomponent +'"'+ ">"+ content + '</div>'
+    template = '<div>' + content + '</div>' #'<div class="grid-item-'+idcomponent+' component'+ idcomponent +'"'+ ">"+ content + '</div>'
     componentpage = """<template>\n""" + processTemplate(template,name) + """
 </template>
 
