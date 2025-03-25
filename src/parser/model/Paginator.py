@@ -10,4 +10,4 @@ class Paginator(Mcomponent):
 		self.totalvisible = totalvisible
 		self.length = length
 		self.vmodel = vmodel
-        self.style = style
+		self.style = style

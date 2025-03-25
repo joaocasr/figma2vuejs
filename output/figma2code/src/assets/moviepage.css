@@ -1012,6 +1012,23 @@
 	color: rgba(255.0,202.9374584555626,69.0624949336052,1.0);
 }
   
+.spaginator2488497 {
+    grid-column-start: 13;
+    grid-column-end: 27;
+    grid-row-start: 72;
+    grid-row-end: 73;
+}
+  :deep(.spaginator2488497 .v-pagination__item--is-active .v-btn) {
+    background-color:  rgba(44.000001177191734,44.000001177191734,44.000001177191734,1.0) !important;
+    color: rgba(245.00000059604645,245.00000059604645,245.00000059604645,1.0) !important;
+    border-radius:8.0px;
+  }
+
+  :deep(.spaginator2488497 .v-pagination__item .v-btn) {
+    color:  rgba(245.00000059604645,245.00000059604645,245.00000059604645,1.0);
+  }
+
+  
 .posnavbar {
   position:sticky;
   top:0%;

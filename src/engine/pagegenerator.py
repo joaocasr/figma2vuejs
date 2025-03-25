@@ -1,5 +1,5 @@
-from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties
-from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin, useRatingVuetifyPlugin
+from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties, generatePaginatorCssProperties
+from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin, useRatingVuetifyPlugin, usePaginatorVuetifyPlugin
 from engine.logicgenerator import handleBehaviour,getpopulateDropdownFunction
 from parser.model.Mcomponent import Mcomponent
 from parser.model.Melement import Melement
@@ -116,6 +116,13 @@ def applytransformation(elem,projectname,page):
             generateSliderCssProperties(projectname,pagename,cssclass,elem)
             componentAssets[pagename].extend([" Slider"])
             return (f'<Slider {vmodel} class="{cssclass}" >','</Slider>')
+        if(elem.getNameComponent()=="Paginator" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+            usePaginatorVuetifyPlugin(projectname)
+            cssclass= "spaginator" + cssclass
+            vmodel = 'v-model="'+str(elem.vmodel)+'"'
+            generatePaginatorCssProperties(projectname,pagename,cssclass,elem)
+            componentAssets[pagename].extend([" v-pagination"])
+            return (f'<v-pagination {vmodel} :total-visible="{elem.totalvisible}" :length="{elem.length}" class="{cssclass}" >','</v-pagination>')
 
     if(isinstance(elem, TextElement)):
         generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)

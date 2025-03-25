@@ -175,10 +175,12 @@ def generateComponentStyle(name,component):
   boxshadow = ""
   border = ""
   borderRadius=""
+  zindex=""
   if(component.style.background!=None): background = """\n  background:"""+ component.style.background+";"
   if(component.style.boxShadow != None): boxshadow ="\n  "+f"box-shadow: {component.style.boxShadow};"
   if(component.style.borderStyle) != None: border ="\n  "+f"border: {component.style.borderStyle};"
   if(component.style.borderRadius) != None: borderRadius ="\n  "+f"border-radius: {component.style.borderRadius}px;"
+  if(component.type=="OVERLAY"): zindex = "\n  "+f"z-index: 2;"
 
   css = """\n.component"""+ idcomponent +""" {
   display:"""+ component.style.display+ """;
@@ -189,7 +191,7 @@ def generateComponentStyle(name,component):
   grid-row-start:"""+ str(component.style.gridrowStart)+""";
   grid-row-end:"""+ str(component.style.gridrowEnd)+""";
   margin:"""+ component.style.margin + """;
-  padding:"""+ component.style.padding + """;"""+ border + boxshadow + background + borderRadius + """
+  padding:"""+ component.style.padding + """;"""+ border + boxshadow + background + borderRadius + zindex + """
 }
   
 .grid-item-"""+ idcomponent + """ {
@@ -211,6 +213,32 @@ def generateComponentStyle(name,component):
     lines.insert(0, newcsscontent)
     f.seek(0)   
     f.writelines(lines)
+
+def generatePaginatorCssProperties(projectname,pagename,cssclass,elem):
+  css ="""\n."""+ str(cssclass) + """ {
+    grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
+    grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
+    grid-row-start: """+  str(elem.style.gridrowStart)+""";
+    grid-row-end: """+  str(elem.style.gridrowEnd)+""";
+}
+  :deep(."""+ str(cssclass) + """ .v-pagination__item--is-active .v-btn) {
+    background-color:  """+  str(elem.style.getbackgroundColor()) +""" !important;
+    color: """+  str(elem.style.getcolor()) +""" !important;
+    border-radius:"""+  str(elem.style.getborderRadius()) +"""px;
+  }
+
+  :deep(."""+ str(cssclass) + """ .v-pagination__item .v-btn) {
+    color:  """+  str(elem.style.getcolor()) +""";
+  }
+
+  """
+  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  mode = "w"
+  if os.path.isfile(cssfile):
+    mode = "a"
+  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+    f.write(css)
+
 
 def setComponentPositionCSS(projectname,pagename,componentName,elem):
   top="0%"

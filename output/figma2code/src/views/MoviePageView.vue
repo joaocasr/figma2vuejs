@@ -65,6 +65,8 @@
  <Review class="grid-item-2488518 component2488518"></Review>
  <v-rating :length="5" :model-value="starsSeletec2465472" :size="25" class="srating2465472"  half-increments hover readonly >
  </v-rating>
+ <v-pagination :length="68" :total-visible="3" class="spaginator2488497" v-model="currentPage2488497">
+ </v-pagination>
  <Navbar class="grid-item-2362441 component2362441 posnavbar"></Navbar>
  <Confirmationwatchlistmodal @close-from2362622-to2362620="show2362620=false" @close-from2362624-to2362620="show2362620=false" class="grid-item-2362620 component2362620" v-if="show2362620==true"></Confirmationwatchlistmodal>
 </div>
@@ -72,30 +74,31 @@
 </template>
 
 <script>
-import Review from '@/components/Review.vue';
-import Related1 from '@/components/Related1.vue';
-import Navbar from '@/components/Navbar.vue';
 import Related2 from '@/components/Related2.vue';
-import Confirmationwatchlistmodal from '@/components/Confirmationwatchlistmodal.vue';
-import Footer from '@/components/Footer.vue';
 import Related3 from '@/components/Related3.vue';
+import Related1 from '@/components/Related1.vue';
+import Footer from '@/components/Footer.vue';
+import Navbar from '@/components/Navbar.vue';
+import Review from '@/components/Review.vue';
+import Confirmationwatchlistmodal from '@/components/Confirmationwatchlistmodal.vue';
 
 export default {
     components:{
-        Review,
-        Related1,
-        Navbar,
         Related2,
-        Confirmationwatchlistmodal,
+        Related3,
+        Related1,
         Footer,
-        Related3
+        Navbar,
+        Review,
+        Confirmationwatchlistmodal
     },
     data(){
         return {
             show2362620:false,
             starsSeletec2480470:"5",
             starsSeletec2480470:"5",
-            starsSeletec2465472:"3"    
+            starsSeletec2465472:"3",
+            currentPage2488497:1    
         }
     },
     methods:{

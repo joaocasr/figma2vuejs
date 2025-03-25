@@ -6,6 +6,8 @@ from parser.model.DatePicker import DatePicker
 from parser.model.DatePickerStyle import DatePickerStyle
 from parser.model.Rating import Rating
 from parser.model.RatingStyle import RatingStyle
+from parser.model.Paginator import Paginator
+from parser.model.PaginatorStyle import PaginatorStyle
 from parser.model.Slider import Slider
 from parser.model.SliderStyle import SliderStyle
 
@@ -164,6 +166,41 @@ def convertToRating(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,na
     rating =  Rating(id,"",name,"COMPONENT_ASSET",nrstars,readOnly,vmodel,selected,style)
     return rating
 
+def convertToPaginator(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name):
+    elemid = getElemId(id)
+    vmodel = "currentPage"+str(elemid)
+    paginationList = None
+    backgroundcolor = None
+    cornerRadius = None
+    length = 0
+    visible = 0
+    for l in data["children"][0]["children"]:
+        if(l["name"]=="Pagination List"):
+            for p in l["children"]:
+                if(p["name"]!="Pagination Gap"):
+                    visible+=1
+                else:
+                    break
+
+            selectedColor = l["children"][0]["children"][0]["fills"][0]["color"]
+            txtselectedColor = "rgba("+str(selectedColor["r"] * 255)+","+str(selectedColor["g"] * 255)+","+str(selectedColor["b"] * 255)+","+str(selectedColor["a"])+")"
+            selectedbackgroundColor = l["children"][0]["background"][0]["color"]
+            cornerRadius = l["children"][0]["cornerRadius"]
+            backgroundcolor = "rgba("+str(selectedbackgroundColor["r"] * 255)+","+str(selectedbackgroundColor["g"] * 255)+","+str(selectedbackgroundColor["b"] * 255)+","+str(selectedbackgroundColor["a"])+")"
+            l["children"].reverse()
+            length = l["children"][0]["children"][0]['characters']
+
+    style = PaginatorStyle(cornerRadius,txtselectedColor,txtselectedColor,backgroundcolor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
+
+    rating =  Paginator(id,"",name,"COMPONENT_ASSET",vmodel,visible,length,style)
+    return rating
+    
+
+    print(cornerRadius)
+    print(txtselectedColor)
+    print(backgroundcolor)
+    print(length)
+    print(visible)
 
 def getElemId(id):
     elemid = id

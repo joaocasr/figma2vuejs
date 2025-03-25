@@ -263,6 +263,29 @@ def useRatingVuetifyPlugin(name):
     f.close()
     allDependencies["vrating"]=True
 
+def usePaginatorVuetifyPlugin(name):
+  global allDependencies
+  content =""
+  filevuetify = "../output/"+name+"/src/plugins/vuetify.js"
+  if("vpagination" not in allDependencies):
+    selectimport = "import { VPagination } from 'vuetify/components';\n"
+    componentname ="\tVPagination"
+    f = open(filevuetify, "r")
+    for l in f.readlines():
+      l = l.strip()
+      content+=l+"\n"
+      if(l=="import '@mdi/font/css/materialdesignicons.css';"):
+        content+=selectimport
+      if(l=="components: {},"):
+        content=content[:-3] +"\n"+ componentname + "\n},\n"
+      if(l=="components: {"):
+        content+= componentname + ",\n"
+    f.close()
+    f= open(filevuetify,"w")
+    f.write(content)
+    f.close()
+    allDependencies["vpagination"]=True
+    
 def useIconFieldPrimevuePlugin(name):
   global allDependencies
   content =""

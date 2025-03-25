@@ -58,37 +58,39 @@
    <img class="grid-item container2442250" src="/govector.svg"/>
   </div>
  </div>
+ <v-pagination :length="68" :total-visible="3" class="spaginator2487476" v-model="currentPage2487476">
+ </v-pagination>
  <Navbar class="grid-item-2362346 component2362346 posnavbar"></Navbar>
 </div>
 
 </template>
 
 <script>
+import Movie1 from '@/components/Movie1.vue';
+import Movie4 from '@/components/Movie4.vue';
 import Homebanner from '@/components/Homebanner.vue';
-import Movie5 from '@/components/Movie5.vue';
+import Footer from '@/components/Footer.vue';
+import Movie7 from '@/components/Movie7.vue';
+import Movie2 from '@/components/Movie2.vue';
 import Movie3 from '@/components/Movie3.vue';
 import Navbar from '@/components/Navbar.vue';
-import Movie4 from '@/components/Movie4.vue';
-import Movie2 from '@/components/Movie2.vue';
-import Footer from '@/components/Footer.vue';
-import Movie1 from '@/components/Movie1.vue';
-import Movie8 from '@/components/Movie8.vue';
 import Movie6 from '@/components/Movie6.vue';
-import Movie7 from '@/components/Movie7.vue';
+import Movie8 from '@/components/Movie8.vue';
+import Movie5 from '@/components/Movie5.vue';
 
 export default {
     components:{
+        Movie1,
+        Movie4,
         Homebanner,
-        Movie5,
+        Footer,
+        Movie7,
+        Movie2,
         Movie3,
         Navbar,
-        Movie4,
-        Movie2,
-        Footer,
-        Movie1,
-        Movie8,
         Movie6,
-        Movie7
+        Movie8,
+        Movie5
     },
     data(){
         return {
@@ -100,7 +102,8 @@ export default {
             starsSeletec2473303:"3",
             starsSeletec2473375:"3",
             starsSeletec2473355:"3",
-            inputsearch2377217:""    
+            inputsearch2377217:"",
+            currentPage2487476:1    
         }
     },
     methods:{
