@@ -213,6 +213,7 @@ def installPrimeVueDependencies(name):
     primevue =  subprocess.run(['npm','install','primevue'],cwd='../output/'+name,capture_output=True, text=True)
     primeicons =  subprocess.run(['npm','install','primeicons'],cwd='../output/'+name,capture_output=True, text=True)
     primevuethemes =  subprocess.run(['npm','install','@primevue/themes'],cwd='../output/'+name,capture_output=True, text=True)
+    primeforms =  subprocess.run(['npm','install','@primevue/forms'],cwd='../output/'+name,capture_output=True, text=True)
     allDependencies["primevue"]=True
   else:
     print("PrimeVue is already installed.")
@@ -285,20 +286,55 @@ def usePaginatorVuetifyPlugin(name):
     f.write(content)
     f.close()
     allDependencies["vpagination"]=True
-    
+
+def useFormPrimeVuePlugin(name):
+  global allDependencies
+  content =""
+  if("form" not in allDependencies or "inputtext" not in allDependencies or "message" not in allDependencies==False):
+    filemain = "../output/"+name+"/src/plugins/primevue.js"
+    primeimport = ""
+    primecomponent = ""
+    if("form" not in allDependencies): 
+      primeimport+="""import { Form } from '@primevue/forms';\n"""
+      primecomponent+="""app.component('Form',Form)\n"""
+    if("inputtext" not in allDependencies):
+      primeimport+="""import InputText from 'primevue/inputtext';\n"""
+      primecomponent+="""app.component('InputText',InputText)\n"""
+    if("message" not in allDependencies):
+      primeimport+="""import Message from 'primevue/message';\n"""
+      primecomponent+="""app.component('Message',Message)\n"""
+    f = open(filemain, "r")
+    for l in f.readlines():
+      l = l.strip()
+      content+=l+"\n"
+      if(l=="import 'primeicons/primeicons.css';"):
+        content+=primeimport
+      if(l=="});"):
+        content+=primecomponent
+    f.close()
+    f= open(filemain,"w")
+    f.write(content)
+    f.close()
+    allDependencies["form"]=True
+    allDependencies["inputtext"]=True
+    allDependencies["message"]=True
+
 def useIconFieldPrimevuePlugin(name):
   global allDependencies
   content =""
   if("inputtext" not in allDependencies or "inputicon" not in allDependencies or "iconfield" not in allDependencies==False):
     filemain = "../output/"+name+"/src/plugins/primevue.js"
-    primeimport = """import InputText from 'primevue/inputtext';
-import InputIcon from 'primevue/inputicon';
-import IconField from 'primevue/iconfield';
-"""
-    primecomponent = """app.component('InputText',InputText)
-app.component('InputIcon',InputIcon)
-app.component('IconField',IconField)
-"""
+    primeimport = ""
+    primecomponent = ""
+    if("inputtext" not in allDependencies): 
+      primeimport+="""import InputText from 'primevue/inputtext';\n"""
+      primecomponent+="""app.component('InputText',InputText)\n"""
+    if("inputicon" not in allDependencies):
+      primeimport+="""import InputIcon from 'primevue/inputicon';\n"""
+      primecomponent+="""app.component('InputIcon',InputIcon)\n"""
+    if("iconfield" not in allDependencies):
+      primeimport+="""import IconField from 'primevue/iconfield';\n"""      
+      primecomponent+="""app.component('IconField',IconField)\n"""
     f = open(filemain, "r")
     for l in f.readlines():
       l = l.strip()

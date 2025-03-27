@@ -76,21 +76,21 @@
 <script>
 import Related2 from '@/components/Related2.vue';
 import Related3 from '@/components/Related3.vue';
-import Related1 from '@/components/Related1.vue';
-import Footer from '@/components/Footer.vue';
-import Navbar from '@/components/Navbar.vue';
-import Review from '@/components/Review.vue';
 import Confirmationwatchlistmodal from '@/components/Confirmationwatchlistmodal.vue';
+import Navbar from '@/components/Navbar.vue';
+import Footer from '@/components/Footer.vue';
+import Related1 from '@/components/Related1.vue';
+import Review from '@/components/Review.vue';
 
 export default {
     components:{
         Related2,
         Related3,
-        Related1,
-        Footer,
+        Confirmationwatchlistmodal,
         Navbar,
-        Review,
-        Confirmationwatchlistmodal
+        Footer,
+        Related1,
+        Review
     },
     data(){
         return {

@@ -239,6 +239,33 @@ def generatePaginatorCssProperties(projectname,pagename,cssclass,elem):
   with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
     f.write(css)
 
+def generateFormCssProperties(projectname,pagename,cssclass,elem,formclass,inputclass,btnclass):
+  css ="""\n."""+ str(formclass) + """ {
+    grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
+    grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
+    grid-row-start: """+  str(elem.style.gridrowStart)+""";
+    grid-row-end: """+  str(elem.style.gridrowEnd)+""";
+    margin:10px;
+  }
+ 
+  ."""+ str(btnclass) + """ {
+    background-color: """+  str(elem.style.getbackgroundcolorbtn())+""";
+    border-radius: 8px;
+    margin:10px;
+  }
+."""+ str(inputclass) + """ .p-inputtext{ 
+   --p-inputtext-background:"""+  str(elem.style.getbackgroundcolor())+""";
+   margin:10px;
+
+}
+  """
+  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  mode = "w"
+  if os.path.isfile(cssfile):
+    mode = "a"
+  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+    f.write(css)
+
 
 def setComponentPositionCSS(projectname,pagename,componentName,elem):
   top="0%"

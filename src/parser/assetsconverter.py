@@ -10,6 +10,8 @@ from parser.model.Paginator import Paginator
 from parser.model.PaginatorStyle import PaginatorStyle
 from parser.model.Slider import Slider
 from parser.model.SliderStyle import SliderStyle
+from parser.model.Form import Form
+from parser.model.FormStyle import FormStyle
 
 import re 
 
@@ -195,12 +197,30 @@ def convertToPaginator(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id
     rating =  Paginator(id,"",name,"COMPONENT_ASSET",vmodel,visible,length,style)
     return rating
     
+def convertToForm(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name):
+    inputs = []
+    buttontxt = None
+    inputbackgroundcolor=""
+    btnbackgroundcolor=""
+    data["children"].reverse()
+    for i in data["children"]:
+        if(i["name"]!="submitbtn"):
+            inputs.append({"name":getFormatedName(i["name"]),"placeholder":i["children"][0]["characters"]})
+            color = i["background"][0]["color"]
+            inputbackgroundcolor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
+        else:
+            buttontxt = i["children"][0]["characters"]
+            color = i["background"][0]["color"]
+            btnbackgroundcolor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
 
-    print(cornerRadius)
-    print(txtselectedColor)
-    print(backgroundcolor)
-    print(length)
-    print(visible)
+    style = FormStyle(inputbackgroundcolor,btnbackgroundcolor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
+    form =  Form(id,"",name,"COMPONENT_ASSET",inputs,buttontxt,style)
+    return form
+
+def getFormatedName(name):
+    pattern = "[\s\.-;:]"
+    name = re.sub(pattern,"",name)
+    return name
 
 def getElemId(id):
     elemid = id

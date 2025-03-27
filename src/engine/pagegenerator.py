@@ -1,6 +1,7 @@
-from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties, generatePaginatorCssProperties
-from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin, useRatingVuetifyPlugin, usePaginatorVuetifyPlugin
+from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties, generatePaginatorCssProperties, generateFormCssProperties
+from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin, useRatingVuetifyPlugin, usePaginatorVuetifyPlugin, useFormPrimeVuePlugin
 from engine.logicgenerator import handleBehaviour,getpopulateDropdownFunction
+from engine.assetshelper import getPrimeVueForm
 from parser.model.Mcomponent import Mcomponent
 from parser.model.Melement import Melement
 from parser.model.TextElement import TextElement
@@ -17,6 +18,7 @@ import itertools
 allhooks = dict()
 imports = dict()
 components = dict()
+auxiliarImports = dict()
 componentAssets = dict()
 allPagesInfo = dict()
 
@@ -26,6 +28,7 @@ def buildpage(name,page,pagesInfo):
     allhooks[page.pagename] = {}
     imports[page.pagename] = []
     components[page.pagename] = set()
+    auxiliarImports[page.pagename] = set()
     componentAssets[page.pagename] = []
     allPagesInfo = pagesInfo
     output = ""  
@@ -70,7 +73,6 @@ def applytransformation(elem,projectname,page):
         if(elem.getNameComponent()=="Dropdown" and elem.getTypeComponent()=="COMPONENT_ASSET"):
             useSelectVuetifyPlugin(projectname)
             options = ':items="allOptionValues'+str(cssclass)+'"'
-            allhooks[pagename].setdefault("mounted", []).extend([('getItems'+str(cssclass),getpopulateDropdownFunction('allOptionValues'+str(cssclass),'allOptions'+str(cssclass)))])
 
             cssclass= "svueselect" + cssclass
             vmodel = 'v-model="'+str(elem.vmodel)+'"'
@@ -123,6 +125,13 @@ def applytransformation(elem,projectname,page):
             generatePaginatorCssProperties(projectname,pagename,cssclass,elem)
             componentAssets[pagename].extend([" v-pagination"])
             return (f'<v-pagination {vmodel} :total-visible="{elem.totalvisible}" :length="{elem.length}" class="{cssclass}" >','</v-pagination>')
+        if(elem.getNameComponent()=="Form" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+            useFormPrimeVuePlugin(projectname)
+            form = getPrimeVueForm(elem,cssclass,elem.inputs,elem.buttontxt)
+            generateFormCssProperties(projectname,pagename,cssclass,elem,f"form{cssclass}",f"inputform{cssclass}",f"submitbtnform{cssclass}")
+            auxiliarImports[pagename].add("import { ref } from 'vue'")
+            componentAssets[pagename].extend([" Form"," InputText"," Message"])
+            return form
 
     if(isinstance(elem, TextElement)):
         generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
@@ -174,6 +183,8 @@ def writeVue(name,page,content):
     componentsimports=""
     for comp in components[page.getPagename()]:
         componentsimports += "import "+str(comp).capitalize()+" from '@/components/"+str(comp).capitalize()+".vue';\n" 
+    for auximports in auxiliarImports[page.getPagename()]:
+        componentsimports += auximports+";\n"
     cssimport = "@import '../assets/"+page.getPagename().lower()+".css';"
     template = '<div class="grid-container">'+ content + '</div>'
     pagehooks=""
@@ -183,13 +194,21 @@ def writeVue(name,page,content):
     for hook in allhooks[page.getPagename()]:
         if("methods" in hook): pagehooks += hook + ":{\n"
         if("mounted" in hook): pagehooks += hook + "(){\n"
+        if("setup" in hook): pagehooks += hook + "(){\n"
         for content in allhooks[page.getPagename()][hook]:
             if("methods" in hook): 
                 pagehooks += content[1] + ",\n"
             if("mounted" in hook): 
                 pagehooks += content[1] + "\n\n"
-        pagehooks = pagehooks[:-2]
-        pagehooks +="\n\t},"
+            if("setup" in hook): 
+                pagehooks += content[1] + "\n\n"
+        if(hook=="setup"): #writing the return statements from setup content
+            pagehooks+="        return {\n          """
+            for content in allhooks[page.getPagename()][hook]:
+                for retstatement in content[0]:
+                    pagehooks += "  "+retstatement + ",\n          "
+            pagehooks += "}\n\n"
+        pagehooks=pagehooks[:-2]+"\n\t},"
     pagehooks = pagehooks[:-1]
     if(len(pagehooks)>0): pagehooks= ",\n    "+pagehooks
     vuepage = """<template>\n""" + processTemplate(template,page.getPagename()) + """
@@ -231,6 +250,11 @@ def processTemplate(html_string,page):
         if(tag=="v-rating"):
             if(c.split(" ")[2]=="readonly"):
                 processedTemplate = re.sub('<v-rating'+r"([\s]*.*?)"+'half-increments="" hover="" readonly=""'+r'([\s]*.*?)'+'>',"<v-rating"+r"\1 half-increments hover readonly \2>",processedTemplate)
+        if(tag=="InputText"):
+            processedTemplate = re.sub('<InputText'+r"([\s]*.*?)"+'fluid=""'+r'([\s]*.*?)'+'>',"<InputText"+r"\1 fluid \2>",processedTemplate)
+        if(tag=="Form"):
+            processedTemplate = re.sub('<Form'+r"([\s]*.*?)"+':initialvalues'+r'([\s]*.*?)'+':validateonblur'+r'([\s]*.*?)'+'>',"<Form"+r"\1 :initialValues\2 :validateOnBlur\3>",processedTemplate)
+
         finalHtml = processedTemplate
     return finalHtml
 

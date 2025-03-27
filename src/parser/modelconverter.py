@@ -23,7 +23,7 @@ from parser.model.NavigationAction import NavigationAction
 from parser.model.CloseAction import CloseAction
 from parser.model.OverlayAction import OverlayAction
 from engine.stylegenerator import calculate_gradientDegree
-from parser.assetsconverter import convertToDropdown, convertToSearchInput, convertToDatePicker, convertToSlider, convertToRating, convertToPaginator
+from parser.assetsconverter import convertToDropdown, convertToSearchInput, convertToDatePicker, convertToSlider, convertToRating, convertToPaginator, convertToForm
 
 allpages = {}
 allimages = []
@@ -32,7 +32,7 @@ componentVariables = {}
 # key: component_id ; value: MComponent
 allcomponents = {}
 pageComponents = {}
-assetComponents = ["InputSearch","DatePicker","Dropdown","ReadOnlyRating","InteractiveRating","Paginator"]
+assetComponents = ["InputSearch","DatePicker","Dropdown","ReadOnlyRating","InteractiveRating","Paginator","Form"]
 pageWidth = -1
 tags = ["nav","footer","main","section","aside","article","p","header","h1","h2","h3","h4","h5","h6","ul","li"]
 figmadata = {}
@@ -228,7 +228,8 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         allpages[pagename].addVariable({melement.vmodel:1})
         return melement
     elif(data["name"]=="Form" and data["type"]=="INSTANCE"):
-        return None
+        melement = convertToForm(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
+        return melement
     # handling VectorElements
     elif(data["type"]=="VECTOR"):
         style = VectorStyle(data["absoluteRenderBounds"]["x"],

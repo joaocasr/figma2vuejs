@@ -549,6 +549,25 @@
 	color: rgba(242.00000077486038,242.00000077486038,242.00000077486038,1.0);
 }
   
+.form2538550 {
+    grid-column-start: 6;
+    grid-column-end: 36;
+    grid-row-start: 42;
+    grid-row-end: 68;
+    margin:10px;
+  }
+ 
+  .submitbtnform2538550 {
+    background-color: rgba(46.53750501573086,46.53750501573086,46.53750501573086,1.0);
+    border-radius: 8px;
+    margin:10px;
+  }
+.inputform2538550 .p-inputtext{ 
+   --p-inputtext-background:rgba(28.604181110858917,21.282762475311756,45.6874830275774,1.0);
+   margin:10px;
+
+}
+  
 .posnavbar {
   position:sticky;
   top:0%;

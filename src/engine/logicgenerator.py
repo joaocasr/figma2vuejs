@@ -44,7 +44,12 @@ def handleBehaviour(elem,allPagesInfo,isPageRender):
                     insertFunction("methods",hooks,methodName,closeOverlay(methodName,"close-from"+str(originid)+"-to"+str(destinationid)))
                     elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                     elemBehaviour[1] = hooks
-
+    # HANDLE DROPDOWN LOGIC
+    if(isinstance(elem,Mcomponent) and elem.getNameComponent()=="Dropdown"):
+        elemBehaviour = insertDropdownLogic(getElemId(elem.idComponent),hooks,elemBehaviour)
+    # HANDLE FORM LOGIC
+    if(isinstance(elem,Mcomponent) and elem.getNameComponent()=="Form"):
+        elemBehaviour = insertFormLogic(getElemId(elem.idComponent),elem.inputs,hooks,elemBehaviour)
     # SHOW CONDITIONAL ELEMENTS | from page
     if(isinstance(elem,Mcomponent) and elem.getTypeComponent()=="OVERLAY" and isPageRender==True):
         pattern = "[:;]"
@@ -90,3 +95,53 @@ def getpopulateDropdownFunction(values,options):
     function =f"""      /*Here you can adapt to fetch the data from an API*/
         this.{values} = this.{options}.map(x => x.value);""" 
     return function
+
+def insertFormLogic(idform,inputs,hooks,elemBehaviour):
+    elemBehaviour[0] = []
+    function = f"""
+        const initialValues{idform} = ref("""+'{\n'
+    for i in inputs:
+        function += "           "+i["name"]+": '',\n"
+    function=function[:-1]+"""
+        });
+    """
+    function+=f"""
+        const resolver{idform} = ("""+"{ values }) => {"+"""
+            const errors = {};
+        """
+    for i in inputs:
+        function += f"""    if (!values.{i["name"]})"""+ "{"+f"""
+                errors.{i["name"]} = ["""+"{ message: "+f"""'{i["placeholder"]} is required.'"""+ "}];"+"""
+            }
+        
+        """
+    function=function[:-1]+"""
+            return {
+                errors
+            };
+        };
+    """
+    if(not "setup" in hooks):
+        hooks.setdefault("setup", []).append(([f"initialValues{idform}",f"resolver{idform}"],function))
+    else:
+        hooks[hook].append(("",function))
+    elemBehaviour[1] = hooks
+    return elemBehaviour
+
+def insertDropdownLogic(dropdownid,hooks,elemBehaviour):
+    elemBehaviour[0] = []
+    if(not "mounted" in hooks):
+        hooks.setdefault("mounted", []).append(('getItems'+str(dropdownid),getpopulateDropdownFunction('allOptionValues'+str(dropdownid),'allOptions'+str(dropdownid))))
+    else:
+        hooks[hook].append(('getItems'+str(dropdownid),getpopulateDropdownFunction('allOptionValues'+str(dropdownid),'allOptions'+str(dropdownid))))
+    elemBehaviour[1] = hooks
+    return elemBehaviour
+
+def getElemId(id):
+    elemid = id
+    if(str(id).startswith("I")):
+        ids = id.split(";")
+        elemid = str(ids[len(ids)-1])
+    pattern = "[:;]"
+    elemid = re.sub(pattern,"",elemid)
+    return elemid
