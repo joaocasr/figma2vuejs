@@ -1,7 +1,7 @@
-from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties, generatePaginatorCssProperties, generateFormCssProperties
-from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin, useRatingVuetifyPlugin, usePaginatorVuetifyPlugin, useFormPrimeVuePlugin
+from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties, generatePaginatorCssProperties, generateFormCssProperties, generateCheckboxCssProperties
+from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin, useRatingVuetifyPlugin, usePaginatorVuetifyPlugin, useFormPrimeVuePlugin, useCheckboxPrimeVuePlugin
 from engine.logicgenerator import handleBehaviour,getpopulateDropdownFunction
-from engine.assetshelper import getPrimeVueForm
+from engine.assetshelper import getPrimeVueForm, getPrimeVueCheckbox
 from parser.model.Mcomponent import Mcomponent
 from parser.model.Melement import Melement
 from parser.model.TextElement import TextElement
@@ -132,6 +132,13 @@ def applytransformation(elem,projectname,page):
             auxiliarImports[pagename].add("import { ref } from 'vue'")
             componentAssets[pagename].extend([" Form"," InputText"," Message"])
             return form
+        if(elem.getNameComponent()=="Checkbox" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+            useCheckboxPrimeVuePlugin(projectname)
+            checkbox = getPrimeVueCheckbox(elem,cssclass)
+            cssclass= "scheckbox" + cssclass
+            generateCheckboxCssProperties(projectname,pagename,cssclass,f"label{cssclass}",elem)
+            componentAssets[pagename].extend([" Checkbox"])
+            return checkbox
 
     if(isinstance(elem, TextElement)):
         generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)

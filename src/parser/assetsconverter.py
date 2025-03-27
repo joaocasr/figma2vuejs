@@ -12,6 +12,8 @@ from parser.model.Slider import Slider
 from parser.model.SliderStyle import SliderStyle
 from parser.model.Form import Form
 from parser.model.FormStyle import FormStyle
+from parser.model.Checkbox import Checkbox
+from parser.model.CheckboxStyle import CheckboxStyle
 
 import re 
 
@@ -202,20 +204,37 @@ def convertToForm(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name
     buttontxt = None
     inputbackgroundcolor=""
     btnbackgroundcolor=""
+    widthInput = ""
     data["children"].reverse()
     for i in data["children"]:
         if(i["name"]!="submitbtn"):
             inputs.append({"name":getFormatedName(i["name"]),"placeholder":i["children"][0]["characters"]})
             color = i["background"][0]["color"]
             inputbackgroundcolor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
+            widthInput = i["absoluteBoundingBox"]["width"]
         else:
             buttontxt = i["children"][0]["characters"]
             color = i["background"][0]["color"]
             btnbackgroundcolor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
 
-    style = FormStyle(inputbackgroundcolor,btnbackgroundcolor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
+    style = FormStyle(inputbackgroundcolor,btnbackgroundcolor,widthInput,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
     form =  Form(id,"",name,"COMPONENT_ASSET",inputs,buttontxt,style)
     return form
+
+def convertToCheckbox(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name):
+    data["children"].reverse()
+    boxes = []
+    textColor = ""
+    for option in data["children"]:
+        for b in option["children"]:
+            if(b["type"]=="TEXT"):
+                boxes.append({"name":b["characters"],"key":getFormatedName(data["name"])})
+                colortxt = b["fills"][0]["color"]
+                textColor = "rgba("+str(colortxt["r"] * 255)+","+str(colortxt["g"] * 255)+","+str(colortxt["b"] * 255)+","+str(colortxt["a"])+")"
+
+    style = CheckboxStyle(textColor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
+    checkbox =  Checkbox(id,"",name,"COMPONENT_ASSET",boxes,style)
+    return checkbox
 
 def getFormatedName(name):
     pattern = "[\s\.-;:]"

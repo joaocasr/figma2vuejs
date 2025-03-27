@@ -252,12 +252,36 @@ def generateFormCssProperties(projectname,pagename,cssclass,elem,formclass,input
     background-color: """+  str(elem.style.getbackgroundcolorbtn())+""";
     border-radius: 8px;
     margin:10px;
+    width:200px;
+    height:50px;
   }
 ."""+ str(inputclass) + """ .p-inputtext{ 
-   --p-inputtext-background:"""+  str(elem.style.getbackgroundcolor())+""";
-   margin:10px;
+  --p-inputtext-background:"""+  str(elem.style.getbackgroundcolor())+""";
+  margin:10px;
+  width: """+  str(elem.style.getwidthinput())+"""px;
 
 }
+  """
+  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  mode = "w"
+  if os.path.isfile(cssfile):
+    mode = "a"
+  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+    f.write(css)
+
+def generateCheckboxCssProperties(projectname,pagename,cssclass,labelclass,elem):
+  css ="""\n."""+ str(cssclass) + """ {
+    grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
+    grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
+    grid-row-start: """+  str(elem.style.gridrowStart)+""";
+    grid-row-end: """+  str(elem.style.gridrowEnd)+""";
+    margin:5px;
+  }
+
+  ."""+ str(labelclass) + """ {
+    color: """+  str(elem.style.getColortxt())+""";
+    margin-left: 5px;
+  }
   """
   cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
   mode = "w"

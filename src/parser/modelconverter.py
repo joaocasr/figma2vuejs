@@ -23,7 +23,7 @@ from parser.model.NavigationAction import NavigationAction
 from parser.model.CloseAction import CloseAction
 from parser.model.OverlayAction import OverlayAction
 from engine.stylegenerator import calculate_gradientDegree
-from parser.assetsconverter import convertToDropdown, convertToSearchInput, convertToDatePicker, convertToSlider, convertToRating, convertToPaginator, convertToForm
+from parser.assetsconverter import convertToDropdown, convertToSearchInput, convertToDatePicker, convertToSlider, convertToRating, convertToPaginator, convertToForm, convertToCheckbox
 
 allpages = {}
 allimages = []
@@ -32,7 +32,7 @@ componentVariables = {}
 # key: component_id ; value: MComponent
 allcomponents = {}
 pageComponents = {}
-assetComponents = ["InputSearch","DatePicker","Dropdown","ReadOnlyRating","InteractiveRating","Paginator","Form"]
+assetComponents = ["InputSearch","DatePicker","Dropdown","ReadOnlyRating","InteractiveRating","Paginator","Form", "Checkbox"]
 pageWidth = -1
 tags = ["nav","footer","main","section","aside","article","p","header","h1","h2","h3","h4","h5","h6","ul","li"]
 figmadata = {}
@@ -229,6 +229,18 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         return melement
     elif(data["name"]=="Form" and data["type"]=="INSTANCE"):
         melement = convertToForm(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
+        return melement
+    elif(data["name"]=="Checkbox" and data["type"]=="INSTANCE"):
+        elemid = getElemId(data["id"])
+        melement = convertToCheckbox(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
+        if(not pagename in allpages):
+            addComponentVariable(pagename,{"boxes"+elemid:[]})
+            addComponentVariable(pagename,{"boxesValues"+elemid:melement.boxes})
+            addComponentVariable(pagename,{"selectedBoxes"+elemid:[]})
+        else:
+            allpages[pagename].addVariable({"boxes"+elemid:[]})
+            allpages[pagename].addVariable({"boxesValues"+elemid:melement.boxes})
+            allpages[pagename].addVariable({"selectedBoxes"+elemid:[]})
         return melement
     # handling VectorElements
     elif(data["type"]=="VECTOR"):

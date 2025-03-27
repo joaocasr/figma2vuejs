@@ -12,3 +12,12 @@ def getPrimeVueForm(elem,formid,inputsinfo,buttontext):
     template+=f'''<Button class="submitbtnform{formid}" type="submit" label="Submit">{buttontext}</Button>
     '''
     return (template,"</Form></div>")
+
+def getPrimeVueCheckbox(elem,checkboxid):
+    template = f'''<div class="scheckbox{checkboxid}">
+        <div v-for="box of boxes{checkboxid}" :key="box.key">
+                <Checkbox v-model="selectedCategories" :inputId="box.key" name="box" :value="box.name" />
+                <label class="labelscheckbox{checkboxid}" :for="box.key">'''+'''{{ box.name }}'''+'''</label>
+        </div>
+    '''
+    return (template,"</div>")

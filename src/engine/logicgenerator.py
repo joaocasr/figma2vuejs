@@ -47,6 +47,9 @@ def handleBehaviour(elem,allPagesInfo,isPageRender):
     # HANDLE DROPDOWN LOGIC
     if(isinstance(elem,Mcomponent) and elem.getNameComponent()=="Dropdown"):
         elemBehaviour = insertDropdownLogic(getElemId(elem.idComponent),hooks,elemBehaviour)
+    # HANDLE CHECKBOX LOGIC
+    if(isinstance(elem,Mcomponent) and elem.getNameComponent()=="Checkbox"):
+        elemBehaviour = insertCheckboxLogic(getElemId(elem.idComponent),hooks,elemBehaviour)
     # HANDLE FORM LOGIC
     if(isinstance(elem,Mcomponent) and elem.getNameComponent()=="Form"):
         elemBehaviour = insertFormLogic(getElemId(elem.idComponent),elem.inputs,hooks,elemBehaviour)
@@ -91,9 +94,18 @@ def closeOverlay(name,event):
         }""" 
     return function
 
-def getpopulateDropdownFunction(values,options):
-    function =f"""      /*Here you can adapt to fetch the data from an API*/
-        this.{values} = this.{options}.map(x => x.value);""" 
+def getpopulateDropdownFunction(functionname,values,options):
+    function =f"""        {functionname}()"""+"{"+f"""
+            /*Here you can adapt to fetch the data from an API*/
+            this.{values} = this.{options}.map(x => x.value);"""+"""
+        }""" 
+    return function
+
+def getpopulateCheckboxFunction(functionname,values,boxes):
+    function =f"""        {functionname}()"""+"{"+f"""
+            /*Here you can adapt to fetch the data from an API*/
+            this.{boxes} = this.{values};"""+"""
+        }""" 
     return function
 
 def insertFormLogic(idform,inputs,hooks,elemBehaviour):
@@ -130,10 +142,27 @@ def insertFormLogic(idform,inputs,hooks,elemBehaviour):
 
 def insertDropdownLogic(dropdownid,hooks,elemBehaviour):
     elemBehaviour[0] = []
-    if(not "mounted" in hooks):
-        hooks.setdefault("mounted", []).append(('getItems'+str(dropdownid),getpopulateDropdownFunction('allOptionValues'+str(dropdownid),'allOptions'+str(dropdownid))))
+    if(not "methods" in hooks):
+        hooks.setdefault("methods", []).append(('getDropdownOptions'+str(dropdownid),getpopulateDropdownFunction('getDropdownOptions'+str(dropdownid),'allOptionValues'+str(dropdownid),'allOptions'+str(dropdownid))))
     else:
-        hooks[hook].append(('getItems'+str(dropdownid),getpopulateDropdownFunction('allOptionValues'+str(dropdownid),'allOptions'+str(dropdownid))))
+        hooks["methods"].append(('getDropdownOptions'+str(dropdownid),getpopulateDropdownFunction('getDropdownOptions'+str(dropdownid),'allOptionValues'+str(dropdownid),'allOptions'+str(dropdownid))))
+    if(not "mounted" in hooks):
+        hooks.setdefault("mounted", []).append(('getDropdownOptions'+str(dropdownid),"        this."+'getDropdownOptions'+str(dropdownid)+"();"))
+    else:
+        hooks["mounted"].append(('getDropdownOptions'+str(dropdownid),"       this."+'getDropdownOptions'+str(dropdownid)+"();"))
+    elemBehaviour[1] = hooks
+    return elemBehaviour
+
+def insertCheckboxLogic(checkboxid,hooks,elemBehaviour):
+    elemBehaviour[0] = []
+    if(not "methods" in hooks):
+        hooks.setdefault("methods", []).append(('getCheckboxOptions'+str(checkboxid),getpopulateCheckboxFunction('getCheckboxOptions'+str(checkboxid),'boxesValues'+str(checkboxid),'boxes'+str(checkboxid))))
+    else:
+        hooks["methods"].append(('getCheckboxOptions'+str(checkboxid),getpopulateCheckboxFunction('getCheckboxOptions'+str(checkboxid),'boxesValues'+str(checkboxid),'boxes'+str(checkboxid))))
+    if(not "mounted" in hooks):
+        hooks.setdefault("mounted", []).append(('getCheckboxOptions'+str(checkboxid),"        this."+'getCheckboxOptions'+str(checkboxid)+"();"))
+    else:
+        hooks["mounted"].append(('getCheckboxOptions'+str(checkboxid),"       this."+'getCheckboxOptions'+str(checkboxid)+"();"))
     elemBehaviour[1] = hooks
     return elemBehaviour
 

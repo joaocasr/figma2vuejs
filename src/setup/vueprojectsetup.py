@@ -319,6 +319,30 @@ def useFormPrimeVuePlugin(name):
     allDependencies["inputtext"]=True
     allDependencies["message"]=True
 
+def useCheckboxPrimeVuePlugin(name):
+  global allDependencies
+  content =""
+  if("checkbox" not in allDependencies):
+    filemain = "../output/"+name+"/src/plugins/primevue.js"
+    primeimport = ""
+    primecomponent = ""
+    if("checkbox" not in allDependencies): 
+      primeimport+="""import Checkbox from 'primevue/checkbox';\n"""
+      primecomponent+="""app.component('Checkbox',Checkbox)\n"""
+    f = open(filemain, "r")
+    for l in f.readlines():
+      l = l.strip()
+      content+=l+"\n"
+      if(l=="import 'primeicons/primeicons.css';"):
+        content+=primeimport
+      if(l=="});"):
+        content+=primecomponent
+    f.close()
+    f= open(filemain,"w")
+    f.write(content)
+    f.close()
+    allDependencies["checkbox"]=True
+
 def useIconFieldPrimevuePlugin(name):
   global allDependencies
   content =""

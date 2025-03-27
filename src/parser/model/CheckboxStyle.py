@@ -1,34 +1,23 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-class FormStyle(object):
+class CheckboxStyle(object):
 
-	def __init__(self,backgroundcolor,backgroundcolorbtn,widthinput,gridcolumnStart,gridcolumnEnd,gridrowStart,gridrowEnd):
-		self.backgroundcolor = backgroundcolor
-		self.widthinput = widthinput
-		self.backgroundcolorbtn = backgroundcolorbtn
+	def __init__(self,colortxt,gridcolumnStart,gridcolumnEnd,gridrowStart,gridrowEnd):
+		self.colortxt = colortxt
 		self.gridcolumnStart = gridcolumnStart
 		self.gridcolumnEnd = gridcolumnEnd
 		self.gridrowStart = gridrowStart
 		self.gridrowEnd = gridrowEnd
 		self.gridArea = None
 
-	def getbackgroundcolor(self):
-		return self.backgroundcolor
+	def getColortxt(self):
+		"""@ReturnType String"""
+		return self.colortxt
 
-	def setbackgroundcolor(self, backgroundcolor):
-		self.backgroundcolor = backgroundcolor
-
-	def getwidthinput(self):
-		return self.widthinput
-
-	def setwidthinput(self, widthinput):
-		self.widthinput = widthinput
-
-	def getbackgroundcolorbtn(self):
-		return self.backgroundcolorbtn
-
-	def setbackgroundcolorbtn(self, backgroundcolorbtn):
-		self.backgroundcolorbtn = backgroundcolorbtn
+	def setColortxt(self, colortxt):
+		"""@ParamType colortxt String
+		@ReturnType void"""
+		self.colortxt = colortxt
 
 	def getGridcolumnStart(self):
 		"""@ReturnType String"""
