@@ -20,7 +20,7 @@
    Add to Watchlist
   </p>
  </div>
- <div class="grid-item container2362406">
+ <div class="grid-item container2362406" v-on:click="scrollTo2362406()">
   <p class="grid-item text2362407">
    Watch Trailer
   </p>
@@ -67,6 +67,10 @@
  </v-rating>
  <v-pagination :length="68" :total-visible="3" class="spaginator2488497" v-model="currentPage2488497">
  </v-pagination>
+ <div class="svideo2560721" ref="ref2560721">
+  <iframe controls="1" height="500.0px" src="https://www.youtube.com/embed/9ZIgQFKaK4Y" width="934.0px">
+  </iframe>
+ </div>
  <Navbar class="grid-item-2362441 component2362441 posnavbar"></Navbar>
  <Confirmationwatchlistmodal @close-from2362622-to2362620="show2362620=false" @close-from2362624-to2362620="show2362620=false" class="grid-item-2362620 component2362620" v-if="show2362620==true"></Confirmationwatchlistmodal>
 </div>
@@ -74,23 +78,23 @@
 </template>
 
 <script>
+import Related2 from '@/components/Related2.vue';
+import Review from '@/components/Review.vue';
+import Footer from '@/components/Footer.vue';
+import Confirmationwatchlistmodal from '@/components/Confirmationwatchlistmodal.vue';
+import Navbar from '@/components/Navbar.vue';
 import Related1 from '@/components/Related1.vue';
 import Related3 from '@/components/Related3.vue';
-import Footer from '@/components/Footer.vue';
-import Review from '@/components/Review.vue';
-import Navbar from '@/components/Navbar.vue';
-import Related2 from '@/components/Related2.vue';
-import Confirmationwatchlistmodal from '@/components/Confirmationwatchlistmodal.vue';
 
 export default {
     components:{
-        Related1,
-        Related3,
-        Footer,
-        Review,
-        Navbar,
         Related2,
-        Confirmationwatchlistmodal
+        Review,
+        Footer,
+        Confirmationwatchlistmodal,
+        Navbar,
+        Related1,
+        Related3
     },
     data(){
         return {
@@ -104,6 +108,9 @@ export default {
     methods:{
 		changeVisibility2362620(){
             this.show2362620 = true;
+        },
+        scrollTo2362406(){
+            this.$refs.ref2560721?.scrollIntoView({ behavior: 'smooth' });
         },
 		gotoReviewPage(){
             this.$router.push({path:"/reviewpage"});

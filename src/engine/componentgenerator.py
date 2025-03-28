@@ -18,12 +18,14 @@ import re
 allhooks = dict()
 allpagesInfo = {}
 componentAssets = dict()
+allrefs = {}
 
-def buildcomponent(component,projectname,pagesInfo):
-    global allhooks,allpagesInfo
+def buildcomponent(component,projectname,pagesInfo,refs):
+    global allhooks,allpagesInfo,allrefs
     name = component.componentName
     allhooks[name] = {}
     componentAssets[name] = []
+    allrefs = refs
     # build elements from the component  
     allpagesInfo = pagesInfo
     output = ""
@@ -55,11 +57,14 @@ def processChildren(data,projectname,name,idcomponent):
         return output
 
 def applytransformation(elem,projectname,pagename,idcomponent):
-    global allhooks, allpagesInfo
+    global allhooks, allpagesInfo, allrefs
     cssclass = ""
     if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.idElement)
     else: cssclass = getElemId(elem.idComponent)
-    
+    ref=""
+    if(pagename in allrefs and cssclass in allrefs[pagename]):
+        ref = f' ref="ref{cssclass}" '
+
     directives, hooks = handleBehaviour(elem,allpagesInfo,False)
     if(hooks!=None): 
         for hook in hooks:
@@ -67,35 +72,31 @@ def applytransformation(elem,projectname,pagename,idcomponent):
 
     if(isinstance(elem, TextElement)):
         generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
-        #iterate the list of interactions (logicgenerator.py)
         if(elem.tag==""):
             elem.tag = "p"
-        return ("<"+elem.tag+" class="+'"grid-item-'+ idcomponent +' text'+ cssclass +'" '+' '.join(d for d in directives)+'>'+elem.text, "</"+elem.tag+">")
+        return ("<"+elem.tag+f" {ref}class="+'"grid-item-'+ idcomponent +' text'+ cssclass +'" '+' '.join(d for d in directives)+'>'+elem.text, "</"+elem.tag+">")
     if(isinstance(elem, ContainerElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         if(elem.tag==""):
             elem.tag = "div"
-        #iterate the list of interactions (logicgenerator.py)
-        #directives = []
-        html = "<"+elem.tag+" class="+'"grid-item-'+ idcomponent +' container'+ cssclass + '" '+ ' '.join(d for d in directives) +">"
+        html = "<"+elem.tag+f" {ref}class="+'"grid-item-'+ idcomponent +' container'+ cssclass + '" '+ ' '.join(d for d in directives) +">"
         return (html, "</"+elem.tag+">")
     if(isinstance(elem, ShapeElement)):
         cssclassifier = ""
         cssclassifier = elem.getType().lower() + str(cssclass)
         generateShapeCSS(projectname,pagename,cssclassifier,elem.getType(),elem)
     
-        #directives = []
-        html = "<div class="+'"grid-item-'+ idcomponent +' '+ cssclassifier + '" '+ ' '.join(d for d in directives) +">"
+        html = f"<div {ref}class="+'"grid-item-'+ idcomponent +' '+ cssclassifier + '" '+ ' '.join(d for d in directives) +">"
         return (html, "</div>")
     if(isinstance(elem, ImageElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         if(elem.tag==""):
             elem.tag = "img"
-        return ("<"+elem.tag +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getimgpath() + '"' + ' '.join(d for d in directives) , "/>")
+        return ("<"+elem.tag +f" {ref}class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getimgpath() + '"' + ' '.join(d for d in directives) , "/>")
     
     if(isinstance(elem, VectorElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
-        return ("<"+elem.tag +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getsvgpath() + '"' + ' '.join(d for d in directives) , "/>")
+        return ("<"+elem.tag +f" {ref}class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getsvgpath() + '"' + ' '.join(d for d in directives) , "/>")
 
         return (begintag,endtag)
 

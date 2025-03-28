@@ -51,14 +51,14 @@
 </template>
 
 <script>
-import Footer from '@/components/Footer.vue';
 import Deletionwatchlistmodal from '@/components/Deletionwatchlistmodal.vue';
+import Footer from '@/components/Footer.vue';
 import Navbar from '@/components/Navbar.vue';
 
 export default {
     components:{
-        Footer,
         Deletionwatchlistmodal,
+        Footer,
         Navbar
     },
     data(){

@@ -1,8 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Raleway:wght@400&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Open Sans:wght@600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Alatsi:wght@400&display=swap");
 
 .grid-container {
@@ -381,135 +380,33 @@
     background-color:rgba(255.0,255.0,255.0,1.0);
 	    border: solid;
     border-color: rgba(255.0,255.0,255.0,1.0);    border-radius: Nonepx;    border-width: 1.0px;
-}.container2362645 {
-	grid-column-start: 46;
-	grid-column-end: 57;
-	grid-row-start: 9;
-	grid-row-end: 22;
-	border-top-left-radius: 17.0px;
-	border-top-right-radius: 17.0px;
-}
-
-
-.container2362674 {
-	background-color: rgba(45.899998024106026,45.899998024106026,45.899998024106026,1.0);
-	box-shadow: 0px 4px 4px 0px rgba(0.0,0.0,0.0,0.25);
-	border-radius: 10.0px;
-	grid-column-start: 6;
-	grid-column-end: 11;
-	grid-row-start: 30;
-	grid-row-end: 32;
-	display: grid;
-	grid-template-columns: repeat(64,1fr);
-	grid-template-rows: repeat(64,1fr);
-	padding: 0;
-}
-
-
-.text2362675 {
-	font-style: Regular;
-	font-weight: 400;
-	font-size: 0.7142857142857143vw;
-	font-family: Raleway;
-	text-align: left;
-	line-height: 18px;
-	color: rgba(255.0,255.0,255.0,1.0);
-	grid-column-start: 18;
-	grid-column-end: 49;
-	grid-row-start: 22;
-	grid-row-end: 34;
-	overflow-wrap: break-word;
-	white-space: normal;
-	width: 100%;
-	display: flex;
-	align-items: stretch;
-	justify-content: stretch;
-}
-
-
-.text2362676 {
-	font-style: Regular;
-	font-weight: 400;
-	font-size: 4.285714285714286vw;
-	font-family: Raleway;
-	text-align: center;
-	line-height: 18px;
-	color: rgba(255.0,255.0,255.0,1.0);
-	grid-column-start: 6;
-	grid-column-end: 25;
-	grid-row-start: 10;
-	grid-row-end: 12;
-	overflow-wrap: break-word;
-	width: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: stretch;
-}
-
-
-.container2442230 {
-	border-radius: 20.0px;
-	grid-column-start: 6;
-	grid-column-end: 44;
-	grid-row-start: 20;
-	grid-row-end: 28;
-	display: grid;
-	grid-template-columns: repeat(64,1fr);
-	grid-template-rows: repeat(64,1fr);
-	padding: 0;
-}
-
-
-.rectangle2442231 {
-    grid-column-start: 1;
-    grid-column-end: 65;
-    grid-row-start: 1;
-    grid-row-end: 64;
-    aspect-ratio: 1;
-    clip-path: polygon(0 0, 0% 100%, 100% 100%,100% 0);
-    background-color:rgba(100.80468446016312,103.66693407297134,105.18749848008156,1.0);
-	border-radius:20.0px;
-	display: grid;
-	    border: solid;
-    border-color: rgba(255.0,255.0,255.0,1.0);    border-radius: 20.0px;    border-width: 1.0px;
-}
-.text2442232 {
-	font-style: SemiBold;
-	font-weight: 600;
-	font-size: 1.4285714285714286vw;
-	font-family: Open Sans;
-	text-align: left;
-	line-height: 30px;
-	color: rgba(255.0,255.0,255.0,1.0);
-	grid-column-start: 5;
-	grid-column-end: 25;
-	grid-row-start: 13;
-	grid-row-end: 19;
-	overflow-wrap: break-word;
-	width: 100%;
-	display: flex;
-	align-items: stretch;
-	justify-content: stretch;
-}
-
-
-.container2480491 {
-	grid-column-start: 32;
-	grid-column-end: 37;
-	grid-row-start: 17;
-	grid-row-end: 19;
-	display: grid;
-	grid-template-columns: repeat(64,1fr);
-	grid-template-rows: repeat(64,1fr);
-	padding: 0;
-}
-
-
-.container2480492 {
+}.container2549596 {
 	grid-column-start: 1;
 	grid-column-end: 65;
-	grid-row-start: 1;
-	grid-row-end: 64;
+	grid-row-start: 5;
+	grid-row-end: 43;
+	width: 100%;
+	height: 100%;
+	display: block;
+	object-fit: cover;
+}
+
+.container2549626 {
+	grid-column-start: 3;
+	grid-column-end: 7;
+	grid-row-start: 7;
+	grid-row-end: 10;
+}
+
+
+.container2548653 {
+	background-color: rgba(18.710091523826122,22.304976023733616,26.137490272521973,1.0);
+	border: 3.0px solid rgba(84.01774004101753,84.3550631403923,94.13749381899834,1.0);
+	border-radius: 10.0px;
+	grid-column-start: 16;
+	grid-column-end: 50;
+	grid-row-start: 13;
+	grid-row-end: 31;
 	display: grid;
 	grid-template-columns: repeat(64,1fr);
 	grid-template-rows: repeat(64,1fr);
@@ -517,19 +414,42 @@
 }
 
 
-.text2480493 {
-	font-style: Medium;
-	font-weight: 500;
-	font-size: 0.6493506493506493vw;
-	font-family: Poppins;
+.form2549619 {
+    grid-column-start: 15;
+    grid-column-end: 60;
+    grid-row-start: 5;
+    grid-row-end: 58;
+    margin:10px;
+  }
+ 
+  .submitbtnform2549619 {
+    background-color: rgba(106.88748925924301,105.37329331040382,105.37329331040382,1.0);
+    border-radius: 8px;
+    margin:10px;
+    width:200px;
+    height:50px;
+  }
+.inputform2549619 .p-inputtext{ 
+  --p-inputtext-background:rgba(43.00000123679638,42.000001296401024,44.000001177191734,1.0);
+  margin:10px;
+  width: 454.0px;
+
+}
+  
+.text2549628 {
+	font-style: Regular;
+	font-weight: 400;
+	font-size: 1.2987012987012987vw;
+	font-family: Inter;
 	text-align: left;
-	line-height: 15px;
-	color: rgba(212.00000256299973,218.00000220537186,221.00000202655792,1.0);
-	grid-column-start: 3;
-	grid-column-end: 20;
-	grid-row-start: 5;
-	grid-row-end: 13;
+	line-height: 24px;
+	color: rgba(166.38749331235886,166.38749331235886,166.38749331235886,1.0);
+	grid-column-start: 45;
+	grid-column-end: 63;
+	grid-row-start: 40;
+	grid-row-end: 42;
 	overflow-wrap: break-word;
+	word-wrap: break-word;
 	width: 100%;
 	display: flex;
 	align-items: stretch;
@@ -537,16 +457,18 @@
 }
 
 
-.srating2480504 {
-    grid-column-start: 1;
-    grid-column-end: 65;
+.scheckbox2549638 {
+    grid-column-start: 4;
+    grid-column-end: 29;
     grid-row-start: 35;
-    grid-row-end: 64;
-}
+    grid-row-end: 51;
+    margin:5px;
+  }
 
-.srating2480504{
-	color: rgba(242.00000077486038,242.00000077486038,242.00000077486038,1.0);
-}
+  .labelscheckbox2549638 {
+    color: rgba(154.48750466108322,149.20922309160233,149.20922309160233,1.0);
+    margin-left: 5px;
+  }
   
 .posnavbar {
   position:sticky;

@@ -18,27 +18,31 @@ from parser.model.ContainerStyle import ContainerStyle
 from parser.model.ImageStyle import ImageStyle
 from parser.model.ComponentStyle import ComponentStyle
 from parser.model.TextStyle import TextStyle
+from parser.model.VideoElement import VideoElement
+from parser.model.VideoStyle import VideoStyle
 from parser.model.InteractionElement import InteractionElement
 from parser.model.NavigationAction import NavigationAction 
 from parser.model.CloseAction import CloseAction
 from parser.model.OverlayAction import OverlayAction
+from parser.model.ScrollAction import ScrollAction
 from engine.stylegenerator import calculate_gradientDegree
 from parser.assetsconverter import convertToDropdown, convertToSearchInput, convertToDatePicker, convertToSlider, convertToRating, convertToPaginator, convertToForm, convertToCheckbox
 
 allpages = {}
 allimages = []
 allsvgs = []
+refs = {}
 componentVariables = {}
 # key: component_id ; value: MComponent
 allcomponents = {}
 pageComponents = {}
-assetComponents = ["InputSearch","DatePicker","Dropdown","ReadOnlyRating","InteractiveRating","Paginator","Form", "Checkbox"]
+assetComponents = ["InputSearch","DatePicker","Dropdown","ReadOnlyRating","InteractiveRating","Paginator","Form","Checkbox","Video"]
 pageWidth = -1
 tags = ["nav","footer","main","section","aside","article","p","header","h1","h2","h3","h4","h5","h6","ul","li"]
 figmadata = {}
 
 def getFigmaData(prototype):
-    global allpages, allcomponents,pageComponents, figmadata
+    global allpages, allcomponents,pageComponents, figmadata, refs
     prototype1 = "../tests/prototype"+str(prototype)+".json"
 
     with open(prototype1,"r") as file:
@@ -63,7 +67,7 @@ def getFigmaData(prototype):
 
     extractImages(project_name)
     extractSVGs(project_name)
-    return (project_name, allpages)
+    return (project_name, allpages, refs)
 
 def parsePageEntities(data):
     global allpages
@@ -120,7 +124,7 @@ def iterate_nestedElements(data):
 
 
 def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstlevelelem,parent_data=None):
-    global allcomponents,pageComponents,allpages,pageWidth, figmadata, allimages, allsvgs
+    global allcomponents,pageComponents,allpages,pageWidth, figmadata, allimages, allsvgs, refs
     children = []
     elementwidth = data["absoluteRenderBounds"]["width"]
     elementheight = data["absoluteRenderBounds"]["height"]
@@ -241,6 +245,11 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             allpages[pagename].addVariable({"boxes"+elemid:[]})
             allpages[pagename].addVariable({"boxesValues"+elemid:melement.boxes})
             allpages[pagename].addVariable({"selectedBoxes"+elemid:[]})
+        return melement
+    elif(data["name"]=="Video" and data["type"]=="INSTANCE"):
+        style = VideoStyle(data["absoluteRenderBounds"]["width"],data["absoluteRenderBounds"]["height"],
+                                nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
+        melement = VideoElement(data["id"],tag,data["name"],"https://www.youtube.com/embed/9ZIgQFKaK4Y",style)
         return melement
     # handling VectorElements
     elif(data["type"]=="VECTOR"):
@@ -496,6 +505,10 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
 
                         overlayAction = OverlayAction(action["destinationId"])
                         interactionelement.addAction(overlayAction)
+                if(action["type"]=="NODE" and action["navigation"]=="SCROLL_TO"):
+                    refs.setdefault(pagename, []).append(getElemId(action["destinationId"]))
+                    scrollAction = ScrollAction(action["destinationId"])
+                    interactionelement.addAction(scrollAction)
                 if(action["type"]=="CLOSE"):
                     closeAction = CloseAction(firstlevelelem["id"])
                     interactionelement.addAction(closeAction)
@@ -520,7 +533,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         if(melement!=None): melement.setChildren(children)
     return melement
 
-# auxiliar funcion to calculate position 
+# auxiliar funcion to calculate
 def getPosition(xielem,yielem,elementwidth,elementheight,page_width,page_height, nrrows):
 
     nr_columnstart = max(round((xielem / page_width) * 64 ) + 1,1)

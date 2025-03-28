@@ -1,10 +1,11 @@
-from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties, generatePaginatorCssProperties, generateFormCssProperties, generateCheckboxCssProperties
+from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties, generatePaginatorCssProperties, generateFormCssProperties, generateCheckboxCssProperties, generateVideoCssProperties
 from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin, useRatingVuetifyPlugin, usePaginatorVuetifyPlugin, useFormPrimeVuePlugin, useCheckboxPrimeVuePlugin
 from engine.logicgenerator import handleBehaviour,getpopulateDropdownFunction
 from engine.assetshelper import getPrimeVueForm, getPrimeVueCheckbox
 from parser.model.Mcomponent import Mcomponent
 from parser.model.Melement import Melement
 from parser.model.TextElement import TextElement
+from parser.model.VideoElement import VideoElement
 from parser.model.VectorElement import VectorElement
 from parser.model.Dropdown import Dropdown
 from parser.model.ShapeElement import ShapeElement
@@ -21,15 +22,17 @@ components = dict()
 auxiliarImports = dict()
 componentAssets = dict()
 allPagesInfo = dict()
+allrefs = {}
 
-def buildpage(name,page,pagesInfo):
-    global allhooks,imports,components,allPagesInfo
+def buildpage(name,page,pagesInfo,refs):
+    global allhooks,imports,components,allPagesInfo,allrefs
     #setup a page
     allhooks[page.pagename] = {}
     imports[page.pagename] = []
     components[page.pagename] = set()
     auxiliarImports[page.pagename] = set()
     componentAssets[page.pagename] = []
+    allrefs = refs
     allPagesInfo = pagesInfo
     output = ""  
 
@@ -55,12 +58,14 @@ def processChildren(data,projectname,page):
 
 # Do a better handling of the tags
 def applytransformation(elem,projectname,page):
-    global allPagesInfo, allhooks, components, componentAssets
+    global allPagesInfo, allhooks, components, componentAssets, allrefs
     pagename = page.pagename
     cssclass = ""
     if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.idElement)
     else: cssclass = getElemId(elem.idComponent)
-    
+    ref=""
+    if(pagename in allrefs and cssclass in allrefs[pagename]):
+        ref = f' ref="ref{cssclass}" '
     # insert directives and functions if there is some behaviour
     directives, hooks = handleBehaviour(elem,allPagesInfo,True)
     if(hooks!=None): 
@@ -79,7 +84,7 @@ def applytransformation(elem,projectname,page):
             placeholder = 'label="'+str(elem.placeholder)+'"'
 
             generateVueSelectCssProperties(projectname,pagename,cssclass,elem)
-            return ("<v-select class="+'"grid-item '+ cssclass  + '" '+vmodel+' '+options+' '+placeholder, "/>")
+            return (f"<v-select {id}{ref}class="+'"grid-item '+ cssclass  + '" '+vmodel+' '+options+' '+placeholder, "/>")
         if(elem.getNameComponent()=="InputSearch" and elem.getTypeComponent()=="COMPONENT_ASSET"):
             useIconFieldPrimevuePlugin(projectname)
             cssclass= "ssearchinputfilter" + cssclass
@@ -87,7 +92,7 @@ def applytransformation(elem,projectname,page):
             placeholder = 'placeholder="'+str(elem.placeholder)+'"'
             generateInputSearchFilterCssProperties(projectname,pagename,cssclass,elem)
             componentAssets[pagename].extend([" IconField"," InputIcon"," InputText"])
-            return (f'<IconField class="{cssclass}"><InputIcon class="pi pi-search"/><InputText {vmodel} {placeholder} />','</IconField>')
+            return (f'<IconField {id}{ref}class="{cssclass}"><InputIcon class="pi pi-search"/><InputText {vmodel} {placeholder} />','</IconField>')
         if(elem.getNameComponent()=="DatePicker" and elem.getTypeComponent()=="COMPONENT_ASSET"):
             useDatePickerPrimevuePlugin(projectname)
             cssclass= "sdatepicker" + cssclass
@@ -97,7 +102,7 @@ def applytransformation(elem,projectname,page):
             showicon = ""
             if(elem.style.getdropdownbackgroundcolor()!=None):
                 showicon = ":showOnFocus='false' showIcon='' fluid=''"
-            return (f'<DatePicker {vmodel} class="{cssclass}" {showicon} >','</DatePicker>')
+            return (f'<DatePicker {id}{ref}{vmodel} class="{cssclass}" {showicon} >','</DatePicker>')
         if((elem.getNameComponent()=="ReadOnlyRating" or elem.getNameComponent()=="InteractiveRating") and elem.getTypeComponent()=="COMPONENT_ASSET"):
             useRatingVuetifyPlugin(projectname)
             cssclass= "srating" + cssclass
@@ -109,7 +114,7 @@ def applytransformation(elem,projectname,page):
             if(readonly==True):
                 readonlyconf = "readonly=''"
                 componentAssets[pagename].extend([" v-rating readonly"])
-            return (f'<v-rating class="{cssclass}" '+ f':length="{size}" :size="25" :model-value="{vmodel}" '+f" half-increments='' hover='' {readonlyconf} >",'</v-rating>')
+            return (f'<v-rating {id}{ref}class="{cssclass}" '+ f':length="{size}" :size="25" :model-value="{vmodel}" '+f" half-increments='' hover='' {readonlyconf} >",'</v-rating>')
 
         if(elem.getNameComponent()=="Slider" and elem.getTypeComponent()=="COMPONENT_ASSET"):
             useSliderPrimevuePlugin(projectname)
@@ -117,14 +122,14 @@ def applytransformation(elem,projectname,page):
             vmodel = 'v-model="'+str(elem.vmodel)+'"'
             generateSliderCssProperties(projectname,pagename,cssclass,elem)
             componentAssets[pagename].extend([" Slider"])
-            return (f'<Slider {vmodel} class="{cssclass}" >','</Slider>')
+            return (f'<Slider {id}{ref}{vmodel} class="{cssclass}" >','</Slider>')
         if(elem.getNameComponent()=="Paginator" and elem.getTypeComponent()=="COMPONENT_ASSET"):
             usePaginatorVuetifyPlugin(projectname)
             cssclass= "spaginator" + cssclass
             vmodel = 'v-model="'+str(elem.vmodel)+'"'
             generatePaginatorCssProperties(projectname,pagename,cssclass,elem)
             componentAssets[pagename].extend([" v-pagination"])
-            return (f'<v-pagination {vmodel} :total-visible="{elem.totalvisible}" :length="{elem.length}" class="{cssclass}" >','</v-pagination>')
+            return (f'<v-pagination {id}{ref}{vmodel} :total-visible="{elem.totalvisible}" :length="{elem.length}" class="{cssclass}" >','</v-pagination>')
         if(elem.getNameComponent()=="Form" and elem.getTypeComponent()=="COMPONENT_ASSET"):
             useFormPrimeVuePlugin(projectname)
             form = getPrimeVueForm(elem,cssclass,elem.inputs,elem.buttontxt)
@@ -145,28 +150,32 @@ def applytransformation(elem,projectname,page):
         if(elem.tag==""):
             elem.tag = "p"
         txt = re.sub(r"\n", "<br/>",elem.text)
-        return ("<"+ elem.tag +" class="+'"grid-item text'+ cssclass  + '" '+ ' '.join(d for d in directives) +">"+txt, "</"+elem.tag+">")
+        return ("<"+ elem.tag + id + ref +" class="+'"grid-item text'+ cssclass  + '" '+ ' '.join(d for d in directives) +">"+txt, "</"+elem.tag+">")
     if(isinstance(elem, ContainerElement)):
 
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         if(elem.tag==""):
             elem.tag = "div"
-        return ("<"+elem.tag + id +" class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) +">", "</"+elem.tag+">")
+        return ("<"+elem.tag + id + ref +" class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) +">", "</"+elem.tag+">")
     if(isinstance(elem, ImageElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         if(elem.tag==""):
             elem.tag = "img"
-        return ("<"+elem.tag+ id +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getimgpath() + '"' + ' '.join(d for d in directives) , "/>")
+        return ("<"+elem.tag+ id + ref +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getimgpath() + '"' + ' '.join(d for d in directives) , "/>")
     if(isinstance(elem, VectorElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
-        return ("<"+elem.tag+ id +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getsvgpath() + '"' + ' '.join(d for d in directives) , "/>")
+        return ("<"+elem.tag+ id + ref +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getsvgpath() + '"' + ' '.join(d for d in directives) , "/>")
+    if(isinstance(elem, VideoElement)):
+        cssclass= "svideo" + cssclass
+        generateVideoCssProperties(projectname,pagename,cssclass,elem)
+        return (f'<div {id}{ref}class="{cssclass}"><iframe width="{elem.style.getwidth()}px" height="{elem.style.getheight()}px" controls=1 src="{elem.getSrc()}">',"</iframe></div>")
     if(isinstance(elem, ShapeElement)):
         cssclassifier = ""
         cssclassifier = elem.getType().lower() + str(cssclass)
 
         generateShapeCSS(projectname,pagename,cssclassifier,elem.getType(),elem)
 
-        begintag = "<div"+ id +" class="+'"grid-item '+ cssclassifier + '" '+ ' '.join(d for d in directives) +">"
+        begintag = "<div"+ id + ref +" class="+'"grid-item '+ cssclassifier + '" '+ ' '.join(d for d in directives) +">"
         endtag = "</div>"
         if(elem.style.boxShadow!=None): 
             wrapperclass = "wrapper" + cssclassifier
@@ -177,12 +186,12 @@ def applytransformation(elem,projectname,page):
         return (begintag,endtag)
     if isinstance(elem, Mcomponent):
         componentName = elem.componentName.capitalize()
-        classname = 'class="'+"grid-item-"+getElemId(elem.idComponent)+' component'+ getElemId(elem.idComponent)     
+        classname = ' class="'+"grid-item-"+getElemId(elem.idComponent)+' component'+ getElemId(elem.idComponent)     
         if(elem.style.getPosition()!=None):
             classname += " pos"+componentName.lower()
             setComponentPositionCSS(projectname,pagename,"pos"+componentName.lower(),elem)
         components.setdefault(pagename, {}).add(elem.componentName.lower())
-        return ("<"+componentName+f" {classname}"+'" '+ ' '.join(d for d in directives) + ">","</"+componentName+">")
+        return ("<"+componentName+f"{id}{ref}{classname}"+'" '+ ' '.join(d for d in directives) + ">","</"+componentName+">")
     return ("","")
 
 def writeVue(name,page,content):

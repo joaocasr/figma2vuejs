@@ -3,6 +3,7 @@ import HomePageView from '@/views/HomePageView.vue';
 import MoviePageView from '@/views/MoviePageView.vue';
 import WatchlistPageView from '@/views/WatchlistPageView.vue';
 import ReviewPageView from '@/views/ReviewPageView.vue';
+import LoginPageView from '@/views/LoginPageView.vue';
 import ErrorPageView from '@/views/ErrorPageView.vue';
 
 const router = createRouter({
@@ -30,6 +31,11 @@ const router = createRouter({
     "path": "/reviewpage",
     "name": "ReviewPage",
     "component": ReviewPageView
+},
+{
+    "path": "/loginpage",
+    "name": "LoginPage",
+    "component": LoginPageView
 },
 {
     "path": "/:catchAll(.*)",

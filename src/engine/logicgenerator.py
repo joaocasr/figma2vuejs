@@ -2,6 +2,7 @@ from parser.model.InteractionElement import InteractionElement
 from parser.model.NavigationAction import NavigationAction
 from parser.model.OverlayAction import OverlayAction 
 from parser.model.CloseAction import CloseAction
+from parser.model.ScrollAction import ScrollAction
 from parser.model.Mcomponent import Mcomponent
 import re
 
@@ -24,6 +25,9 @@ def handleBehaviour(elem,allPagesInfo,isPageRender):
                     insertFunction("methods",hooks,methodName,getNavigationFunction(methodName,destination))
                     elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                     elemBehaviour[1] = hooks
+                # SCROLL EVENTS
+                if(isinstance(action,ScrollAction)):
+                    elemBehaviour = insertScrollBehaviour(elem,action,hooks,elemBehaviour)
                 # CLICK-OVERLAY EVENTS
                 if(isinstance(action,OverlayAction)):
                     pattern = "[:;]"
@@ -108,6 +112,12 @@ def getpopulateCheckboxFunction(functionname,values,boxes):
         }""" 
     return function
 
+def getScrollBehaviourFunction(elem,action):
+    function =f"""        scrollTo{getElemId(elem.getIdElement())}()"""+"{"+f"""
+            this.$refs.ref{getElemId(action.getDestinationID())}?.scrollIntoView("""+"{ behavior: 'smooth' });"+"""
+        }""" 
+    return function
+
 def insertFormLogic(idform,inputs,hooks,elemBehaviour):
     elemBehaviour[0] = []
     function = f"""
@@ -142,29 +152,27 @@ def insertFormLogic(idform,inputs,hooks,elemBehaviour):
 
 def insertDropdownLogic(dropdownid,hooks,elemBehaviour):
     elemBehaviour[0] = []
-    if(not "methods" in hooks):
-        hooks.setdefault("methods", []).append(('getDropdownOptions'+str(dropdownid),getpopulateDropdownFunction('getDropdownOptions'+str(dropdownid),'allOptionValues'+str(dropdownid),'allOptions'+str(dropdownid))))
-    else:
-        hooks["methods"].append(('getDropdownOptions'+str(dropdownid),getpopulateDropdownFunction('getDropdownOptions'+str(dropdownid),'allOptionValues'+str(dropdownid),'allOptions'+str(dropdownid))))
-    if(not "mounted" in hooks):
-        hooks.setdefault("mounted", []).append(('getDropdownOptions'+str(dropdownid),"        this."+'getDropdownOptions'+str(dropdownid)+"();"))
-    else:
-        hooks["mounted"].append(('getDropdownOptions'+str(dropdownid),"       this."+'getDropdownOptions'+str(dropdownid)+"();"))
+    
+    hooks.setdefault("methods", []).append(('getDropdownOptions'+str(dropdownid),getpopulateDropdownFunction('getDropdownOptions'+str(dropdownid),'allOptionValues'+str(dropdownid),'allOptions'+str(dropdownid))))
+    hooks.setdefault("mounted", []).append(('getDropdownOptions'+str(dropdownid),"        this."+'getDropdownOptions'+str(dropdownid)+"();"))
     elemBehaviour[1] = hooks
     return elemBehaviour
 
 def insertCheckboxLogic(checkboxid,hooks,elemBehaviour):
     elemBehaviour[0] = []
-    if(not "methods" in hooks):
-        hooks.setdefault("methods", []).append(('getCheckboxOptions'+str(checkboxid),getpopulateCheckboxFunction('getCheckboxOptions'+str(checkboxid),'boxesValues'+str(checkboxid),'boxes'+str(checkboxid))))
-    else:
-        hooks["methods"].append(('getCheckboxOptions'+str(checkboxid),getpopulateCheckboxFunction('getCheckboxOptions'+str(checkboxid),'boxesValues'+str(checkboxid),'boxes'+str(checkboxid))))
-    if(not "mounted" in hooks):
-        hooks.setdefault("mounted", []).append(('getCheckboxOptions'+str(checkboxid),"        this."+'getCheckboxOptions'+str(checkboxid)+"();"))
-    else:
-        hooks["mounted"].append(('getCheckboxOptions'+str(checkboxid),"       this."+'getCheckboxOptions'+str(checkboxid)+"();"))
+    
+    hooks.setdefault("methods", []).append(('getCheckboxOptions'+str(checkboxid),getpopulateCheckboxFunction('getCheckboxOptions'+str(checkboxid),'boxesValues'+str(checkboxid),'boxes'+str(checkboxid))))
+    hooks.setdefault("mounted", []).append(('getCheckboxOptions'+str(checkboxid),"        this."+'getCheckboxOptions'+str(checkboxid)+"();"))
     elemBehaviour[1] = hooks
     return elemBehaviour
+
+def insertScrollBehaviour(elem,action,hooks,elemBehaviour):
+    elemBehaviour[0] = []
+    elemBehaviour[0].append('v-on:click="'+f"scrollTo{getElemId(elem.getIdElement())}"+'()"')
+    hooks.setdefault("methods", []).append((f"scrollTo{getElemId(elem.getIdElement())}",getScrollBehaviourFunction(elem,action)))
+    elemBehaviour[1] = hooks
+    return elemBehaviour
+
 
 def getElemId(id):
     elemid = id

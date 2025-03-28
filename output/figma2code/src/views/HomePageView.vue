@@ -66,31 +66,31 @@
 </template>
 
 <script>
-import Movie6 from '@/components/Movie6.vue';
-import Movie7 from '@/components/Movie7.vue';
-import Movie8 from '@/components/Movie8.vue';
-import Footer from '@/components/Footer.vue';
-import Navbar from '@/components/Navbar.vue';
-import Movie1 from '@/components/Movie1.vue';
-import Movie3 from '@/components/Movie3.vue';
 import Homebanner from '@/components/Homebanner.vue';
+import Movie1 from '@/components/Movie1.vue';
 import Movie4 from '@/components/Movie4.vue';
-import Movie2 from '@/components/Movie2.vue';
+import Footer from '@/components/Footer.vue';
+import Movie3 from '@/components/Movie3.vue';
+import Movie8 from '@/components/Movie8.vue';
+import Navbar from '@/components/Navbar.vue';
 import Movie5 from '@/components/Movie5.vue';
+import Movie2 from '@/components/Movie2.vue';
+import Movie7 from '@/components/Movie7.vue';
+import Movie6 from '@/components/Movie6.vue';
 
 export default {
     components:{
-        Movie6,
-        Movie7,
-        Movie8,
-        Footer,
-        Navbar,
-        Movie1,
-        Movie3,
         Homebanner,
+        Movie1,
         Movie4,
+        Footer,
+        Movie3,
+        Movie8,
+        Navbar,
+        Movie5,
         Movie2,
-        Movie5
+        Movie7,
+        Movie6
     },
     data(){
         return {

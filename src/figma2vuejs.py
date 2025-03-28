@@ -14,7 +14,7 @@ else:
   prototype = sys.argv[1]
   # extract figma data and build intern model
   #try:
-  project_name, allpages = getFigmaData(prototype)
+  project_name, allpages, refs = getFigmaData(prototype)
   #except Exception as e:
   #  print(e)
   #  sys.exit()
@@ -45,10 +45,10 @@ else:
           uniqueComponents.append(x)
 
     for component in uniqueComponents:
-      buildcomponent(component,project_name,pagesInfo)
+      buildcomponent(component,project_name,pagesInfo,refs)
 
     # build each page (elements within, styling and components)
     for page in mypages:
-      buildpage(project_name,mypages[page],pagesInfo)
+      buildpage(project_name,mypages[page],pagesInfo,refs)
 
 
