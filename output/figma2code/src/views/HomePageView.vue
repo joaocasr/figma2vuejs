@@ -66,31 +66,31 @@
 </template>
 
 <script>
+import Movie7 from '@/components/Movie7.vue';
 import Homebanner from '@/components/Homebanner.vue';
-import Movie1 from '@/components/Movie1.vue';
-import Movie4 from '@/components/Movie4.vue';
-import Footer from '@/components/Footer.vue';
 import Movie3 from '@/components/Movie3.vue';
+import Movie2 from '@/components/Movie2.vue';
 import Movie8 from '@/components/Movie8.vue';
 import Navbar from '@/components/Navbar.vue';
+import Movie4 from '@/components/Movie4.vue';
+import Movie1 from '@/components/Movie1.vue';
 import Movie5 from '@/components/Movie5.vue';
-import Movie2 from '@/components/Movie2.vue';
-import Movie7 from '@/components/Movie7.vue';
 import Movie6 from '@/components/Movie6.vue';
+import Footer from '@/components/Footer.vue';
 
 export default {
     components:{
+        Movie7,
         Homebanner,
-        Movie1,
-        Movie4,
-        Footer,
         Movie3,
+        Movie2,
         Movie8,
         Navbar,
+        Movie4,
+        Movie1,
         Movie5,
-        Movie2,
-        Movie7,
-        Movie6
+        Movie6,
+        Footer
     },
     data(){
         return {
@@ -103,7 +103,8 @@ export default {
             starsSeletec2473375:"3",
             starsSeletec2473355:"3",
             inputsearch2377217:"",
-            currentPage2487476:1    
+            currentPage2487476:1,
+            menuoptions2575928:[{'option': 'Login', 'destination': '2548:560'}, {'option': 'Sign Up'}]    
         }
     },
     methods:{
@@ -121,7 +122,11 @@ export default {
         },
 		gotoWatchlistPage(){
             this.$router.push({path:"/watchlistpage"});
-        }
+        },
+        selectedItem2575928(){
+               this.$router.push({path:"/loginpage"});
+
+            }
 	}
 }
 </script>

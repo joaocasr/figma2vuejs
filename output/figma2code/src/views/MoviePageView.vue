@@ -72,29 +72,29 @@
   </iframe>
  </div>
  <Navbar class="grid-item-2362441 component2362441 posnavbar"></Navbar>
- <Confirmationwatchlistmodal @close-from2362622-to2362620="show2362620=false" @close-from2362624-to2362620="show2362620=false" class="grid-item-2362620 component2362620" v-if="show2362620==true"></Confirmationwatchlistmodal>
 </div>
+<Confirmationwatchlistmodal @close-from2362622-to2362620="show2362620=false" @close-from2362624-to2362620="show2362620=false" class="grid-item-2362620 component2362620" v-if="show2362620==true"></Confirmationwatchlistmodal>
 
 </template>
 
 <script>
 import Related2 from '@/components/Related2.vue';
-import Review from '@/components/Review.vue';
-import Footer from '@/components/Footer.vue';
 import Confirmationwatchlistmodal from '@/components/Confirmationwatchlistmodal.vue';
-import Navbar from '@/components/Navbar.vue';
-import Related1 from '@/components/Related1.vue';
+import Review from '@/components/Review.vue';
 import Related3 from '@/components/Related3.vue';
+import Related1 from '@/components/Related1.vue';
+import Navbar from '@/components/Navbar.vue';
+import Footer from '@/components/Footer.vue';
 
 export default {
     components:{
         Related2,
-        Review,
-        Footer,
         Confirmationwatchlistmodal,
-        Navbar,
+        Review,
+        Related3,
         Related1,
-        Related3
+        Navbar,
+        Footer
     },
     data(){
         return {
@@ -102,7 +102,8 @@ export default {
             starsSeletec2480470:"5",
             starsSeletec2480470:"5",
             starsSeletec2465472:"3",
-            currentPage2488497:1    
+            currentPage2488497:1,
+            menuoptions2575928:[{'option': 'Login', 'destination': '2548:560'}, {'option': 'Sign Up'}]    
         }
     },
     methods:{
@@ -123,7 +124,11 @@ export default {
         },
 		gotoWatchlistPage(){
             this.$router.push({path:"/watchlistpage"});
-        }
+        },
+        selectedItem2575928(){
+               this.$router.push({path:"/loginpage"});
+
+            }
 	}
 }
 </script>

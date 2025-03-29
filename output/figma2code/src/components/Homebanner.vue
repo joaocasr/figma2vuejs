@@ -1,6 +1,6 @@
 <template>
 <div>
- <img class="grid-item container2362370" src="/maxresdefault1.png"/>
+ <img class="grid-item-2362316 container2362370" src="/maxresdefault1.png"/>
  <div class="grid-item-2362316 container2362371">
  </div>
  <p class="grid-item-2362316 text2362372">

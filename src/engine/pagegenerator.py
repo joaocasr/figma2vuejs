@@ -1,7 +1,7 @@
-from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties, generatePaginatorCssProperties, generateFormCssProperties, generateCheckboxCssProperties, generateVideoCssProperties
-from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin, useRatingVuetifyPlugin, usePaginatorVuetifyPlugin, useFormPrimeVuePlugin, useCheckboxPrimeVuePlugin
+from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties, generatePaginatorCssProperties, generateFormCssProperties, generateCheckboxCssProperties, generateVideoCssProperties, generateMenuCssProperties
+from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin, useRatingVuetifyPlugin, usePaginatorVuetifyPlugin, useFormPrimeVuePlugin, useCheckboxPrimeVuePlugin, useMenuVuetifyPlugin
 from engine.logicgenerator import handleBehaviour,getpopulateDropdownFunction
-from engine.assetshelper import getPrimeVueForm, getPrimeVueCheckbox
+from engine.assetshelper import getPrimeVueForm, getPrimeVueCheckbox, getVuetifyMenu
 from parser.model.Mcomponent import Mcomponent
 from parser.model.Melement import Melement
 from parser.model.TextElement import TextElement
@@ -144,6 +144,12 @@ def applytransformation(elem,projectname,page):
             generateCheckboxCssProperties(projectname,pagename,cssclass,f"label{cssclass}",elem)
             componentAssets[pagename].extend([" Checkbox"])
             return checkbox
+        if(elem.getNameComponent()=="Menu" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+            useMenuVuetifyPlugin(projectname)
+            menu = getVuetifyMenu(elem,cssclass)
+            generateMenuCssProperties(projectname,pagename,"smenu"+cssclass,elem)
+            componentAssets[pagename].extend([" v-menu"," v-list"])
+            return menu
 
     if(isinstance(elem, TextElement)):
         generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
@@ -184,7 +190,7 @@ def applytransformation(elem,projectname,page):
             generateShapeShadowCSS(projectname,pagename,wrapperclass,elem)
 
         return (begintag,endtag)
-    if isinstance(elem, Mcomponent):
+    if(isinstance(elem, Mcomponent)):
         componentName = elem.componentName.capitalize()
         classname = ' class="'+"grid-item-"+getElemId(elem.idComponent)+' component'+ getElemId(elem.idComponent)     
         if(elem.style.getPosition()!=None):

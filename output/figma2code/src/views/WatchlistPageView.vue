@@ -45,26 +45,27 @@
  </div>
  <Footer class="grid-item-2362509 component2362509"></Footer>
  <Navbar class="grid-item-2362512 component2362512 posnavbar"></Navbar>
- <Deletionwatchlistmodal @close-from2362636-to2362634="show2362634=false" @close-from2362638-to2362634="show2362634=false" class="grid-item-2362634 component2362634" v-if="show2362634==true"></Deletionwatchlistmodal>
 </div>
+<Deletionwatchlistmodal @close-from2362636-to2362634="show2362634=false" @close-from2362638-to2362634="show2362634=false" class="grid-item-2362634 component2362634" v-if="show2362634==true"></Deletionwatchlistmodal>
 
 </template>
 
 <script>
 import Deletionwatchlistmodal from '@/components/Deletionwatchlistmodal.vue';
-import Footer from '@/components/Footer.vue';
 import Navbar from '@/components/Navbar.vue';
+import Footer from '@/components/Footer.vue';
 
 export default {
     components:{
         Deletionwatchlistmodal,
-        Footer,
-        Navbar
+        Navbar,
+        Footer
     },
     data(){
         return {
             show2362634:false,
-            starsSeletec2465466:"3"    
+            starsSeletec2465466:"3",
+            menuoptions2575928:[{'option': 'Login', 'destination': '2548:560'}, {'option': 'Sign Up'}]    
         }
     },
     methods:{
@@ -79,7 +80,11 @@ export default {
         },
 		gotoWatchlistPage(){
             this.$router.push({path:"/watchlistpage"});
-        }
+        },
+        selectedItem2575928(){
+               this.$router.push({path:"/loginpage"});
+
+            }
 	}
 }
 </script>

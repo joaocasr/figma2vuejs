@@ -1,6 +1,6 @@
 <template>
 <div>
- <img class="grid-item container2362529" src="/Joker2019FinalStylestepsPosterbuyoriginalmoviepostersatstarstills__625181.png"/>
+ <img class="grid-item-2362326 container2362529" src="/Joker2019FinalStylestepsPosterbuyoriginalmoviepostersatstarstills__625181.png"/>
  <div class="grid-item-2362326 container2362530">
   <p class="grid-item-2362326 text2362531">
    Joker
@@ -17,7 +17,7 @@
    4.0
   </p>
  </div>
- <v-rating :length="5" :model-value="starsSeletec2473355" :size="25" class="srating2473355"  half-increments hover readonly >
+ <v-rating :length="5" :model-value="starsSeletec2473355" :size="25" class="grid-item-2362326 srating2473355"  half-increments hover readonly >
  </v-rating>
 </div>
 

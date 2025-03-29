@@ -32,17 +32,18 @@
 </template>
 
 <script>
-import Footer from '@/components/Footer.vue';
 import Navbar from '@/components/Navbar.vue';
+import Footer from '@/components/Footer.vue';
 
 export default {
     components:{
-        Footer,
-        Navbar
+        Navbar,
+        Footer
     },
     data(){
         return {
-            starsSeletec2480504:"5"    
+            starsSeletec2480504:"5",
+            menuoptions2575928:[{'option': 'Login', 'destination': '2548:560'}, {'option': 'Sign Up'}]    
         }
     },
     methods:{
@@ -54,7 +55,11 @@ export default {
         },
 		gotoWatchlistPage(){
             this.$router.push({path:"/watchlistpage"});
-        }
+        },
+        selectedItem2575928(){
+               this.$router.push({path:"/loginpage"});
+
+            }
 	}
 }
 </script>

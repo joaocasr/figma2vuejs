@@ -26,7 +26,7 @@ from parser.model.CloseAction import CloseAction
 from parser.model.OverlayAction import OverlayAction
 from parser.model.ScrollAction import ScrollAction
 from engine.stylegenerator import calculate_gradientDegree
-from parser.assetsconverter import convertToDropdown, convertToSearchInput, convertToDatePicker, convertToSlider, convertToRating, convertToPaginator, convertToForm, convertToCheckbox
+from parser.assetsconverter import convertToDropdown, convertToSearchInput, convertToDatePicker, convertToSlider, convertToRating, convertToPaginator, convertToForm, convertToCheckbox, convertToMenu
 
 allpages = {}
 allimages = []
@@ -36,7 +36,7 @@ componentVariables = {}
 # key: component_id ; value: MComponent
 allcomponents = {}
 pageComponents = {}
-assetComponents = ["InputSearch","DatePicker","Dropdown","ReadOnlyRating","InteractiveRating","Paginator","Form","Checkbox","Video"]
+assetComponents = ["InputSearch","DatePicker","Dropdown","ReadOnlyRating","InteractiveRating","Paginator","Form","Checkbox","Video","Menu"]
 pageWidth = -1
 tags = ["nav","footer","main","section","aside","article","p","header","h1","h2","h3","h4","h5","h6","ul","li"]
 figmadata = {}
@@ -250,6 +250,15 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         style = VideoStyle(data["absoluteRenderBounds"]["width"],data["absoluteRenderBounds"]["height"],
                                 nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
         melement = VideoElement(data["id"],tag,data["name"],"https://www.youtube.com/embed/9ZIgQFKaK4Y",style)
+        return melement
+    elif(data["name"]=="Menu" and data["type"]=="INSTANCE"):
+        melement = convertToMenu(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
+        allimages.extend([melement.iconImage])
+        menuid = getElemId(data["id"])
+        if(not pagename in allpages):
+            addComponentVariable(pagename,{f"menuoptions{menuid}":melement.options})
+        else:
+            allpages[pagename].addVariable({f"menuoptions{menuid}":melement.options})
         return melement
     # handling VectorElements
     elif(data["type"]=="VECTOR"):

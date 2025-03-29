@@ -1,6 +1,6 @@
 <template>
 <div>
- <img class="grid-item container2362353" src="/48311921.png"/>
+ <img class="grid-item-2548575 container2362353" src="/48311921.png"/>
  <p class="grid-item-2548575 text2362354" v-on:click="gotoHomePage()">
   MOVIESTV
  </p>
@@ -16,16 +16,26 @@
   </p>
   <div class="grid-item-2548575 container2402193">
    <div class="grid-item-2548575 container2402194" v-on:click="gotoWatchlistPage()">
-    <img class="grid-item container2402195" src="/listVector.svg"/>
-   </div>
-   <div class="grid-item-2548575 container2402201">
-    <div class="grid-item-2548575 container2402202">
-     <img class="grid-item container2402203" src="/bodyVector.svg"/>
-     <img class="grid-item container2402204" src="/headVector.svg"/>
-    </div>
+    <img class="grid-item-2548575 container2402195" src="/listVector.svg"/>
    </div>
    <div class="grid-item-2548575 container2402196">
-    <img class="grid-item container2402197" src="/heartVector.svg"/>
+    <img class="grid-item-2548575 container2402197" src="/heartVector.svg"/>
+   </div>
+   <div class="grid-item-2548575 smenu2575928">
+    <v-menu>
+     <template v-slot:activator="{ props }">
+      <div v-bind="props">
+       <img src="/iconMenu.png"/>
+      </div>
+     </template>
+     <v-list>
+      <v-list-item :key="index" :value="index" v-for="(item, index) in menuoptions2575928">
+       <v-list-item-title @click="selectedItem2575928(item)">
+        {{ item.option }}
+       </v-list-item-title>
+      </v-list-item>
+     </v-list>
+    </v-menu>
    </div>
   </div>
  </div>
@@ -37,7 +47,7 @@
 export default {
     data(){
         return {
-           
+        menuoptions2575928:[{'option': 'Login', 'destination': '2548:560'}, {'option': 'Sign Up'}]   
         }
     },
     methods:{
@@ -49,7 +59,11 @@ export default {
         },
 		gotoWatchlistPage(){
             this.$router.push({path:"/watchlistpage"});
-        }
+        },
+        selectedItem2575928(){
+               this.$router.push({path:"/loginpage"});
+
+            }
 	}
 }
 </script>

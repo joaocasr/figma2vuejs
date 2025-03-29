@@ -305,6 +305,20 @@ def generateVideoCssProperties(projectname,pagename,cssclass,elem):
   with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
     f.write(css)
 
+def generateMenuCssProperties(projectname,pagename,cssclass,elem):
+  css ="""\n."""+ str(cssclass) + """ {
+    grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
+    grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
+    grid-row-start: """+  str(elem.style.gridrowStart)+""";
+    grid-row-end: """+  str(elem.style.gridrowEnd)+""";
+  }
+  """
+  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  mode = "w"
+  if os.path.isfile(cssfile):
+    mode = "a"
+  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+    f.write(css)
 
 def setComponentPositionCSS(projectname,pagename,componentName,elem):
   top="0%"

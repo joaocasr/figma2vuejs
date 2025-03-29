@@ -11,6 +11,8 @@ from parser.model.PaginatorStyle import PaginatorStyle
 from parser.model.Slider import Slider
 from parser.model.SliderStyle import SliderStyle
 from parser.model.Form import Form
+from parser.model.Menu import Menu
+from parser.model.MenuStyle import MenuStyle
 from parser.model.FormStyle import FormStyle
 from parser.model.Checkbox import Checkbox
 from parser.model.CheckboxStyle import CheckboxStyle
@@ -235,6 +237,26 @@ def convertToCheckbox(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,
     style = CheckboxStyle(textColor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
     checkbox =  Checkbox(id,"",name,"COMPONENT_ASSET",boxes,style)
     return checkbox
+
+def convertToMenu(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name):
+    options = []
+    iconImage = None
+    menuName = name
+    for c in data["children"]:
+        if(c["name"]=="iconMenu"):
+            name = c["name"]
+            if("#" in c["name"]): name = c["name"].split("#")[0]
+            iconImage = {"id":c["id"],"name":name}
+        if(c["name"]=="optionsMenu"):
+            for op in c["children"]:
+                option = {"option":op["children"][0]["characters"]}
+                for i in op["interactions"]:
+                    if(i["trigger"]["type"]=="ON_CLICK" and i["actions"][0]["navigation"]=="NAVIGATE"):
+                        option["destination"]=i["actions"][0]["destinationId"]
+                options.append(option)
+    style = MenuStyle(nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
+    menu = Menu(id,"",menuName,"COMPONENT_ASSET",options,iconImage,style)
+    return menu
 
 def getFormatedName(name):
     pattern = "[\s\.-;:]"

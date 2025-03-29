@@ -287,6 +287,43 @@ def usePaginatorVuetifyPlugin(name):
     f.close()
     allDependencies["vpagination"]=True
 
+def useMenuVuetifyPlugin(name):
+  global allDependencies
+  content =""
+  filevuetify = "../output/"+name+"/src/plugins/vuetify.js"
+  if("vmenu" not in allDependencies or "vlist" not in allDependencies or "vlistitem" not in allDependencies):
+    vuetifyimport = ""
+    vuetifycomponent = ""
+    components = []
+    if("vmenu" not in allDependencies): 
+      vuetifyimport+="""import { VMenu } from 'vuetify/components';\n"""
+      components.append("VMenu")
+    if("vlist" not in allDependencies):
+      vuetifyimport+="""import { VList } from 'vuetify/components';\n"""
+      components.append("VList")
+    if("vlistitem" not in allDependencies):
+      vuetifyimport+="""import { VListItem } from 'vuetify/components';\n"""
+      components.append("VListItem")
+
+    vuetifycomponents = ',\n\t'.join(components)
+    f = open(filevuetify, "r")
+    for l in f.readlines():
+      l = l.strip()
+      content+=l+"\n"
+      if(l=="import '@mdi/font/css/materialdesignicons.css';"):
+        content+=vuetifyimport
+      if(l=="components: {},"):
+        content=content[:-3] +"\n"+ vuetifycomponents + "\n},\n"
+      if(l=="components: {"):
+        content+= vuetifycomponents + ",\n"
+    f.close()
+    f= open(filevuetify,"w")
+    f.write(content)
+    f.close()
+    allDependencies["vmenu"]=True
+    allDependencies["vlist"]=True
+    allDependencies["vlistitem"]=True
+
 def useFormPrimeVuePlugin(name):
   global allDependencies
   content =""

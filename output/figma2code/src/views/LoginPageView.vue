@@ -44,20 +44,21 @@
 </template>
 
 <script>
-import Footer from '@/components/Footer.vue';
 import Navbar from '@/components/Navbar.vue';
+import Footer from '@/components/Footer.vue';
 import { ref } from 'vue';
 
 export default {
     components:{
-        Footer,
-        Navbar
+        Navbar,
+        Footer
     },
     data(){
         return {
             boxes2549638:[],
             boxesValues2549638:[{'name': 'Remember Me', 'key': 'Checkbox'}],
-            selectedBoxes2549638:[]    
+            selectedBoxes2549638:[],
+            menuoptions2575928:[{'option': 'Login', 'destination': '2548:560'}, {'option': 'Sign Up'}]    
         }
     },
     setup(){
@@ -101,7 +102,11 @@ export default {
         },
 		gotoWatchlistPage(){
             this.$router.push({path:"/watchlistpage"});
-        }
+        },
+        selectedItem2575928(){
+               this.$router.push({path:"/loginpage"});
+
+            }
 	},mounted(){
         this.getCheckboxOptions2549638();
 	}

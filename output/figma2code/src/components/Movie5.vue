@@ -1,6 +1,6 @@
 <template>
 <div>
- <img class="grid-item container2362565" src="/MV5BMTg5MjMzNDczM15BMl5BanBnXkFtZTgwMjMwMjM5MTE_V1_FMjpg_UX1000_1.png"/>
+ <img class="grid-item-2362323 container2362565" src="/MV5BMTg5MjMzNDczM15BMl5BanBnXkFtZTgwMjMwMjM5MTE_V1_FMjpg_UX1000_1.png"/>
  <div class="grid-item-2362323 container2362566">
   <p class="grid-item-2362323 text2362567">
    Willow Creek
@@ -17,7 +17,7 @@
    4.5
   </p>
  </div>
- <v-rating :length="5" :model-value="starsSeletec2473435" :size="25" class="srating2473435"  half-increments hover readonly >
+ <v-rating :length="5" :model-value="starsSeletec2473435" :size="25" class="grid-item-2362323 srating2473435"  half-increments hover readonly >
  </v-rating>
 </div>
 

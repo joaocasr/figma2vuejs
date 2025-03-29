@@ -1,6 +1,6 @@
 <template>
 <div>
- <img class="grid-item container2362595" src="/393895_3bf87fd7a8024df6b501bef082a9aa3b~mv21.png"/>
+ <img class="grid-item-2362321 container2362595" src="/393895_3bf87fd7a8024df6b501bef082a9aa3b~mv21.png"/>
  <div class="grid-item-2362321 container2362596">
   <p class="grid-item-2362321 text2362597">
    Us
@@ -17,7 +17,7 @@
    4.0
   </p>
  </div>
- <v-rating :length="5" :model-value="starsSeletec2473415" :size="25" class="srating2473415"  half-increments hover readonly >
+ <v-rating :length="5" :model-value="starsSeletec2473415" :size="25" class="grid-item-2362321 srating2473415"  half-increments hover readonly >
  </v-rating>
 </div>
 

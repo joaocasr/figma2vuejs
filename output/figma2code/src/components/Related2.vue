@@ -1,6 +1,6 @@
 <template>
 <div>
- <img class="grid-item container2362681" src="/insideout.png"/>
+ <img class="grid-item-2362436 container2362681" src="/insideout.png"/>
  <p class="grid-item-2362436 text2362682">
   Inside Out 2
  </p>

@@ -21,3 +21,28 @@ def getPrimeVueCheckbox(elem,checkboxid):
         </div>
     '''
     return (template,"</div>")
+
+
+def getVuetifyMenu(elem,menuid,idcomponent=None):
+    mclass=f"smenu{menuid}"
+    if(idcomponent!=None):
+        mclass="grid-item-"+idcomponent+" "+mclass
+    template = f'''<div class="{mclass}'''+'''">
+    <v-menu>
+      <template v-slot:activator="'''+"{ props }"+'''">
+        <div v-bind="props">
+        '''
+    template+=f'''<img
+            src="/{elem.iconImage["name"]}.png"
+          />
+          '''
+    template+=f'''   </div>
+      </template>
+      <v-list>
+        <v-list-item v-for="(item, index) in menuoptions{menuid}" :key="index" :value="index">
+          <v-list-item-title @click="selectedItem{menuid}(item)">'''+"{{ item.option }}"+'''</v-list-item-title>
+        </v-list-item>
+      </v-list>
+     </div>
+    '''
+    return (template,"</v-menu></div>")

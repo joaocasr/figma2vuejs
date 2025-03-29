@@ -48,6 +48,9 @@ def handleBehaviour(elem,allPagesInfo,isPageRender):
                     insertFunction("methods",hooks,methodName,closeOverlay(methodName,"close-from"+str(originid)+"-to"+str(destinationid)))
                     elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                     elemBehaviour[1] = hooks
+    # HANDLE MENU LOGIC
+    if(isinstance(elem,Mcomponent) and elem.getNameComponent()=="Menu"):
+        elemBehaviour = insertMenuLogic(elem,allPagesInfo,hooks,elemBehaviour)
     # HANDLE DROPDOWN LOGIC
     if(isinstance(elem,Mcomponent) and elem.getNameComponent()=="Dropdown"):
         elemBehaviour = insertDropdownLogic(getElemId(elem.idComponent),hooks,elemBehaviour)
@@ -150,6 +153,18 @@ def insertFormLogic(idform,inputs,hooks,elemBehaviour):
     elemBehaviour[1] = hooks
     return elemBehaviour
 
+def getMenuFunction(elem,allPagesInfo,functionname):
+    bodyfunction=""
+    function=""
+    for option in elem.options:
+        if("destination" in option):
+            destination = getPageById(option["destination"],allPagesInfo) 
+            bodyfunction += f'this.$router.push('+'{path:"/' + destination.lower() + '"});\n'
+            function =f"""        {functionname}()"""+"{"+f"""
+               {bodyfunction}"""+"""
+            }"""
+    return function
+
 def insertDropdownLogic(dropdownid,hooks,elemBehaviour):
     elemBehaviour[0] = []
     
@@ -170,6 +185,12 @@ def insertScrollBehaviour(elem,action,hooks,elemBehaviour):
     elemBehaviour[0] = []
     elemBehaviour[0].append('v-on:click="'+f"scrollTo{getElemId(elem.getIdElement())}"+'()"')
     hooks.setdefault("methods", []).append((f"scrollTo{getElemId(elem.getIdElement())}",getScrollBehaviourFunction(elem,action)))
+    elemBehaviour[1] = hooks
+    return elemBehaviour
+
+def insertMenuLogic(elem,allPagesInfo,hooks,elemBehaviour):
+    elemBehaviour[0] = []
+    hooks.setdefault("methods", []).append((f"selectedItem{getElemId(elem.idComponent)}",getMenuFunction(elem,allPagesInfo,f"selectedItem{getElemId(elem.idComponent)}")))
     elemBehaviour[1] = hooks
     return elemBehaviour
 

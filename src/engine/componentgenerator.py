@@ -1,5 +1,5 @@
-from engine.stylegenerator import generatePageStyle, generateComponentStyle, generateElemCssProperties, generateShapeCSS, generateRatingCssProperties
-from setup.vueprojectsetup import useRatingVuetifyPlugin
+from engine.stylegenerator import generatePageStyle, generateComponentStyle, generateElemCssProperties, generateShapeCSS, generateRatingCssProperties, generateMenuCssProperties
+from setup.vueprojectsetup import useRatingVuetifyPlugin,useMenuVuetifyPlugin
 from engine.logicgenerator import handleBehaviour
 from parser.model.Mcomponent import Mcomponent
 from parser.model.Melement import Melement
@@ -10,6 +10,7 @@ from parser.model.ImageElement import ImageElement
 from parser.model.ShapeElement import ShapeElement
 from parser.model.Rating import Rating
 from parser.model.RatingStyle import RatingStyle
+from engine.assetshelper import getVuetifyMenu
 
 from bs4 import BeautifulSoup
 import itertools
@@ -92,11 +93,11 @@ def applytransformation(elem,projectname,pagename,idcomponent):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         if(elem.tag==""):
             elem.tag = "img"
-        return ("<"+elem.tag +f" {ref}class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getimgpath() + '"' + ' '.join(d for d in directives) , "/>")
+        return ("<"+elem.tag +f" {ref}class="+'"grid-item-'+ idcomponent + ' container'+ cssclass + '" '+ 'src="' + elem.getimgpath() + '"' + ' '.join(d for d in directives) , "/>")
     
     if(isinstance(elem, VectorElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
-        return ("<"+elem.tag +f" {ref}class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getsvgpath() + '"' + ' '.join(d for d in directives) , "/>")
+        return ("<"+elem.tag +f" {ref}class="+'"grid-item-'+idcomponent+' container'+ cssclass + '" '+ 'src="' + elem.getsvgpath() + '"' + ' '.join(d for d in directives) , "/>")
 
         return (begintag,endtag)
 
@@ -111,7 +112,14 @@ def applytransformation(elem,projectname,pagename,idcomponent):
         if(readonly==True):
             readonlyconf = "readonly=''"
             componentAssets[pagename].extend([" v-rating readonly"])
-        return (f'<v-rating class="{cssclass}" '+ f':length="{size}" :size="25" :model-value="{vmodel}" '+f" half-increments='' hover='' {readonlyconf} >",'</v-rating>')
+        return (f'<v-rating class="grid-item-' + idcomponent + f' {cssclass}" ' + f':length="{size}" :size="25" :model-value="{vmodel}" '+f" half-increments='' hover='' {readonlyconf} >",'</v-rating>')
+
+    if(isinstance(elem, Mcomponent) and (elem.getNameComponent()=="Menu")):
+        useMenuVuetifyPlugin(projectname)
+        menu = getVuetifyMenu(elem,cssclass,idcomponent)
+        generateMenuCssProperties(projectname,pagename,"smenu"+cssclass,elem)
+        componentAssets[pagename].extend([" v-menu"," v-list"])
+        return menu
 
     return ("","")
 

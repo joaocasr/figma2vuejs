@@ -1,6 +1,6 @@
 <template>
 <div>
- <img class="grid-item container2362542" src="/im11.png"/>
+ <img class="grid-item-2362325 container2362542" src="/im11.png"/>
  <div class="grid-item-2362325 container2362543">
   <p class="grid-item-2362325 text2362544">
    Area 51
@@ -17,7 +17,7 @@
    3.0
   </p>
  </div>
- <v-rating :length="5" :model-value="starsSeletec2473375" :size="25" class="srating2473375"  half-increments hover readonly >
+ <v-rating :length="5" :model-value="starsSeletec2473375" :size="25" class="grid-item-2362325 srating2473375"  half-increments hover readonly >
  </v-rating>
 </div>
 
