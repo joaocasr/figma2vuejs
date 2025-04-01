@@ -1895,6 +1895,8 @@
 
 
 .container2442248 {
+	background: linear-gradient(-90.0deg, rgba(24.4374842941761,24.4374842941761,24.4374842941761,255.0), rgba(96.68748378753662,96.68748378753662,96.68748378753662,255.0));
+	border-radius: 20.0px;
 	grid-column-start: 20;
 	grid-column-end: 48;
 	grid-row-start: 93;
@@ -1905,18 +1907,7 @@
 	padding: 0;
 }
 
-
-.rectangle2454254 {
-    grid-column-start: 1;
-    grid-column-end: 65;
-    grid-row-start: 1;
-    grid-row-end: 64;
-    aspect-ratio: 1;
-    clip-path: polygon(0 0, 0% 100%, 100% 100%,100% 0);
-    background:linear-gradient(-90.0deg, rgba(24.4374842941761,24.4374842941761,24.4374842941761,255.0), rgba(96.68748378753662,96.68748378753662,96.68748378753662,255.0));
-	border-radius:20.0px;
-	display: grid;
-	}.container2442252 {
+.container2442252 {
 	min-width: 100%;
 	min-height: 100%;grid-column-start: 8;
 	grid-column-end: 20;
@@ -1933,8 +1924,8 @@
 	text-align: left;
 	line-height: 33px;
 	color: rgba(255.0,255.0,255.0,1.0);
-	grid-column-start: 20;
-	grid-column-end: 43;
+	grid-column-start: 23;
+	grid-column-end: 46;
 	grid-row-start: 27;
 	grid-row-end: 35;
 	overflow-wrap: break-word;
@@ -2088,6 +2079,10 @@
 }
 
 
+.container2621776:hover {
+	opacity:0;
+}
+
 .text2621777 {
 	font-style: Regular;
 	font-weight: 400;
@@ -2100,6 +2095,44 @@
 	grid-column-end: 46;
 	grid-row-start: 29;
 	grid-row-end: 37;
+	overflow-wrap: break-word;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: stretch;
+}
+
+
+.container26211200 {
+	background-color: rgba(146.13461047410965,146.13461047410965,146.13461047410965,1.0);
+	grid-column-start: 1;
+	grid-column-end: 12;
+	grid-row-start: 1;
+	grid-row-end: 64;
+	opacity: 0;
+	display: grid;
+	grid-template-columns: repeat(64,1fr);
+	grid-template-rows: repeat(64,1fr);
+	padding: 0;
+}
+
+
+.container26211200:hover {
+	opacity:1;
+}
+
+.text26211201 {
+	font-style: Regular;
+	font-weight: 400;
+	font-size: 1.2987012987012987vw;
+	font-family: Alatsi;
+	text-align: center;
+	line-height: 26px;
+	color: rgba(255.0,255.0,255.0,1.0);
+	grid-column-start: 1;
+	grid-column-end: 27;
+	grid-row-start: 1170;
+	grid-row-end: 64;
 	overflow-wrap: break-word;
 	width: 100%;
 	display: flex;

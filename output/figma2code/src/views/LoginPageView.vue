@@ -25,9 +25,6 @@
     </button>
    </Form>
   </div>
-  <p class="grid-item text2549628">
-   Forgot your password?
-  </p>
   <div class="scheckbox2549638">
    <div :key="box.key" v-for="box of boxes2549638">
     <Checkbox :inputid="box.key" :value="box.name" name="box" v-model="selectedCategories">
@@ -37,21 +34,24 @@
     </label>
    </div>
   </div>
+  <p class="grid-item text2549628">
+   Forgot your password?
+  </p>
  </div>
- <Navbar class="grid-item-2548575 component2548575 posnavbar"></Navbar>
+ <Navbar @show-from2621776-to26211200="show26211200=true" class="grid-item-2548575 component2548575 posnavbar"></Navbar>
 </div>
 
 </template>
 
 <script>
-import Footer from '@/components/Footer.vue';
 import Navbar from '@/components/Navbar.vue';
+import Footer from '@/components/Footer.vue';
 import { ref } from 'vue';
 
 export default {
     components:{
-        Footer,
-        Navbar
+        Navbar,
+        Footer
     },
     data(){
         return {
@@ -103,7 +103,10 @@ export default {
         selectedItem2575928(){
                this.$router.push({path:"/loginpage"});
 
-            }
+            },
+		changeVisibility26211200(){
+            this.$emit('show-from2621776-to26211200');
+        }
 	},mounted(){
         this.getCheckboxOptions2549638();
 	}

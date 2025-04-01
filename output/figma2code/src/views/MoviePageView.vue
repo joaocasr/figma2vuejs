@@ -71,30 +71,30 @@
   <iframe controls="1" height="500.0px" src="https://www.youtube.com/embed/9ZIgQFKaK4Y" width="934.0px">
   </iframe>
  </div>
- <Navbar class="grid-item-2362441 component2362441 posnavbar"></Navbar>
+ <Navbar @show-from2621776-to26211200="show26211200=true" class="grid-item-2362441 component2362441 posnavbar"></Navbar>
  <Confirmationwatchlistmodal @close-from2362622-to2362620="show2362620=false" @close-from2362624-to2362620="show2362620=false" class="grid-item-2362620 component2362620" v-if="show2362620==true"></Confirmationwatchlistmodal>
 </div>
 
 </template>
 
 <script>
-import Footer from '@/components/Footer.vue';
-import Related2 from '@/components/Related2.vue';
-import Related1 from '@/components/Related1.vue';
-import Confirmationwatchlistmodal from '@/components/Confirmationwatchlistmodal.vue';
-import Related3 from '@/components/Related3.vue';
 import Navbar from '@/components/Navbar.vue';
+import Related3 from '@/components/Related3.vue';
+import Related2 from '@/components/Related2.vue';
 import Review from '@/components/Review.vue';
+import Confirmationwatchlistmodal from '@/components/Confirmationwatchlistmodal.vue';
+import Related1 from '@/components/Related1.vue';
+import Footer from '@/components/Footer.vue';
 
 export default {
     components:{
-        Footer,
-        Related2,
-        Related1,
-        Confirmationwatchlistmodal,
-        Related3,
         Navbar,
-        Review
+        Related3,
+        Related2,
+        Review,
+        Confirmationwatchlistmodal,
+        Related1,
+        Footer
     },
     data(){
         return {
@@ -125,7 +125,10 @@ export default {
         selectedItem2575928(){
                this.$router.push({path:"/loginpage"});
 
-            }
+            },
+		changeVisibility26211200(){
+            this.$emit('show-from2621776-to26211200');
+        }
 	}
 }
 </script>

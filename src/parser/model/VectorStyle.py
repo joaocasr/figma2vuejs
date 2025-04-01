@@ -12,6 +12,7 @@ class VectorStyle(object):
 		self.gridrowStart = gridrowstart
 		self.gridrowEnd = gridrowend
 		self.boxShadow = None
+		self.hashover = False
 		self.opacity = None
 		self.gridArea = None
 
@@ -88,13 +89,16 @@ class VectorStyle(object):
 		self.gridrowEnd = gridrowEnd
 
 	def getOpacity(self):
-		"""@ReturnType String"""
 		return self.opacity
 
-	def setOpacity(self, opacity):
-		"""@ParamType opacity String
-		@ReturnType void"""
-		self.opacity = opacity
+	def setOpacity(self,opacity):
+		self.opacity=opacity
+  
+	def gethashoverProperty(self):
+		return self.hashover
+
+	def sethashoverProperty(self,hashover):
+		self.hashover = hashover
 
 	def getBoxShadow(self):
 		"""@ReturnType String"""

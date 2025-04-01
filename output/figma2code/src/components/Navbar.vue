@@ -29,8 +29,13 @@
     </v-menu>
    </div>
   </div>
-  <div class="grid-item-2548575 container2621776">
+  <div @mouseover="changeVisibility26211200()" class="grid-item-2548575 container2621776">
    <p class="grid-item-2548575 text2621777">
+    HOME
+   </p>
+  </div>
+  <div class="grid-item-2548575 container26211200">
+   <p class="grid-item-2548575 text26211201">
     HOME
    </p>
   </div>
@@ -56,7 +61,10 @@ export default {
         selectedItem2575928(){
                this.$router.push({path:"/loginpage"});
 
-            }
+            },
+		changeVisibility26211200(){
+            this.$emit('show-from2621776-to26211200');
+        }
 	}
 }
 </script>

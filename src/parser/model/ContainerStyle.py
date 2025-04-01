@@ -32,6 +32,8 @@ class ContainerStyle(object):
 		self.borderTopRightRadius = None
 		self.borderBottomLeftRadius = None
 		self.borderBottomRightRadius = None
+		self.hashover = False
+		self.opacity = None
 		self.gap = None
 
 	def getX(self):
@@ -97,6 +99,17 @@ class ContainerStyle(object):
 		@ReturnType void"""
 		self.background = background
 
+	def getOpacity(self):
+		return self.opacity
+
+	def setOpacity(self,opacity):
+		self.opacity=opacity
+  
+	def gethashoverProperty(self):
+		return self.hashover
+
+	def sethashoverProperty(self,hashover):
+		self.hashover = hashover
 
 	def getDisplay(self):
 		"""@ReturnType String"""

@@ -26,19 +26,19 @@
    </v-rating>
   </div>
  </div>
- <Navbar class="grid-item-2362644 component2362644 posnavbar"></Navbar>
+ <Navbar @show-from2621776-to26211200="show26211200=true" class="grid-item-2362644 component2362644 posnavbar"></Navbar>
 </div>
 
 </template>
 
 <script>
-import Footer from '@/components/Footer.vue';
 import Navbar from '@/components/Navbar.vue';
+import Footer from '@/components/Footer.vue';
 
 export default {
     components:{
-        Footer,
-        Navbar
+        Navbar,
+        Footer
     },
     data(){
         return {
@@ -56,7 +56,10 @@ export default {
         selectedItem2575928(){
                this.$router.push({path:"/loginpage"});
 
-            }
+            },
+		changeVisibility26211200(){
+            this.$emit('show-from2621776-to26211200');
+        }
 	}
 }
 </script>

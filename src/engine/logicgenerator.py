@@ -71,6 +71,9 @@ def handleBehaviour(elem,allPagesInfo,isPageRender):
     # HANDLE FORM LOGIC
     if(isinstance(elem,Mcomponent) and elem.getNameComponent()=="Form"):
         elemBehaviour = insertFormLogic(getElemId(elem.idComponent),elem.inputs,hooks,elemBehaviour)
+    # HANDLE OVERLAY FRAMES
+    #if(isinstance(elem,Melement) and elem.getisOverlay()==True):
+    #    elemBehaviour[0].append('v-if="show'+getElemId(elem.getIdElement())+'==true"')
     # SHOW CONDITIONAL ELEMENTS | from page
     if(isinstance(elem,Mcomponent) and isPageRender==True):
         idcomponent = getElemId(elem.idComponent)
@@ -80,6 +83,9 @@ def handleBehaviour(elem,allPagesInfo,isPageRender):
                 if(hook[0]!=None and hook[1]!=None): elemBehaviour[0].append('@'+hook[0]+'="'+hook[1]+'"')
         elemBehaviour[1] = hooks
     return elemBehaviour
+
+# METHOD TO CHECK IF ELEMENTS INVOLVED ARE IN THE SAME PAGE
+# METHOD TO HANDLE mouseover EVENTS when elements are not overlaping 
 
 def insertFunction(hook,hooks,functioname,function):
     if(hook not in hooks): hooks[hook]=[]

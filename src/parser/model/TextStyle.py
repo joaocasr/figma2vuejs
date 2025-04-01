@@ -20,6 +20,7 @@ class TextStyle(object):
 		self.letterSpacing = None
 		self.cursor = None
 		self.transition = None
+		self.hashover = False
 		self.opacity = None
 		self.gridcolumnStart = gridcolumnStart
 		self.gridcolumnEnd = gridcolumnEnd
@@ -190,13 +191,17 @@ class TextStyle(object):
 		self.transition = transition
 
 	def getOpacity(self):
-		"""@ReturnType String"""
 		return self.opacity
 
-	def setOpacity(self, opacity):
-		"""@ParamType opacity String
-		@ReturnType void"""
-		self.opacity = opacity
+	def setOpacity(self,opacity):
+		self.opacity=opacity
+  
+	def gethashoverProperty(self):
+		return self.hashover
+
+	def sethashoverProperty(self,hashover):
+		self.hashover = hashover
+
 
 	def getGridcolumnStart(self):
 		"""@ReturnType String"""

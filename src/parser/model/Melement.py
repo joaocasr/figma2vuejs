@@ -14,12 +14,19 @@ class Melement(object):
 		self.interactions = []
 		self.upperIdComponent = None
 		self.zindex = 0
+		self.initialOpacity = None
 
 	def getIdElement(self):
 		return self.idElement
 
 	def setIdElement(self, idElement):
 		self.idElement = idElement
+	
+	def getinitialOpacity(self):
+		return self.initialOpacity
+
+	def setinitialOpacity(self, initialOpacity):
+		self.initialOpacity = initialOpacity
 
 	def getTag(self):
 		return self.tag

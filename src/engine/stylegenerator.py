@@ -611,6 +611,7 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     if(elem.style.getBorderBottomRightRadius() != None and elem.style.getBorderBottomRightRadius()!="0.0"): csskeyvalues+=f"border-bottom-right-radius: {elem.style.getBorderBottomRightRadius()}px;{newline}"
     if(elem.style.getPosition() != None): csskeyvalues+=f"position: {elem.style.getPosition()};{newline}"
 
+    if(elem.getinitialOpacity()!=None): csskeyvalues+=f"opacity: {str(elem.getinitialOpacity())};{newline}"
     if elem.style.display != None: csskeyvalues+=f"display: {str(elem.style.display)};{newline}"
     if elem.style.gridtemplatecolumns != None: csskeyvalues+=f"grid-template-columns: {str(elem.style.gridtemplatecolumns)};{newline}"
     if elem.style.gridtemplaterows != None: csskeyvalues+=f"grid-template-rows: {str(elem.style.gridtemplaterows)};{newline}"
@@ -619,8 +620,12 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     if(elem.style.getgridArea()!=None):
       gridareacss = "#"+elem.name.lower()+" {\n\t"+ "grid-area:"+elem.style.getgridArea()+";\n}\n\n"
 
+    hover=""
+    if(elem.style.gethashoverProperty()==True):
+      hover="\n."+cssclass+":hover {\n\t"+ "opacity:"+str(elem.style.getOpacity())+";\n}\n"
     css = gridareacss + "\n."+cssclass+" {\n\t"+ csskeyvalues[:-1] +"}\n\n"
-
+    css+=hover
+    
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):

@@ -41,10 +41,11 @@ pageWidth = -1
 tags = ["nav","footer","main","section","aside","article","p","header","h1","h2","h3","h4","h5","h6","ul","li"]
 notPageElems = {}
 overlayInsideInstances = {}
+pageOverlays = {}
 figmadata = {}
 
 def getFigmaData(prototype):
-    global allpages, allcomponents,pageComponents, figmadata, refs, overlayInsideInstances
+    global allpages, allcomponents,pageComponents, figmadata, refs, overlayInsideInstances, pageOverlays
     prototype1 = "../tests/prototype"+str(prototype)+".json"
 
     with open(prototype1,"r") as file:
@@ -60,6 +61,15 @@ def getFigmaData(prototype):
             if(c.getTypeComponent()=="OVERLAY"):
                 updateOverlayPosition(c,c.style.getOverlayVector()[0],c.style.getOverlayVector()[1],allpages[p].style.getWidth(),allpages[p].style.getHeight())
                 allpages[p].addElement(c)
+            if(c.getIdComponent() in overlayInsideInstances):
+                for i in overlayInsideInstances[c.getIdComponent()]:
+                    if(i[0]==c.getIdComponent()):
+                        c.addChildren(i[1])
+                    manipulateComponentDom(c.children,i)
+    # insert overlay frame elements on page
+    for p in pageOverlays:
+        for el in pageOverlays[p]:
+            allpages[p].addElement(el)
     #"""
     # assign the components for each page
     for p in pageComponents:
@@ -131,7 +141,7 @@ def iterate_nestedElements(data):
 
 
 def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstlevelelem,parent_data=None):
-    global allcomponents,pageComponents,allpages,pageWidth, figmadata, allimages, allsvgs, refs, overlayInsideInstances
+    global allcomponents,pageComponents,allpages,pageWidth, figmadata, allimages, allsvgs, refs, overlayInsideInstances, pageOverlays
     children = []
     elementwidth = data["absoluteRenderBounds"]["width"]
     elementheight = data["absoluteRenderBounds"]["height"]
@@ -503,10 +513,23 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             if(action!=None and action["type"]=="NODE" and action["navigation"]=="OVERLAY"):
                 #verificar se o elemento overlay se encontra no notPageElems
                 if(action["destinationId"] in notPageElems):
+                    notPageElems[action["destinationId"]]["absoluteRenderBounds"]["x"] = data["absoluteRenderBounds"]["x"]+action["overlayRelativePosition"]["x"]
+                    notPageElems[action["destinationId"]]["absoluteRenderBounds"]["y"] = data["absoluteRenderBounds"]["y"]+action["overlayRelativePosition"]["y"]
                     # construir o elemento overlay tendo em conta que o elemento atual será o seu parent
-                    overlayElem = processElement(data["name"],notPageElems[action["destinationId"]]["name"],notPageElems[action["destinationId"]],data["absoluteRenderBounds"]["width"],data["absoluteRenderBounds"]["height"],pageX,pageY,data,None)
+                    if(parent_data!=None):
+                        overlayElem = processElement(parent_data["name"],notPageElems[action["destinationId"]]["name"],notPageElems[action["destinationId"]],parent_data["absoluteRenderBounds"]["width"],parent_data["absoluteRenderBounds"]["height"],parent_data["absoluteRenderBounds"]["x"],parent_data["absoluteRenderBounds"]["y"],firstlevelelem,parent_data)
+                    else:
+                        overlayElem = processElement(pagename,notPageElems[action["destinationId"]]["name"],notPageElems[action["destinationId"]],page_width,page_height,pageX,pageY,firstlevelelem,parent_data)                        
+                        pageOverlays.setdefault(pagename, []).append(overlayElem)
+                    if(type=="ON_HOVER"): 
+                        # caso exista overlaping sao adicionadas as propriedades de hovering
+                        overlaps = setHoverProperties(overlayElem,melement,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
+                        if(not overlaps):
+                            pass
                     if(firstlevelelem["type"]=="INSTANCE"):
-                        overlayInsideInstances.setdefault(firstlevelelem["id"], []).append(overlayElem)
+                        overlayInsideInstances.setdefault(firstlevelelem["id"], []).append((parent_data["id"],overlayElem)) # só fazer isto se a posicao do overlay estiver contida numa instance/component
+                    overlayAction = OverlayAction(action["destinationId"])
+                    interactionelement.addAction(overlayAction)
                 #verificar se o elemento overlay é uma instancia(componente)
                 elif(action["destinationId"] in allcomponents): 
                     #  update the position of the component relatively to the node which will open the component overlay
@@ -778,6 +801,30 @@ def assignComponentData(component):
     if(component.getNameComponent() in componentVariables):
         for v in componentVariables[component.getNameComponent()]:
             component.addVariable(v)
+
+def manipulateComponentDom(elems,i):
+    for el in elems:
+        if(isinstance(el,Melement) and i[0]==el.idElement):
+            el.addChildren(i[1])
+        manipulateComponentDom(el.children,i)
+
+def setHoverProperties(overlayElem,melement,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend):
+    overlaps=True
+    if((overlayElem.style.getGridcolumnStart()<nr_columnstart and overlayElem.style.getGridcolumnEnd()<nr_columnstart)
+       or 
+       (overlayElem.style.getGridrowStart()<nr_rowstart and overlayElem.style.getGridrowEnd()<nr_rowstart)
+       or
+       (overlayElem.style.getGridcolumnStart()>nr_columnend and overlayElem.style.getGridcolumnEnd()>nr_columnend)
+       or
+       (overlayElem.style.getGridrowStart()>nr_rowend and overlayElem.style.getGridrowEnd()>nr_rowend)):
+            overlaps=False
+    if(overlaps==True):
+        overlayElem.style.sethashoverProperty(True)
+        melement.style.sethashoverProperty(True)
+        overlayElem.style.setOpacity(1)
+        overlayElem.setinitialOpacity(0)
+        melement.style.setOpacity(0)
+    return overlaps
 
 def getElemId(id):
     elemid = id

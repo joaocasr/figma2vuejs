@@ -17,6 +17,8 @@ class ShapeStyle(object):
 		self.gridArea = None
 		self.boxShadow = None
 		self.display = None
+		self.hashover = False
+		self.opacity = None
 		self.borderTopLeftRadius = None
 		self.borderTopRightRadius = None
 		self.borderBottomLeftRadius = None
@@ -160,6 +162,18 @@ class ShapeStyle(object):
 		"""@ParamType borderRadius String
 		@ReturnType void"""
 		self.borderRadius = borderRadius
+
+	def getOpacity(self):
+		return self.opacity
+
+	def setOpacity(self,opacity):
+		self.opacity=opacity
+  
+	def gethashoverProperty(self):
+		return self.hashover
+
+	def sethashoverProperty(self,hashover):
+		self.hashover = hashover
 
 	def getBorderTopLeftRadius(self):
 		return self.borderTopLeftRadius
