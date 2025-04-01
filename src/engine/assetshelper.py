@@ -43,6 +43,5 @@ def getVuetifyMenu(elem,menuid,idcomponent=None):
           <v-list-item-title @click="selectedItem{menuid}(item)">'''+"{{ item.option }}"+'''</v-list-item-title>
         </v-list-item>
       </v-list>
-     </div>
     '''
     return (template,"</v-menu></div>")

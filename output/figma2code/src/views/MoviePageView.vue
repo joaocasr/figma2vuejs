@@ -72,29 +72,29 @@
   </iframe>
  </div>
  <Navbar class="grid-item-2362441 component2362441 posnavbar"></Navbar>
+ <Confirmationwatchlistmodal @close-from2362622-to2362620="show2362620=false" @close-from2362624-to2362620="show2362620=false" class="grid-item-2362620 component2362620" v-if="show2362620==true"></Confirmationwatchlistmodal>
 </div>
-<Confirmationwatchlistmodal @close-from2362622-to2362620="show2362620=false" @close-from2362624-to2362620="show2362620=false" class="grid-item-2362620 component2362620" v-if="show2362620==true"></Confirmationwatchlistmodal>
 
 </template>
 
 <script>
-import Related2 from '@/components/Related2.vue';
-import Confirmationwatchlistmodal from '@/components/Confirmationwatchlistmodal.vue';
-import Review from '@/components/Review.vue';
-import Related3 from '@/components/Related3.vue';
-import Related1 from '@/components/Related1.vue';
-import Navbar from '@/components/Navbar.vue';
 import Footer from '@/components/Footer.vue';
+import Related2 from '@/components/Related2.vue';
+import Related1 from '@/components/Related1.vue';
+import Confirmationwatchlistmodal from '@/components/Confirmationwatchlistmodal.vue';
+import Related3 from '@/components/Related3.vue';
+import Navbar from '@/components/Navbar.vue';
+import Review from '@/components/Review.vue';
 
 export default {
     components:{
+        Footer,
         Related2,
-        Confirmationwatchlistmodal,
-        Review,
-        Related3,
         Related1,
+        Confirmationwatchlistmodal,
+        Related3,
         Navbar,
-        Footer
+        Review
     },
     data(){
         return {
@@ -115,9 +115,6 @@ export default {
         },
 		gotoReviewPage(){
             this.$router.push({path:"/reviewpage"});
-        },
-		gotoHomePage(){
-            this.$router.push({path:"/homepage"});
         },
 		gotoHomePage(){
             this.$router.push({path:"/homepage"});

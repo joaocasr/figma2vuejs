@@ -45,21 +45,21 @@
  </div>
  <Footer class="grid-item-2362509 component2362509"></Footer>
  <Navbar class="grid-item-2362512 component2362512 posnavbar"></Navbar>
+ <Deletionwatchlistmodal @close-from2362636-to2362634="show2362634=false" @close-from2362638-to2362634="show2362634=false" class="grid-item-2362634 component2362634" v-if="show2362634==true"></Deletionwatchlistmodal>
 </div>
-<Deletionwatchlistmodal @close-from2362636-to2362634="show2362634=false" @close-from2362638-to2362634="show2362634=false" class="grid-item-2362634 component2362634" v-if="show2362634==true"></Deletionwatchlistmodal>
 
 </template>
 
 <script>
-import Deletionwatchlistmodal from '@/components/Deletionwatchlistmodal.vue';
-import Navbar from '@/components/Navbar.vue';
 import Footer from '@/components/Footer.vue';
+import Navbar from '@/components/Navbar.vue';
+import Deletionwatchlistmodal from '@/components/Deletionwatchlistmodal.vue';
 
 export default {
     components:{
-        Deletionwatchlistmodal,
+        Footer,
         Navbar,
-        Footer
+        Deletionwatchlistmodal
     },
     data(){
         return {
@@ -71,9 +71,6 @@ export default {
     methods:{
 		changeVisibility2362634(){
             this.show2362634 = true;
-        },
-		gotoHomePage(){
-            this.$router.push({path:"/homepage"});
         },
 		gotoHomePage(){
             this.$router.push({path:"/homepage"});

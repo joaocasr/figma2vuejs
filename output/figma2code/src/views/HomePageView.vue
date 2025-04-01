@@ -66,31 +66,31 @@
 </template>
 
 <script>
-import Movie7 from '@/components/Movie7.vue';
-import Homebanner from '@/components/Homebanner.vue';
-import Movie3 from '@/components/Movie3.vue';
-import Movie2 from '@/components/Movie2.vue';
+import Footer from '@/components/Footer.vue';
+import Movie1 from '@/components/Movie1.vue';
 import Movie8 from '@/components/Movie8.vue';
+import Movie3 from '@/components/Movie3.vue';
+import Movie5 from '@/components/Movie5.vue';
+import Movie7 from '@/components/Movie7.vue';
+import Movie6 from '@/components/Movie6.vue';
+import Movie2 from '@/components/Movie2.vue';
 import Navbar from '@/components/Navbar.vue';
 import Movie4 from '@/components/Movie4.vue';
-import Movie1 from '@/components/Movie1.vue';
-import Movie5 from '@/components/Movie5.vue';
-import Movie6 from '@/components/Movie6.vue';
-import Footer from '@/components/Footer.vue';
+import Homebanner from '@/components/Homebanner.vue';
 
 export default {
     components:{
-        Movie7,
-        Homebanner,
-        Movie3,
-        Movie2,
+        Footer,
+        Movie1,
         Movie8,
+        Movie3,
+        Movie5,
+        Movie7,
+        Movie6,
+        Movie2,
         Navbar,
         Movie4,
-        Movie1,
-        Movie5,
-        Movie6,
-        Footer
+        Homebanner
     },
     data(){
         return {
@@ -113,9 +113,6 @@ export default {
         },
 		gotoMoviePage(){
             this.$router.push({path:"/moviepage"});
-        },
-		gotoHomePage(){
-            this.$router.push({path:"/homepage"});
         },
 		gotoHomePage(){
             this.$router.push({path:"/homepage"});

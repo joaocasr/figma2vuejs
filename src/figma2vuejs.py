@@ -5,6 +5,7 @@ from engine.gridgenerator import generateGridTemplate
 from engine.pagegenerator import buildpage
 from engine.componentgenerator import buildcomponent
 from parser.modelconverter import getFigmaData
+from parser.model.Melement import Melement
 
 import sys
 
@@ -37,14 +38,19 @@ else:
   mypages = allpages
   if(len(sys.argv)==3): mypages = generateGridTemplate(sys.argv[2],allpages)
   if(mypages!=None):
-    # filter unique components by its id
-    uniqueComponents = []
+    allcomponents=[]
     for page in pagesInfo:
       for x in pagesInfo[page]["components"]:
-        if(not any(x.idComponent == c.idComponent for c in uniqueComponents)):
-          uniqueComponents.append(x)
-
-    for component in uniqueComponents:
+        if(not any(x==c for c in allcomponents)):
+          allcomponents.append(x)
+    thenavs = []
+    for c in allcomponents:
+      if(c.componentName=="NavBar"):
+        thenavs.append(c)
+    #  print((c.componentName,type(c)))
+    #  for el in c.children:
+    #    if(isinstance(el,Melement)): print(el.getName())
+    for component in allcomponents:
       buildcomponent(component,project_name,pagesInfo,refs)
 
     # build each page (elements within, styling and components)

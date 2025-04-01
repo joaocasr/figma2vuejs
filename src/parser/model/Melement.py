@@ -13,6 +13,7 @@ class Melement(object):
 		self.children = []
 		self.interactions = []
 		self.upperIdComponent = None
+		self.zindex = 0
 
 	def getIdElement(self):
 		return self.idElement
@@ -35,6 +36,9 @@ class Melement(object):
 	def setChildren(self, nchildren):
 		self.children = nchildren
 
+	def addChildren(self,elem):
+		self.children.append(elem)
+
 	def getupperIdComponent(self):
 		return self.upperIdComponent
 
@@ -43,6 +47,12 @@ class Melement(object):
 
 	def getInteractions(self):
 		return self.interactions
+
+	def getzindex(self):
+		return self.zindex
+
+	def setzindex(self, zindex):
+		self.zindex = zindex
 
 	def setInteractions(self, interactions):
 		self.interactions = interactions

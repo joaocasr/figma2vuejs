@@ -39,10 +39,12 @@ pageComponents = {}
 assetComponents = ["InputSearch","DatePicker","Dropdown","ReadOnlyRating","InteractiveRating","Paginator","Form","Checkbox","Video","Menu"]
 pageWidth = -1
 tags = ["nav","footer","main","section","aside","article","p","header","h1","h2","h3","h4","h5","h6","ul","li"]
+notPageElems = {}
+overlayInsideInstances = {}
 figmadata = {}
 
 def getFigmaData(prototype):
-    global allpages, allcomponents,pageComponents, figmadata, refs
+    global allpages, allcomponents,pageComponents, figmadata, refs, overlayInsideInstances
     prototype1 = "../tests/prototype"+str(prototype)+".json"
 
     with open(prototype1,"r") as file:
@@ -63,6 +65,7 @@ def getFigmaData(prototype):
     for p in pageComponents:
         if(p in allpages):
             allpages[p].components = pageComponents[p]
+    
     #print(allpages['PrincipalPage'].elements)
 
     extractImages(project_name)
@@ -73,7 +76,7 @@ def parsePageEntities(data):
     global allpages
     pages = []
     for page in data["document"]["children"][0]["children"]:
-        if(page["type"]=="FRAME"):
+        if(page["type"]=="FRAME" and "#Page" in page["name"]):
             pagina = Mpage(page["name"],"/"+page["name"],page["id"])
             pages.append(pagina)
             allpages[pagina.getPagename()] = pagina
@@ -81,7 +84,13 @@ def parsePageEntities(data):
     return allpages
 
 def iterate_nestedElements(data):    
-    global allpages, pageWidth, primeVueComponents
+    global allpages, pageWidth, primeVueComponents, notPageElems
+    
+    # iterate the frames and groups on first level of the whiteboard which are NOT PAGES
+    for page in data["document"]["children"][0]["children"]:
+        if((page["type"]=="FRAME" or page["type"]=="GROUP") and "children" in page and "#Page" not in page["name"]):
+            notPageElems[page["id"]]=page
+
     #iterate first for all the components nodes (except primevue components)
     for melement in data["document"]["children"][0]["children"]:
         elements = []
@@ -102,9 +111,9 @@ def iterate_nestedElements(data):
             allcomponents[melement["id"]] = Mcomponent(melement["id"],melement["name"],tag,"",elements)
             setComponentStyle(melement)
 
-    #iterate the frame nodes (represent the pages)
+    #iterate the frame nodes which represent PAGES
     for page in data["document"]["children"][0]["children"]:
-        if(page["type"]=="FRAME" and "children" in page):
+        if(page["type"]=="FRAME" and "children" in page and "#Page" in page["name"]):
             pageWidth = page["absoluteRenderBounds"]["width"]
             for element in page["children"]:
                 page_width = page["absoluteRenderBounds"]["width"]
@@ -116,15 +125,13 @@ def iterate_nestedElements(data):
                 if(p!=None): allpages[page["name"]].elements.append(p)
                 #except:
                 #    raise Exception("Error while converting "+element["name"]+". Correct your prototype!")
-
         else:
-            continue
-
+            continue    
         setPageStyle(page["name"],page)
 
 
 def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstlevelelem,parent_data=None):
-    global allcomponents,pageComponents,allpages,pageWidth, figmadata, allimages, allsvgs, refs
+    global allcomponents,pageComponents,allpages,pageWidth, figmadata, allimages, allsvgs, refs, overlayInsideInstances
     children = []
     elementwidth = data["absoluteRenderBounds"]["width"]
     elementheight = data["absoluteRenderBounds"]["height"]
@@ -483,49 +490,61 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
     element_interactions = []
     for interaction in data["interactions"]:
         type = interaction["trigger"]["type"]
+        interactionelement = InteractionElement()
         if(type == "ON_CLICK"):
-            interactionelement = InteractionElement()
             interactionelement.setInteractionType(InteractionElement.Interaction.ONCLICK)
+        if(type == "ON_HOVER"):
+            interactionelement.setInteractionType(InteractionElement.Interaction.ONHOVER)
 
-            for action in interaction["actions"]:
-                if(action["type"]=="NODE" and action["navigation"]=="NAVIGATE"):
-                    navigateAction = NavigationAction(action["destinationId"])
-                    interactionelement.addAction(navigateAction)
-                if(action["type"]=="NODE" and action["navigation"]=="OVERLAY"):
-                    if(action["destinationId"] in allcomponents): 
-                        # neste caso estamos apenas a criar o elemento com overlay position se for apenas um componente já que considero que os frames no primeiro nivel correspondem a paginas
-                        # caso queira extender é essencial acrescentar um 'type' no Melement para ajustar as coordenadas no final
-                        #  update the position of the component relatively to the node which will open the component overlay
-                        compstyle = allcomponents[data["transitionNodeID"]].getComponentStyle()
-                        (xe,ye) = (xielem,yielem)
-                        (rx,ry) = (action["overlayRelativePosition"]["x"],action["overlayRelativePosition"]["y"])
-                        (px,py) = (rx+xe,ry+ye)
-                        (vx,vy) = (px-compstyle.getX(),py-compstyle.getY())
-                        compstyle.setOverlayVector(vx,vy)
+        for action in interaction["actions"]:
+            if(action!=None and action["type"]=="NODE" and action["navigation"]=="NAVIGATE"):
+                navigateAction = NavigationAction(action["destinationId"])
+                interactionelement.addAction(navigateAction)
+            if(action!=None and action["type"]=="NODE" and action["navigation"]=="OVERLAY"):
+                #verificar se o elemento overlay se encontra no notPageElems
+                if(action["destinationId"] in notPageElems):
+                    # construir o elemento overlay tendo em conta que o elemento atual será o seu parent
+                    overlayElem = processElement(data["name"],notPageElems[action["destinationId"]]["name"],notPageElems[action["destinationId"]],data["absoluteRenderBounds"]["width"],data["absoluteRenderBounds"]["height"],pageX,pageY,data,None)
+                    if(firstlevelelem["type"]=="INSTANCE"):
+                        overlayInsideInstances.setdefault(firstlevelelem["id"], []).append(overlayElem)
+                #verificar se o elemento overlay é uma instancia(componente)
+                elif(action["destinationId"] in allcomponents): 
+                    #  update the position of the component relatively to the node which will open the component overlay
+                    compstyle = allcomponents[data["transitionNodeID"]].getComponentStyle()
+                    (xe,ye) = (xielem,yielem)
+                    (rx,ry) = (int(action["overlayRelativePosition"]["x"]),int(action["overlayRelativePosition"]["y"]))
+                    (px,py) = (rx+xe,ry+ye)
+                    (vx,vy) = (px-compstyle.getX(),py-compstyle.getY())
+                    compstyle.setOverlayVector(vx,vy)
+                    compstyle.setinstanceFromComponentId(data["transitionNodeID"])
+                    if(firstlevelelem!=None and "isFixed" in firstlevelelem and firstlevelelem["isFixed"]==True):
+                        allcomponents[data["transitionNodeID"]].setzindex(6)
+                    else:
+                        allcomponents[data["transitionNodeID"]].setzindex(2)
 
-                        allcomponents[data["transitionNodeID"]].setComponentStyle(compstyle)
-                        allcomponents[data["transitionNodeID"]].setTypeComponent("OVERLAY")
-                        pageComponents.setdefault(pagename, []).append(allcomponents[data["transitionNodeID"]])
-                        #allpages[pagename].addElement(allcomponents[data["transitionNodeID"]])
+                    allcomponents[data["transitionNodeID"]].setComponentStyle(compstyle)
+                    allcomponents[data["transitionNodeID"]].setTypeComponent("OVERLAY")
+                    pageComponents.setdefault(pagename, []).append(allcomponents[data["transitionNodeID"]])
+                    #allpages[pagename].addElement(allcomponents[data["transitionNodeID"]])
 
-                        #adicionar variavel na pagina visto que o componente não estará visivel no imediato
-                        idcomponent = getElemId(action["destinationId"])
-                        allpages[pagename].addVariable({"show"+idcomponent:"false"})
+                    #adicionar variavel na pagina visto que o componente não estará visivel no imediato
+                    idcomponent = getElemId(action["destinationId"])
+                    allpages[pagename].addVariable({"show"+idcomponent:"false"})
 
-                        overlayAction = OverlayAction(action["destinationId"])
-                        interactionelement.addAction(overlayAction)
-                if(action["type"]=="NODE" and action["navigation"]=="SCROLL_TO"):
-                    refs.setdefault(pagename, []).append(getElemId(action["destinationId"]))
-                    scrollAction = ScrollAction(action["destinationId"])
-                    interactionelement.addAction(scrollAction)
-                if(action["type"]=="CLOSE"):
-                    closeAction = CloseAction(firstlevelelem["id"])
-                    interactionelement.addAction(closeAction)
+                    overlayAction = OverlayAction(action["destinationId"])
+                    interactionelement.addAction(overlayAction)
+            if(action!=None and action["type"]=="NODE" and action["navigation"]=="SCROLL_TO"):
+                refs.setdefault(pagename, []).append(getElemId(action["destinationId"]))
+                scrollAction = ScrollAction(action["destinationId"])
+                interactionelement.addAction(scrollAction)
+            if(action!=None and action["type"]=="CLOSE"):
+                closeAction = CloseAction(firstlevelelem["id"])
+                interactionelement.addAction(closeAction)
 
         element_interactions.append(interactionelement)
     if(melement!=None):
         melement.setInteractions(element_interactions)
-        if(firstlevelelem["type"]=="COMPONENT"):
+        if(firstlevelelem["type"]=="COMPONENT" or firstlevelelem["type"]=="INSTANCE"):
             melement.setupperIdComponent(firstlevelelem["id"])
 
     myparent_data = data
@@ -647,7 +666,6 @@ def updateOverlayPosition(component, vx, vy, page_width, page_height):
     if isinstance(component, Mcomponent):
 
         nrrows = 128 
-        
         (columnstart, columnend, rowstart, rowend) = getPosition(component.style.getX() + vx,
                                                                             component.style.getY() + vy,
                                                                             component.style.getWidth(),
@@ -744,7 +762,7 @@ def extractSVGs(projectname):
                 print("\nDownloading image "+svgpath+"...")
                 if(not os.path.isfile(destination)):
                     filename = wget.download(svgurl, out=destination)
-        elif(images["status"]==403):
+        elif(svgs["status"]==403):
             print("something went wrong...")
 
 def addComponentVariable(componentName,var):

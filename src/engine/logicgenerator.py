@@ -4,18 +4,33 @@ from parser.model.OverlayAction import OverlayAction
 from parser.model.CloseAction import CloseAction
 from parser.model.ScrollAction import ScrollAction
 from parser.model.Mcomponent import Mcomponent
+from parser.model.Melement import Melement
 import re
 
 # id: [vars]
-shareableHooks = {}
+shareableEvents = {}
 
 def handleBehaviour(elem,allPagesInfo,isPageRender):
-    global shareableHooks
+    global shareableEvents
     directives = []
     hooks = {}
     elemBehaviour = [[],None]
     # from component build
     for interaction in elem.getInteractions():
+        if(interaction.getInteractionType()==InteractionElement.Interaction.ONHOVER):
+            for action in interaction.actions:
+                if(isinstance(action,OverlayAction)):
+                    destinationid = getElemId(action.getDestinationID())
+                    methodName = "changeVisibility"+destinationid
+                    elemBehaviour[0].append('@mouseover="'+methodName+'()"')
+                    if(isinstance(elem,Melement) and isfromInstance(elem.getIdElement()) and elem.getupperIdComponent()!=None):
+                        shareableEvents.setdefault(elem.getupperIdComponent(), []).append(("show-from"+getElemId(elem.getIdElement())+"-to"+getElemId(action.getDestinationID()),"show"+getElemId(action.getDestinationID())+'=true',''))
+                        shareableEvents.setdefault(action.getDestinationID(), []).append((None,None,'v-if="show'+getElemId(action.getDestinationID())+'==true"'))
+                        insertFunction("methods",hooks,methodName,showOverlayfromChildren(methodName,"show-from"+getElemId(elem.getIdElement())+"-to"+getElemId(action.getDestinationID())))
+                        elemBehaviour[1] = hooks
+                    else:
+                        insertFunction("methods",hooks,methodName,getChangeVisibilityFunction(methodName,"show"+destinationid))
+                    elemBehaviour[1] = hooks
         if(interaction.getInteractionType()==InteractionElement.Interaction.ONCLICK):
             for action in interaction.actions:
                 # CLICK-NAVIGATION EVENTS
@@ -30,20 +45,16 @@ def handleBehaviour(elem,allPagesInfo,isPageRender):
                     elemBehaviour = insertScrollBehaviour(elem,action,hooks,elemBehaviour)
                 # CLICK-OVERLAY EVENTS
                 if(isinstance(action,OverlayAction)):
-                    pattern = "[:;]"
-                    destination = action.getDestinationID()
-                    destinationid = re.sub(pattern,"",destination)
+                    destinationid = getElemId(action.getDestinationID())
                     methodName = "changeVisibility"+destinationid
                     insertFunction("methods",hooks,methodName,getChangeVisibilityFunction(methodName,"show"+destinationid))
                     elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                     elemBehaviour[1] = hooks
                 if(isinstance(action,CloseAction) and isPageRender==False and elem.getupperIdComponent()!=None):#verificar se o elemento tem uma acao close e se pertence a um elemento filho de um componente 
-                    pattern = "[:;]"
-                    destination = action.getDestinationID()
-                    destinationid = re.sub(pattern,"",destination)
-                    originid = re.sub(pattern,"",elem.getIdElement())
+                    destinationid = getElemId(action.getDestinationID())
+                    originid = getElemId(elem.getIdElement())
                     # in order to capture the emit signals close-from222310-to22238
-                    shareableHooks.setdefault(elem.getupperIdComponent(), []).append(("close-from"+str(originid)+"-to"+str(destinationid),"show"+destinationid+'=false'))
+                    shareableEvents.setdefault(elem.getupperIdComponent(), []).append(("close-from"+str(originid)+"-to"+str(destinationid),"show"+destinationid+'=false','v-if="show'+destinationid+'==true"'))
                     methodName = "close"+destinationid
                     insertFunction("methods",hooks,methodName,closeOverlay(methodName,"close-from"+str(originid)+"-to"+str(destinationid)))
                     elemBehaviour[0].append('v-on:click="'+methodName+'()"')
@@ -61,26 +72,23 @@ def handleBehaviour(elem,allPagesInfo,isPageRender):
     if(isinstance(elem,Mcomponent) and elem.getNameComponent()=="Form"):
         elemBehaviour = insertFormLogic(getElemId(elem.idComponent),elem.inputs,hooks,elemBehaviour)
     # SHOW CONDITIONAL ELEMENTS | from page
-    if(isinstance(elem,Mcomponent) and elem.getTypeComponent()=="OVERLAY" and isPageRender==True):
-        pattern = "[:;]"
-        idcomponent = re.sub(pattern,"",elem.idComponent)
-        elemBehaviour[0].append('v-if="show'+idcomponent+'==true"')
-        if(elem.getIdComponent() in shareableHooks):
-            for hook in shareableHooks[elem.getIdComponent()]:
-                elemBehaviour[0].append('@'+hook[0]+'="'+hook[1]+'"')
+    if(isinstance(elem,Mcomponent) and isPageRender==True):
+        idcomponent = getElemId(elem.idComponent)
+        if(elem.getIdComponent() in shareableEvents):
+            for hook in shareableEvents[elem.getIdComponent()]:
+                elemBehaviour[0].append(hook[2])
+                if(hook[0]!=None and hook[1]!=None): elemBehaviour[0].append('@'+hook[0]+'="'+hook[1]+'"')
         elemBehaviour[1] = hooks
     return elemBehaviour
 
-# in order to avoid method duplication in vue pages
 def insertFunction(hook,hooks,functioname,function):
-    if(not hook in hooks):
+    if(hook not in hooks): hooks[hook]=[]
+    if((not any(x[0]==functioname for x in hooks[hook]))):
         hooks.setdefault(hook, []).append((functioname,function))
-    elif((hook in hooks) and (not any(x[0]==functioname for x in hooks[hook]))):
-        hooks[hook].append((functioname,function))
 
 def getPageById(id,allPages):
     for pagename in allPages:
-        if(allPages[pagename]["id"]==id): return allPages[pagename]["name"]
+        if(allPages[pagename]["id"]==id): return getFormatedName(allPages[pagename]["name"])
     return ""
 
 def getNavigationFunction(name,destination):
@@ -146,10 +154,7 @@ def insertFormLogic(idform,inputs,hooks,elemBehaviour):
             };
         };
     """
-    if(not "setup" in hooks):
-        hooks.setdefault("setup", []).append(([f"initialValues{idform}",f"resolver{idform}"],function))
-    else:
-        hooks[hook].append(("",function))
+    hooks.setdefault("setup", []).append(([f"initialValues{idform}",f"resolver{idform}"],function))
     elemBehaviour[1] = hooks
     return elemBehaviour
 
@@ -163,6 +168,12 @@ def getMenuFunction(elem,allPagesInfo,functionname):
             function =f"""        {functionname}()"""+"{"+f"""
                {bodyfunction}"""+"""
             }"""
+    return function
+
+def showOverlayfromChildren(methodName,event):
+    function = """\t\t""" + methodName + "(){" + """
+            this.$emit('""" + event +  """');
+        }""" 
     return function
 
 def insertDropdownLogic(dropdownid,hooks,elemBehaviour):
@@ -203,3 +214,11 @@ def getElemId(id):
     pattern = "[:;]"
     elemid = re.sub(pattern,"",elemid)
     return elemid
+
+def isfromInstance(id):
+    return "I" in id
+
+def getFormatedName(name):
+    pattern = "[\s\.\-;#:]"
+    name = re.sub(pattern,"",name)
+    return name

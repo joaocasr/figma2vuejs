@@ -44,14 +44,14 @@
 </template>
 
 <script>
-import Navbar from '@/components/Navbar.vue';
 import Footer from '@/components/Footer.vue';
+import Navbar from '@/components/Navbar.vue';
 import { ref } from 'vue';
 
 export default {
     components:{
-        Navbar,
-        Footer
+        Footer,
+        Navbar
     },
     data(){
         return {
@@ -93,9 +93,6 @@ export default {
         getCheckboxOptions2549638(){
             /*Here you can adapt to fetch the data from an API*/
             this.boxes2549638 = this.boxesValues2549638;
-        },
-		gotoHomePage(){
-            this.$router.push({path:"/homepage"});
         },
 		gotoHomePage(){
             this.$router.push({path:"/homepage"});

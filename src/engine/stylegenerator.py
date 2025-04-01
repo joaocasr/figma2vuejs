@@ -153,7 +153,7 @@ def generatePageStyle(name,page):
       newcsscontent += '@import url(' + '"' + font + '");\n'
   newcsscontent += css
 
-  with open("../output/"+name+"/src/assets/"+page.getPagename().lower()+".css","r+") as f:
+  with open("../output/"+name+"/src/assets/"+getFormatedName(page.getPagename().lower())+".css","r+") as f:
     lines = f.readlines()  
     lines.insert(0, newcsscontent)
     f.seek(0)   
@@ -180,7 +180,7 @@ def generateComponentStyle(name,component):
   if(component.style.boxShadow != None): boxshadow ="\n  "+f"box-shadow: {component.style.boxShadow};"
   if(component.style.borderStyle) != None: border ="\n  "+f"border: {component.style.borderStyle};"
   if(component.style.borderRadius) != None: borderRadius ="\n  "+f"border-radius: {component.style.borderRadius}px;"
-  if(component.type=="OVERLAY"): zindex = "\n  "+f"z-index: 2;"
+  if(component.getzindex()>0): zindex = "\n  "+f"z-index: "+str(component.getzindex())
 
   css = """\n.component"""+ idcomponent +""" {
   display:"""+ component.style.display+ """;
@@ -207,12 +207,16 @@ def generateComponentStyle(name,component):
     for font in font_imports[component.componentName]:
       newcsscontent += '@import url(' + '"' + font + '");\n'
   newcsscontent += css
-
-  with open("../output/"+name+"/src/assets/"+component.componentName.lower()+".css","r+") as f:
-    lines = f.readlines()  
-    lines.insert(0, newcsscontent)
-    f.seek(0)   
-    f.writelines(lines)
+  cssfile="../output/"+name+"/src/assets/"+component.componentName.lower()+".css"
+  if not os.path.isfile(cssfile):
+    with open(cssfile,"w") as f:
+      f.write(newcsscontent)
+  else:
+    with open("../output/"+name+"/src/assets/"+component.componentName.lower()+".css","r+") as f:
+      lines = f.readlines()  
+      lines.insert(0, newcsscontent)
+      f.seek(0)   
+      f.writelines(lines)
 
 def generatePaginatorCssProperties(projectname,pagename,cssclass,elem):
   css ="""\n."""+ str(cssclass) + """ {
@@ -232,11 +236,11 @@ def generatePaginatorCssProperties(projectname,pagename,cssclass,elem):
   }
 
   """
-  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
     mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
     f.write(css)
 
 def generateFormCssProperties(projectname,pagename,cssclass,elem,formclass,inputclass,btnclass):
@@ -262,11 +266,11 @@ def generateFormCssProperties(projectname,pagename,cssclass,elem,formclass,input
 
 }
   """
-  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
     mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
     f.write(css)
 
 def generateCheckboxCssProperties(projectname,pagename,cssclass,labelclass,elem):
@@ -283,11 +287,11 @@ def generateCheckboxCssProperties(projectname,pagename,cssclass,labelclass,elem)
     margin-left: 5px;
   }
   """
-  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
     mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
     f.write(css)
 
 def generateVideoCssProperties(projectname,pagename,cssclass,elem):
@@ -298,11 +302,11 @@ def generateVideoCssProperties(projectname,pagename,cssclass,elem):
     grid-row-end: """+  str(elem.style.gridrowEnd)+""";
   }
   """
-  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
     mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
     f.write(css)
 
 def generateMenuCssProperties(projectname,pagename,cssclass,elem):
@@ -313,11 +317,11 @@ def generateMenuCssProperties(projectname,pagename,cssclass,elem):
     grid-row-end: """+  str(elem.style.gridrowEnd)+""";
   }
   """
-  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
     mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
     f.write(css)
 
 def setComponentPositionCSS(projectname,pagename,componentName,elem):
@@ -334,11 +338,11 @@ def setComponentPositionCSS(projectname,pagename,componentName,elem):
   z-index: 5;
 }
 """
-  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
     mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
     f.write(css)
 
 def generateVueSelectCssProperties(projectname,pagename,cssclass,elem):
@@ -357,11 +361,11 @@ div:deep(."""+ str(cssclass) + """ .v-input__control) {
   color: """+ str(elem.style.placeholder_color) +"""
 }
   """
-  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
     mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
     f.write(css)
 
 def generateInputSearchFilterCssProperties(projectname,pagename,cssclass,elem):
@@ -381,11 +385,11 @@ def generateInputSearchFilterCssProperties(projectname,pagename,cssclass,elem):
    margin-top:calc(-1.4 * (var(--p-icon-size)));
 }
   """
-  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
     mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
     f.write(css)
 
 def generateSliderCssProperties(projectname,pagename,cssclass,elem):
@@ -406,11 +410,11 @@ div:deep(."""+str(cssclass)+""" .p-slider-handle){
     --p-slider-handle-content-hover-background: """+  str(elem.style.getcolorhover()) +""";
 }
 """
-  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
     mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
     f.write(css)
 
 def generateRatingCssProperties(projectname,pagename,cssclass,elem):
@@ -425,11 +429,11 @@ def generateRatingCssProperties(projectname,pagename,cssclass,elem):
 	color: """+  str(elem.style.getstarColor())+""";
 }
   """
-  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
     mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
     f.write(css)
 
 def generateDatePickerCssProperties(projectname,pagename,cssclass,elem):
@@ -448,11 +452,11 @@ def generateDatePickerCssProperties(projectname,pagename,cssclass,elem):
 	background-color:"""+  str(elem.style.getdropdownbackgroundcolor())+""";
 }
   """
-  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
     mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
     f.write(css)
 
 def generateShapeCSS(projectname,pagename,cssclass,type,elem):
@@ -504,11 +508,11 @@ def generateShapeCSS(projectname,pagename,cssclass,type,elem):
   if(elem.style.getBorderColor()!=None):
     css+="    border: solid;\n"+'    '+ f"border-color: {elem.style.getBorderColor()};"+'    '+ f"border-radius: {elem.style.getborderRadius()}px;"+'    '+ f"border-width: {elem.style.getborderWidth()}px;"+'\n'
   css = css + "}"
-  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
     mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
     f.write(css)
 
 def generateShapeShadowCSS(projectname,pagename,cssclass,elem):
@@ -520,11 +524,11 @@ def generateShapeShadowCSS(projectname,pagename,cssclass,elem):
   filter: drop-shadow("""+  str(elem.style.getBoxShadow())+""");
 }
   """
-  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
     mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
     f.write(css)
 
 def generateElemCssProperties(projectname,pagename,cssclass,elem):
@@ -617,11 +621,11 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
 
     css = gridareacss + "\n."+cssclass+" {\n\t"+ csskeyvalues[:-1] +"}\n\n"
 
-  cssfile = "../output/"+projectname+"/src/assets/"+pagename.lower()+".css"
+  cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
     mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+pagename.lower()+".css",mode) as f:
+  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
     f.write(css)
 
 
@@ -642,3 +646,8 @@ def calculate_gradientDegree(startPoint,endPoint,color1,color2):
 
     lineargradient = "linear-gradient("+str(degree)+"deg, " + "rgba("+','.join(str(val) for val in rgba1)+"), " + "rgba("+','.join(str(val) for val in rgba2)+"))" 
     return lineargradient
+
+def getFormatedName(name):
+    pattern = "[\s\.\-;#:]"
+    name = re.sub(pattern,"",name)
+    return name

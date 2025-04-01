@@ -191,12 +191,12 @@ def applytransformation(elem,projectname,page):
 
         return (begintag,endtag)
     if(isinstance(elem, Mcomponent)):
-        componentName = elem.componentName.capitalize()
+        componentName = getFormatedName(elem.componentName.capitalize())
         classname = ' class="'+"grid-item-"+getElemId(elem.idComponent)+' component'+ getElemId(elem.idComponent)     
         if(elem.style.getPosition()!=None):
             classname += " pos"+componentName.lower()
             setComponentPositionCSS(projectname,pagename,"pos"+componentName.lower(),elem)
-        components.setdefault(pagename, {}).add(elem.componentName.lower())
+        components.setdefault(pagename, {}).add(getFormatedName(elem.componentName.lower()))
         return ("<"+componentName+f"{id}{ref}{classname}"+'" '+ ' '.join(d for d in directives) + ">","</"+componentName+">")
     return ("","")
 
@@ -204,10 +204,10 @@ def writeVue(name,page,content):
     global allhooks, components
     componentsimports=""
     for comp in components[page.getPagename()]:
-        componentsimports += "import "+str(comp).capitalize()+" from '@/components/"+str(comp).capitalize()+".vue';\n" 
+        componentsimports += "import "+getFormatedName(str(comp).capitalize())+" from '@/components/"+getFormatedName(str(comp).capitalize())+".vue';\n" 
     for auximports in auxiliarImports[page.getPagename()]:
         componentsimports += auximports+";\n"
-    cssimport = "@import '../assets/"+page.getPagename().lower()+".css';"
+    cssimport = "@import '../assets/"+getFormatedName(page.getPagename().lower())+".css';"
     template = '<div class="grid-container">'+ content + '</div>'
     pagehooks=""
     allcomponents = (x.capitalize() for x in components[page.getPagename()])
@@ -249,7 +249,7 @@ export default {"""+ pagecomponents +"""
 <style lang="css" scoped>
 """+ cssimport +"""
 </style>"""
-    with open("../output/"+name+"/src/views/"+page.getPagename()+"View.vue","w") as f:
+    with open("../output/"+name+"/src/views/"+getFormatedName(page.getPagename())+"View.vue","w") as f:
         f.write(vuepage)
     generatePageStyle(name,page)
 
@@ -260,7 +260,7 @@ def processTemplate(html_string,page):
     soup = BeautifulSoup(html_string, "html.parser")
     finalHtml = soup.prettify()
     for c in components[page]:
-        pattern = "<"+c.lower()+r"([\s]*.*?)"+">"+r"(\n|.)*?"+r"<\/"+c.lower()+">"
+        pattern = "<"+c.lower()+r"([\s]*.*?)"+">"+r"((\n|.)*?)"+r"<\/"+c.lower()+">"
         processedTemplate = re.sub(pattern,"<"+c.capitalize()+ r'\1' +">"+"</"+c.capitalize()+">",finalHtml)
         finalHtml = processedTemplate
     for c in componentAssets[page]:
@@ -325,3 +325,8 @@ def getElemId(id):
     pattern = "[:;]"
     elemid = re.sub(pattern,"",elemid)
     return elemid
+
+def getFormatedName(name):
+    pattern = "[\s\.\-;#:]"
+    name = re.sub(pattern,"",name)
+    return name

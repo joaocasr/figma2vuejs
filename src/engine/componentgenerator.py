@@ -99,8 +99,6 @@ def applytransformation(elem,projectname,pagename,idcomponent):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         return ("<"+elem.tag +f" {ref}class="+'"grid-item-'+idcomponent+' container'+ cssclass + '" '+ 'src="' + elem.getsvgpath() + '"' + ' '.join(d for d in directives) , "/>")
 
-        return (begintag,endtag)
-
     if(isinstance(elem, Mcomponent) and (elem.getNameComponent()=="ReadOnlyRating" or elem.getNameComponent()=="InteractiveRating")):
         useRatingVuetifyPlugin(projectname)
         cssclass= "srating" + cssclass
@@ -125,7 +123,6 @@ def applytransformation(elem,projectname,pagename,idcomponent):
 
 def writeVueComponent(name,project_name,content,component,pagesInfo):
     global allhooks 
-    pattern = "[:;]"
     idcomponent = getElemId(component.idComponent)
     cssimport = "@import '../assets/"+name.lower()+".css';"
     pagehooks=""
@@ -152,7 +149,7 @@ export default {
 <style lang="css" scoped>
 """+ cssimport +"""
 </style>"""
-    with open("../output/"+project_name+"/src/components/"+name.capitalize()+".vue","w") as f:
+    with open("../output/"+project_name+"/src/components/"+getFormatedName(name.capitalize())+".vue","w") as f:
         f.write(componentpage)
     generateComponentStyle(project_name,component)
 
@@ -180,10 +177,10 @@ def filterOverlapingElements(allShapes,allElements):
             for s in allShapes:
                 elem1 = e
                 elem2 = s
-                if(elem1.style.gridcolumnStart>=elem2.style.gridcolumnStart and
-                    elem1.style.gridcolumnEnd<=elem2.style.gridcolumnEnd and
-                    elem1.style.gridrowStart>=elem2.style.gridrowStart and
-                    elem1.style.gridrowEnd<=elem2.style.gridrowEnd and
+                if(getValue(elem1.style.gridcolumnStart)>=getValue(elem2.style.gridcolumnStart) and
+                    getValue(elem1.style.gridcolumnEnd)<=getValue(elem2.style.gridcolumnEnd) and
+                    getValue(elem1.style.gridrowStart)>=getValue(elem2.style.gridrowStart) and
+                    getValue(elem1.style.gridrowEnd)<=getValue(elem2.style.gridrowEnd) and
                     (isinstance(elem2,ShapeElement))):
                         onstack.append((elem1,elem2))
     return onstack
@@ -208,6 +205,12 @@ def flattenAndShapes(component):
     allShapes = list(filter(lambda x: (isinstance(x,ShapeElement)),flattenElements))
     return (flattenElements,allShapes)
 
+def getValue(value):
+    if " span " in str(value):
+        realvalue = value.split(" span ")[1] 
+        return int(realvalue)
+    else:
+        return int(value) 
 
 def getElemId(id):
     elemid = id
@@ -217,3 +220,8 @@ def getElemId(id):
     pattern = "[:;]"
     elemid = re.sub(pattern,"",elemid)
     return elemid
+
+def getFormatedName(name):
+    pattern = "[\s\.\-;#:]"
+    name = re.sub(pattern,"",name)
+    return name

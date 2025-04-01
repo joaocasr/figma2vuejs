@@ -5,15 +5,6 @@
   MOVIESTV
  </p>
  <div class="grid-item-2548575 container2362355">
-  <p class="grid-item-2548575 text2362356" v-on:click="gotoHomePage()">
-   Home
-  </p>
-  <p class="grid-item-2548575 text2362357">
-   Movies
-  </p>
-  <p class="grid-item-2548575 text2362358">
-   Series
-  </p>
   <div class="grid-item-2548575 container2402193">
    <div class="grid-item-2548575 container2402194" v-on:click="gotoWatchlistPage()">
     <img class="grid-item-2548575 container2402195" src="/listVector.svg"/>
@@ -38,6 +29,11 @@
     </v-menu>
    </div>
   </div>
+  <div class="grid-item-2548575 container2621776">
+   <p class="grid-item-2548575 text2621777">
+    HOME
+   </p>
+  </div>
  </div>
 </div>
 
@@ -51,9 +47,6 @@ export default {
         }
     },
     methods:{
-		gotoHomePage(){
-            this.$router.push({path:"/homepage"});
-        },
 		gotoHomePage(){
             this.$router.push({path:"/homepage"});
         },

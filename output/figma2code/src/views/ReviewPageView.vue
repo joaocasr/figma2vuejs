@@ -32,13 +32,13 @@
 </template>
 
 <script>
-import Navbar from '@/components/Navbar.vue';
 import Footer from '@/components/Footer.vue';
+import Navbar from '@/components/Navbar.vue';
 
 export default {
     components:{
-        Navbar,
-        Footer
+        Footer,
+        Navbar
     },
     data(){
         return {
@@ -47,9 +47,6 @@ export default {
         }
     },
     methods:{
-		gotoHomePage(){
-            this.$router.push({path:"/homepage"});
-        },
 		gotoHomePage(){
             this.$router.push({path:"/homepage"});
         },

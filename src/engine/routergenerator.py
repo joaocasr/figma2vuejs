@@ -8,11 +8,11 @@ def generate_routes(name,pages):
     for pagina in pages:
         element = {
                 "component": {
-                    'path': pages[pagina].getPagepath().lower(),
-                    'name': pages[pagina].getPagename(),
-                    'component': pages[pagina].getPagename()+'View',
+                    'path': getFormatedName(pages[pagina].getPagepath()).lower(),
+                    'name': getFormatedName(pages[pagina].getPagename()),
+                    'component': getFormatedName(pages[pagina].getPagename())+'View',
                 },
-                "import": "import "+pages[pagina].getPagename()+'View'+" from '@/views/"+pages[pagina].getPagename()+'View'+".vue';\n"
+                "import": "import "+getFormatedName(pages[pagina].getPagename())+'View'+" from '@/views/"+getFormatedName(pages[pagina].getPagename())+'View'+".vue';\n"
 
         }
         element_routes.append(element)
@@ -70,3 +70,8 @@ export default {
     f= open(fileerror,"w")
     f.write(errorpage)
     f.close()
+
+def getFormatedName(name):
+    pattern = "[\s\.\-;#:]"
+    name = re.sub(pattern,"",name)
+    return name

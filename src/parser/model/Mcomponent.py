@@ -12,6 +12,8 @@ class Mcomponent(object):
 		self.data = []
 		self.hasCloseAction = False
 		self.upperIdComponent = None
+		self.zindex = 0
+		self.isComponentInstance = False
 
 	def getIdComponent(self):
 		"""@ReturnType String"""
@@ -80,8 +82,26 @@ class Mcomponent(object):
 	def setHasCloseAction(self, hasCloseAction):
 		self.hasCloseAction = hasCloseAction
 
+	def addChildren(self,elem):
+		self.children.append(elem)
+
 	def setChildren(self,children):
 		self.children = children
+
+	def getzindex(self):
+		return self.zindex
+
+	def setzindex(self, zindex):
+		self.zindex = zindex
+
+	def getisComponentInstance(self):
+		"""@ReturnType String"""
+		return self.isComponentInstance
+
+	def setisComponentInstance(self, isComponentInstance):
+		"""@ParamType isComponentInstance String
+		@ReturnType void"""
+		self.isComponentInstance = isComponentInstance
 
 	def getInteractions(self):
 		return self.interactions
