@@ -14,6 +14,7 @@ class Mcomponent(object):
 		self.upperIdComponent = None
 		self.zindex = 0
 		self.isComponentInstance = False
+		self.hasConditionalVisibility = False
 
 	def getIdComponent(self):
 		"""@ReturnType String"""
@@ -102,6 +103,12 @@ class Mcomponent(object):
 		"""@ParamType isComponentInstance String
 		@ReturnType void"""
 		self.isComponentInstance = isComponentInstance
+
+	def gethascondvisib(self):
+		return self.hasConditionalVisibility
+
+	def sethascondvisib(self, hascondvisib):
+		self.hasConditionalVisibility = hascondvisib
 
 	def getInteractions(self):
 		return self.interactions

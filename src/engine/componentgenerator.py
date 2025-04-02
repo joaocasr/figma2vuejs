@@ -32,6 +32,7 @@ def buildcomponent(component,projectname,pagesInfo,refs):
     output = ""
     idcomponent = getElemId(component.idComponent)
 
+    
     (flattenElements,allShapes) = flattenAndShapes(component)
     onstack = filterOverlapingElements(allShapes,flattenElements)
     handleClipPathOverlaping(component,onstack)
@@ -66,7 +67,7 @@ def applytransformation(elem,projectname,pagename,idcomponent):
     if(pagename in allrefs and cssclass in allrefs[pagename]):
         ref = f' ref="ref{cssclass}" '
 
-    directives, hooks = handleBehaviour(elem,allpagesInfo,False)
+    directives, hooks = handleBehaviour(elem,allpagesInfo,pagename,False)
     if(hooks!=None): 
         for hook in hooks:
             allhooks[pagename].setdefault(hook, []).extend(hooks[hook])
@@ -200,7 +201,7 @@ def handleClipPathOverlaping(component,onstack):
     component.children = [child for child in component.children if child not in toremove]
     component.children.reverse()
 
-def flattenAndShapes(component):
+def flattenAndShapes(component):    
     flattenElements = list(itertools.chain(*([x] + x.children for x in component.children)))
     allShapes = list(filter(lambda x: (isinstance(x,ShapeElement)),flattenElements))
     return (flattenElements,allShapes)

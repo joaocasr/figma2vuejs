@@ -2,7 +2,7 @@
 <div class="grid-container">
  <Footer class="grid-item-2362643 component2362643"></Footer>
  <img class="grid-item container2362645" src="/image12.png"/>
- <div class="grid-item container2362674">
+ <div class="grid-item container2362674" v-on:click="changeVisibility26211200()">
   <p class="grid-item text2362675">
    PUBLISH
   </p>
@@ -26,27 +26,36 @@
    </v-rating>
   </div>
  </div>
- <Navbar @show-from2621776-to26211200="show26211200=true" class="grid-item-2362644 component2362644 posnavbar"></Navbar>
+ <Navbar class="grid-item-2362644 component2362644 posnavbar"></Navbar>
+ <div class="grid-item container26211200" v-show="show26211200==true">
+  <p class="grid-item text26211201">
+   HOME
+  </p>
+ </div>
 </div>
 
 </template>
 
 <script>
-import Navbar from '@/components/Navbar.vue';
 import Footer from '@/components/Footer.vue';
+import Navbar from '@/components/Navbar.vue';
 
 export default {
     components:{
-        Navbar,
-        Footer
+        Footer,
+        Navbar
     },
     data(){
         return {
+            show26211200:false,
             starsSeletec2480504:"5",
             menuoptions2575928:[{'option': 'Login', 'destination': '2548:560'}, {'option': 'Sign Up'}]    
         }
     },
     methods:{
+		changeVisibility26211200(){
+            this.show26211200 = true;
+        },
 		gotoHomePage(){
             this.$router.push({path:"/homepage"});
         },
@@ -56,10 +65,7 @@ export default {
         selectedItem2575928(){
                this.$router.push({path:"/loginpage"});
 
-            },
-		changeVisibility26211200(){
-            this.$emit('show-from2621776-to26211200');
-        }
+            }
 	}
 }
 </script>

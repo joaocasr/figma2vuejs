@@ -1,6 +1,6 @@
 <template>
 <div class="grid-container">
- <Homebanner class="grid-item-2362316 component2362316"></Homebanner>
+ <Homebanner @show-from2362375-to26211200="show26211200=true" class="grid-item-2362316 component2362316"></Homebanner>
  <Footer class="grid-item-2362317 component2362317"></Footer>
  <div class="grid-item container2362318">
   <Movie1 class="grid-item-2362319 component2362319"></Movie1>
@@ -58,37 +58,37 @@
  </div>
  <v-pagination :length="68" :total-visible="3" class="spaginator2487476" v-model="currentPage2487476">
  </v-pagination>
- <Navbar @show-from2621776-to26211200="show26211200=true" class="grid-item-2362346 component2362346 posnavbar"></Navbar>
+ <Navbar class="grid-item-2362346 component2362346 posnavbar"></Navbar>
 </div>
 
 </template>
 
 <script>
-import Homebanner from '@/components/Homebanner.vue';
+import Movie3 from '@/components/Movie3.vue';
+import Movie4 from '@/components/Movie4.vue';
+import Movie1 from '@/components/Movie1.vue';
+import Movie7 from '@/components/Movie7.vue';
+import Movie5 from '@/components/Movie5.vue';
+import Movie2 from '@/components/Movie2.vue';
+import Footer from '@/components/Footer.vue';
 import Movie8 from '@/components/Movie8.vue';
 import Navbar from '@/components/Navbar.vue';
-import Movie4 from '@/components/Movie4.vue';
-import Movie3 from '@/components/Movie3.vue';
 import Movie6 from '@/components/Movie6.vue';
-import Movie2 from '@/components/Movie2.vue';
-import Movie1 from '@/components/Movie1.vue';
-import Movie5 from '@/components/Movie5.vue';
-import Movie7 from '@/components/Movie7.vue';
-import Footer from '@/components/Footer.vue';
+import Homebanner from '@/components/Homebanner.vue';
 
 export default {
     components:{
-        Homebanner,
+        Movie3,
+        Movie4,
+        Movie1,
+        Movie7,
+        Movie5,
+        Movie2,
+        Footer,
         Movie8,
         Navbar,
-        Movie4,
-        Movie3,
         Movie6,
-        Movie2,
-        Movie1,
-        Movie5,
-        Movie7,
-        Footer
+        Homebanner
     },
     data(){
         return {
@@ -106,6 +106,9 @@ export default {
         }
     },
     methods:{
+		changeVisibility26211200(){
+            this.show26211200 = !this.show26211200;
+        },
 		gotoMoviePage(){
             this.$router.push({path:"/moviepage"});
         },
@@ -121,10 +124,7 @@ export default {
         selectedItem2575928(){
                this.$router.push({path:"/loginpage"});
 
-            },
-		changeVisibility26211200(){
-            this.$emit('show-from2621776-to26211200');
-        }
+            }
 	}
 }
 </script>

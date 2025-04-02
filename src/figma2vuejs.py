@@ -15,7 +15,7 @@ else:
   prototype = sys.argv[1]
   # extract figma data and build intern model
   #try:
-  project_name, allpages, refs = getFigmaData(prototype)
+  project_name, allpages, orphanComponents, refs = getFigmaData(prototype)
   #except Exception as e:
   #  print(e)
   #  sys.exit()
@@ -33,7 +33,10 @@ else:
   # pages_info will be a dictionary of the path and components ids of each page
   pagesInfo = dict()
   for page in allpages:
-    pagesInfo[page] = {"path":allpages[page].pagepath, "name": page, "id": allpages[page].idpage, "components": allpages[page].components}
+    pagesInfo[page] = {"path":allpages[page].pagepath,
+                       "name": page, "id": allpages[page].idpage,
+                       "components": allpages[page].components,
+                       "pageElements":allpages[page].elements}
 
   mypages = allpages
   if(len(sys.argv)==3): mypages = generateGridTemplate(sys.argv[2],allpages)
@@ -43,16 +46,13 @@ else:
       for x in pagesInfo[page]["components"]:
         if(not any(x==c for c in allcomponents)):
           allcomponents.append(x)
-    thenavs = []
-    for c in allcomponents:
-      if(c.componentName=="NavBar"):
-        thenavs.append(c)
-    #  print((c.componentName,type(c)))
-    #  for el in c.children:
-    #    if(isinstance(el,Melement)): print(el.getName())
+
     for component in allcomponents:
       buildcomponent(component,project_name,pagesInfo,refs)
 
+    for orphan in orphanComponents:
+      buildcomponent(orphan,project_name,pagesInfo,refs)
+      
     # build each page (elements within, styling and components)
     for page in mypages:
       buildpage(project_name,mypages[page],pagesInfo,refs)

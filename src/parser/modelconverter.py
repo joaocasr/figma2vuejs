@@ -75,12 +75,19 @@ def getFigmaData(prototype):
     for p in pageComponents:
         if(p in allpages):
             allpages[p].components = pageComponents[p]
-    
-    #print(allpages['PrincipalPage'].elements)
 
+    orphanComponents = []
+    for id in allcomponents:
+        l = []
+        for p in pageComponents:
+            filtered = list(map(lambda x : x.getNameComponent(),pageComponents[p]))
+            l.extend(filtered)
+        if(allcomponents[id].getNameComponent() not in l and c not in orphanComponents):
+            orphanComponents.append(allcomponents[id])
+            
     extractImages(project_name)
     extractSVGs(project_name)
-    return (project_name, allpages, refs)
+    return (project_name, allpages, orphanComponents, refs)
 
 def parsePageEntities(data):
     global allpages
@@ -515,21 +522,26 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                 if(action["destinationId"] in notPageElems):
                     notPageElems[action["destinationId"]]["absoluteRenderBounds"]["x"] = data["absoluteRenderBounds"]["x"]+action["overlayRelativePosition"]["x"]
                     notPageElems[action["destinationId"]]["absoluteRenderBounds"]["y"] = data["absoluteRenderBounds"]["y"]+action["overlayRelativePosition"]["y"]
+                    isonPageLevel = False
                     # construir o elemento overlay tendo em conta que o elemento atual será o seu parent
                     if(parent_data!=None):
                         overlayElem = processElement(parent_data["name"],notPageElems[action["destinationId"]]["name"],notPageElems[action["destinationId"]],parent_data["absoluteRenderBounds"]["width"],parent_data["absoluteRenderBounds"]["height"],parent_data["absoluteRenderBounds"]["x"],parent_data["absoluteRenderBounds"]["y"],firstlevelelem,parent_data)
+                        addComponentVariable(firstlevelelem["name"],{"show"+getElemId(overlayElem.getIdElement()):"false"})
                     else:
                         overlayElem = processElement(pagename,notPageElems[action["destinationId"]]["name"],notPageElems[action["destinationId"]],page_width,page_height,pageX,pageY,firstlevelelem,parent_data)                        
-                        pageOverlays.setdefault(pagename, []).append(overlayElem)
-                    if(type=="ON_HOVER"): 
+                        isonPageLevel = True
+                        allpages[pagename].addVariable({"show"+getElemId(overlayElem.getIdElement()):"false"})   
+                    if(type=="ON_HOVER" or type=="ON_CLICK"): 
                         # caso exista overlaping sao adicionadas as propriedades de hovering
                         overlaps = setHoverProperties(overlayElem,melement,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
                         if(not overlaps):
-                            pass
+                            overlayElem.sethascondvisib(True)
+                            overlayAction = OverlayAction(action["destinationId"])
+                            interactionelement.addAction(overlayAction)
+                            resetHoverProperties(melement,overlayElem)
+                    if(isonPageLevel==True): pageOverlays.setdefault(pagename, []).append(overlayElem)
                     if(firstlevelelem["type"]=="INSTANCE"):
                         overlayInsideInstances.setdefault(firstlevelelem["id"], []).append((parent_data["id"],overlayElem)) # só fazer isto se a posicao do overlay estiver contida numa instance/component
-                    overlayAction = OverlayAction(action["destinationId"])
-                    interactionelement.addAction(overlayAction)
                 #verificar se o elemento overlay é uma instancia(componente)
                 elif(action["destinationId"] in allcomponents): 
                     #  update the position of the component relatively to the node which will open the component overlay
@@ -793,14 +805,25 @@ def addComponentVariable(componentName,var):
     for idp in pageComponents:
         for compp in pageComponents[idp]:
             if(compp.getNameComponent()==componentName):
-                if(not var in pageComponents[idp]): 
-                    pageComponents[idp].addVariable(var)
-    componentVariables.setdefault(componentName, []).append(var)
+                if(not var in compp.getData()): 
+                    compp.addVariable(var)
+    if(componentName in componentVariables and var not in componentVariables[componentName]):
+        componentVariables[componentName].append(var)
+    elif(componentName not in componentVariables):
+        componentVariables[componentName]=[var]
 
 def assignComponentData(component):
     if(component.getNameComponent() in componentVariables):
         for v in componentVariables[component.getNameComponent()]:
             component.addVariable(v)
+            
+def assignComponentDataById(id):
+    global pageComponents
+    for p in pageComponents:
+        for c in pageComponents[p]:
+            if(id==c.getIdComponent()):
+                print(c)
+                assignComponentData(c)
 
 def manipulateComponentDom(elems,i):
     for el in elems:
@@ -825,6 +848,14 @@ def setHoverProperties(overlayElem,melement,nr_columnstart,nr_columnend,nr_rowst
         overlayElem.setinitialOpacity(0)
         melement.style.setOpacity(0)
     return overlaps
+
+def resetHoverProperties(el1,el2):
+    el1.style.sethashoverProperty(False)
+    el2.style.sethashoverProperty(False)
+    el1.setinitialOpacity(1)
+    el2.setinitialOpacity(1)
+    el1.style.setOpacity(1)
+    el2.style.setOpacity(1)
 
 def getElemId(id):
     elemid = id

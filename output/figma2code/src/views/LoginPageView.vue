@@ -38,20 +38,20 @@
    Forgot your password?
   </p>
  </div>
- <Navbar @show-from2621776-to26211200="show26211200=true" class="grid-item-2548575 component2548575 posnavbar"></Navbar>
+ <Navbar class="grid-item-2548575 component2548575 posnavbar"></Navbar>
 </div>
 
 </template>
 
 <script>
-import Navbar from '@/components/Navbar.vue';
 import Footer from '@/components/Footer.vue';
+import Navbar from '@/components/Navbar.vue';
 import { ref } from 'vue';
 
 export default {
     components:{
-        Navbar,
-        Footer
+        Footer,
+        Navbar
     },
     data(){
         return {
@@ -103,10 +103,7 @@ export default {
         selectedItem2575928(){
                this.$router.push({path:"/loginpage"});
 
-            },
-		changeVisibility26211200(){
-            this.$emit('show-from2621776-to26211200');
-        }
+            }
 	},mounted(){
         this.getCheckboxOptions2549638();
 	}

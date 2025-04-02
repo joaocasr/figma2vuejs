@@ -29,7 +29,7 @@
     </v-menu>
    </div>
   </div>
-  <div @mouseover="changeVisibility26211200()" class="grid-item-2548575 container2621776">
+  <div class="grid-item-2548575 container2621776">
    <p class="grid-item-2548575 text2621777">
     HOME
    </p>
@@ -48,7 +48,8 @@
 export default {
     data(){
         return {
-        menuoptions2575928:[{'option': 'Login', 'destination': '2548:560'}, {'option': 'Sign Up'}]   
+        menuoptions2575928:[{'option': 'Login', 'destination': '2548:560'}, {'option': 'Sign Up'}],
+            show26211200:false   
         }
     },
     methods:{
@@ -61,10 +62,7 @@ export default {
         selectedItem2575928(){
                this.$router.push({path:"/loginpage"});
 
-            },
-		changeVisibility26211200(){
-            this.$emit('show-from2621776-to26211200');
-        }
+            }
 	}
 }
 </script>

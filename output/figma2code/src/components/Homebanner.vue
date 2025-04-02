@@ -12,7 +12,7 @@
  <p class="grid-item-2362316 text2362374">
   7.8/10
  </p>
- <div class="grid-item-2362316 container2362375">
+ <div @mouseenter="changeVisibility26211200" @mouseleave="changeVisibility26211200" class="grid-item-2362316 container2362375">
   <p class="grid-item-2362316 text2362376">
    Watch Trailer
   </p>
@@ -32,6 +32,11 @@
  <p class="grid-item-2362316 text2362382">
   Dunkirk
  </p>
+ <div class="grid-item-2362316 container26211200" v-show="show26211200==true">
+  <p class="grid-item-2362316 text26211201">
+   HOME
+  </p>
+ </div>
 </div>
 
 </template>
@@ -40,9 +45,14 @@
 export default {
     data(){
         return {
-           
+        show26211200:false   
         }
-    }
+    },
+    methods:{
+		changeVisibility26211200(){
+            this.show26211200 = !this.show26211200;
+        }
+	}
 }
 </script>
 <style lang="css" scoped>

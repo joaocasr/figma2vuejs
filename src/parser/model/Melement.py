@@ -15,7 +15,8 @@ class Melement(object):
 		self.upperIdComponent = None
 		self.zindex = 0
 		self.initialOpacity = None
-
+		self.hasConditionalVisibility = False
+  
 	def getIdElement(self):
 		return self.idElement
 
@@ -60,6 +61,12 @@ class Melement(object):
 
 	def setzindex(self, zindex):
 		self.zindex = zindex
+
+	def gethascondvisib(self):
+		return self.hasConditionalVisibility
+
+	def sethascondvisib(self, hascondvisib):
+		self.hasConditionalVisibility = hascondvisib
 
 	def setInteractions(self, interactions):
 		self.interactions = interactions

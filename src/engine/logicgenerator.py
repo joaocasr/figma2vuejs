@@ -6,15 +6,18 @@ from parser.model.ScrollAction import ScrollAction
 from parser.model.Mcomponent import Mcomponent
 from parser.model.Melement import Melement
 import re
+import itertools
 
 # id: [vars]
 shareableEvents = {}
 
-def handleBehaviour(elem,allPagesInfo,isPageRender):
+def handleBehaviour(elem,allPagesInfo,pagename,isPageRender):
     global shareableEvents
     directives = []
     hooks = {}
     elemBehaviour = [[],None]
+    #if(isinstance(elem,Mcomponent)): currentId = elem.getIdComponent()
+    #else: currentId = elem.getIdElement()
     # from component build
     for interaction in elem.getInteractions():
         if(interaction.getInteractionType()==InteractionElement.Interaction.ONHOVER):
@@ -22,14 +25,13 @@ def handleBehaviour(elem,allPagesInfo,isPageRender):
                 if(isinstance(action,OverlayAction)):
                     destinationid = getElemId(action.getDestinationID())
                     methodName = "changeVisibility"+destinationid
-                    elemBehaviour[0].append('@mouseover="'+methodName+'()"')
+                    elemBehaviour[0].extend(['@mouseenter="'+methodName+'"','@mouseleave="'+methodName+'"'])
                     if(isinstance(elem,Melement) and isfromInstance(elem.getIdElement()) and elem.getupperIdComponent()!=None):
                         shareableEvents.setdefault(elem.getupperIdComponent(), []).append(("show-from"+getElemId(elem.getIdElement())+"-to"+getElemId(action.getDestinationID()),"show"+getElemId(action.getDestinationID())+'=true',''))
                         shareableEvents.setdefault(action.getDestinationID(), []).append((None,None,'v-if="show'+getElemId(action.getDestinationID())+'==true"'))
-                        insertFunction("methods",hooks,methodName,showOverlayfromChildren(methodName,"show-from"+getElemId(elem.getIdElement())+"-to"+getElemId(action.getDestinationID())))
+                        insertFunction("methods",hooks,methodName,showOverlayonHover(methodName,"show"+destinationid))
                         elemBehaviour[1] = hooks
-                    else:
-                        insertFunction("methods",hooks,methodName,getChangeVisibilityFunction(methodName,"show"+destinationid))
+                    
                     elemBehaviour[1] = hooks
         if(interaction.getInteractionType()==InteractionElement.Interaction.ONCLICK):
             for action in interaction.actions:
@@ -71,9 +73,9 @@ def handleBehaviour(elem,allPagesInfo,isPageRender):
     # HANDLE FORM LOGIC
     if(isinstance(elem,Mcomponent) and elem.getNameComponent()=="Form"):
         elemBehaviour = insertFormLogic(getElemId(elem.idComponent),elem.inputs,hooks,elemBehaviour)
-    # HANDLE OVERLAY FRAMES
-    #if(isinstance(elem,Melement) and elem.getisOverlay()==True):
-    #    elemBehaviour[0].append('v-if="show'+getElemId(elem.getIdElement())+'==true"')
+    # HANDLE CONDITIONAL VISIBLE ELEMENTS
+    if(elem.gethascondvisib()==True):
+        elemBehaviour[0].append('v-show="show'+getElemId(elem.getIdElement())+'==true"')
     # SHOW CONDITIONAL ELEMENTS | from page
     if(isinstance(elem,Mcomponent) and isPageRender==True):
         idcomponent = getElemId(elem.idComponent)
@@ -86,6 +88,15 @@ def handleBehaviour(elem,allPagesInfo,isPageRender):
 
 # METHOD TO CHECK IF ELEMENTS INVOLVED ARE IN THE SAME PAGE
 # METHOD TO HANDLE mouseover EVENTS when elements are not overlaping 
+def isParentChildRelationship(id1,id2,pagename,allpagesInfo):
+    if(pagename not in allpagesInfo): return False
+    elementos = []
+    allElements = list(itertools.chain(*([x] + x.children for x in allpagesInfo[pagename]["pageElements"])))
+    for el in allElements:
+        if((isinstance(el,Melement) and el.getIdElement()==id1) or (isinstance(el,Melement) and el.getIdElement()==id2) and
+           (isinstance(el,Mcomponent) and el.getIdComponent()==id1) or (isinstance(el,Mcomponent) and el.getIdComponent()==id2)):
+            elementos.append(el)
+    if(len(elementos)==2 and type(elementos[0])!=type(elementos[1])): return True 
 
 def insertFunction(hook,hooks,functioname,function):
     if(hook not in hooks): hooks[hook]=[]
@@ -176,9 +187,9 @@ def getMenuFunction(elem,allPagesInfo,functionname):
             }"""
     return function
 
-def showOverlayfromChildren(methodName,event):
-    function = """\t\t""" + methodName + "(){" + """
-            this.$emit('""" + event +  """');
+def showOverlayonHover(name,variable):
+    function = """\t\t""" + name + "(){" + """
+            this.""" + variable +  """ = !this.""" + variable +";"+"""
         }""" 
     return function
 
