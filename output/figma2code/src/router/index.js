@@ -39,7 +39,7 @@ const router = createRouter({
 },
 {
     "path": "/:catchAll(.*)",
-    "name": "error",
+    "name": "ErrorPage",
     "component": ErrorPageView
 },
   ]

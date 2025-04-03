@@ -207,12 +207,12 @@ def generateComponentStyle(name,component):
     for font in font_imports[component.componentName]:
       newcsscontent += '@import url(' + '"' + font + '");\n'
   newcsscontent += css
-  cssfile="../output/"+name+"/src/assets/"+component.componentName.lower()+".css"
+  cssfile="../output/"+name+"/src/assets/"+getFormatedName(component.componentName.lower())+".css"
   if not os.path.isfile(cssfile):
     with open(cssfile,"w") as f:
       f.write(newcsscontent)
   else:
-    with open("../output/"+name+"/src/assets/"+component.componentName.lower()+".css","r+") as f:
+    with open("../output/"+name+"/src/assets/"+getFormatedName(component.componentName.lower())+".css","r+") as f:
       lines = f.readlines()  
       lines.insert(0, newcsscontent)
       f.seek(0)   
@@ -653,6 +653,7 @@ def calculate_gradientDegree(startPoint,endPoint,color1,color2):
     return lineargradient
 
 def getFormatedName(name):
-    pattern = "[\s\.\-;#:]"
+    name = re.sub('([0-9]*)(.*)',r'\2',name)
+    pattern = "[\s\.\-\/\\;#:]"
     name = re.sub(pattern,"",name)
     return name

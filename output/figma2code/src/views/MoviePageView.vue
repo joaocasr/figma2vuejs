@@ -8,11 +8,11 @@
   Jake Sully lives with his newfound family formed on the extrasolar moon  Pandora. Once a familiar threat returns to finish what was previously  started, Jake must work with Neytiri and the army of the Na'vi race to  protect their home.
  </p>
  <div class="grid-item rectangle2433228">
-  <p class="grid-item text2362402">
-   Score
-  </p>
   <p class="grid-item text2362403">
    3.0
+  </p>
+  <p class="grid-item text2362402">
+   Score
   </p>
  </div>
  <div class="grid-item container2362404" v-on:click="changeVisibility2362620()">
@@ -78,23 +78,23 @@
 </template>
 
 <script>
+import Navbar from '@/components/Navbar.vue';
 import Review from '@/components/Review.vue';
+import Footer from '@/components/Footer.vue';
 import Related1 from '@/components/Related1.vue';
-import Related2 from '@/components/Related2.vue';
 import Confirmationwatchlistmodal from '@/components/Confirmationwatchlistmodal.vue';
 import Related3 from '@/components/Related3.vue';
-import Footer from '@/components/Footer.vue';
-import Navbar from '@/components/Navbar.vue';
+import Related2 from '@/components/Related2.vue';
 
 export default {
     components:{
+        Navbar,
         Review,
+        Footer,
         Related1,
-        Related2,
         Confirmationwatchlistmodal,
         Related3,
-        Footer,
-        Navbar
+        Related2
     },
     data(){
         return {

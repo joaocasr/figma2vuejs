@@ -33,8 +33,9 @@ def buildcomponent(component,projectname,pagesInfo,refs):
     idcomponent = getElemId(component.idComponent)
 
     
-    (flattenElements,allShapes) = flattenAndShapes(component)
-    onstack = filterOverlapingElements(allShapes,flattenElements)
+    #(flattenElements,allShapes) = flattenAndShapes(component)
+    onstack = []
+    filterOverlapingElements(component,onstack)
     handleClipPathOverlaping(component,onstack)
 
     for element in component.children:
@@ -125,7 +126,7 @@ def applytransformation(elem,projectname,pagename,idcomponent):
 def writeVueComponent(name,project_name,content,component,pagesInfo):
     global allhooks 
     idcomponent = getElemId(component.idComponent)
-    cssimport = "@import '../assets/"+name.lower()+".css';"
+    cssimport = "@import '../assets/"+getFormatedName(name.lower())+".css';"
     pagehooks=""
     for hook in allhooks[name]:
         pagehooks = hook + ":{\n"
@@ -170,21 +171,28 @@ def processTemplate(html_string,name):
         finalHtml = processedTemplate
     return finalHtml
 
-def filterOverlapingElements(allShapes,allElements):
-    allElements.reverse()
-    onstack = []
-    for e in allElements:
-        if(not isinstance(e,ShapeElement)):
-            for s in allShapes:
-                elem1 = e
-                elem2 = s
-                if(getValue(elem1.style.gridcolumnStart)>=getValue(elem2.style.gridcolumnStart) and
-                    getValue(elem1.style.gridcolumnEnd)<=getValue(elem2.style.gridcolumnEnd) and
-                    getValue(elem1.style.gridrowStart)>=getValue(elem2.style.gridrowStart) and
-                    getValue(elem1.style.gridrowEnd)<=getValue(elem2.style.gridrowEnd) and
-                    (isinstance(elem2,ShapeElement))):
-                        onstack.append((elem1,elem2))
+def filterOverlapingElements(component,onstack):
+    elements = component.children
+    alllevelShapes = getShapes(elements)
+    idel=-1
+    idsh=-1
+    if(len(alllevelShapes)>0):
+        for s in alllevelShapes:
+            idsh+=1
+            for i in component.children:
+                idel+=1
+                if(i!=s and idsh<idel and getValue(i.style.gridcolumnStart)>=getValue(s.style.gridcolumnStart) and
+                    getValue(i.style.gridcolumnEnd)<=getValue(s.style.gridcolumnEnd) and
+                    getValue(i.style.gridrowStart)>=getValue(s.style.gridrowStart) and
+                    getValue(i.style.gridrowEnd)<=getValue(s.style.gridrowEnd) and
+                    (isinstance(s,ShapeElement))):
+                        onstack.append((i,s))
+                for c in i.children:
+                    if(len(c.children)>0): filterOverlapingElements(c,onstack)
     return onstack
+
+def getShapes(elementos):
+    return list(filter(lambda x: (isinstance(x,ShapeElement)),elementos))
 
 def handleClipPathOverlaping(component,onstack):
     component.children.reverse()
@@ -200,18 +208,18 @@ def handleClipPathOverlaping(component,onstack):
             handleClipPathOverlaping(c,onstack)
     component.children = [child for child in component.children if child not in toremove]
     component.children.reverse()
-
+    
 def flattenAndShapes(component):    
     flattenElements = list(itertools.chain(*([x] + x.children for x in component.children)))
     allShapes = list(filter(lambda x: (isinstance(x,ShapeElement)),flattenElements))
     return (flattenElements,allShapes)
 
 def getValue(value):
-    if " span " in str(value):
+    if(isinstance(value, int)): return value
+    if(value.isnumeric()): return int(value)
+    if(" span " in str(value)):
         realvalue = value.split(" span ")[1] 
         return int(realvalue)
-    else:
-        return int(value) 
 
 def getElemId(id):
     elemid = id
@@ -223,6 +231,7 @@ def getElemId(id):
     return elemid
 
 def getFormatedName(name):
-    pattern = "[\s\.\-;#:]"
+    name = re.sub('([0-9]*)(.*)',r'\2',name)
+    pattern = "[\s\.\-\/\\;#:]"
     name = re.sub(pattern,"",name)
     return name

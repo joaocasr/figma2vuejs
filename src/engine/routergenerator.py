@@ -6,24 +6,52 @@ def generate_routes(name,pages):
     print("Updating routes...")
     element_routes = []
     for pagina in pages:
+        pagename = getFormatedName(pages[pagina].getPagename())
         element = {
                 "component": {
-                    'path': getFormatedName(pages[pagina].getPagepath()).lower(),
-                    'name': getFormatedName(pages[pagina].getPagename()),
-                    'component': getFormatedName(pages[pagina].getPagename())+'View',
+                    'path': "/"+pagename.lower(),
+                    'name': pagename,
+                    'component': pagename+'View',
                 },
-                "import": "import "+getFormatedName(pages[pagina].getPagename())+'View'+" from '@/views/"+getFormatedName(pages[pagina].getPagename())+'View'+".vue';\n"
+                "import": "import "+pagename+'View'+" from '@/views/"+pagename+'View'+".vue';\n"
 
         }
         element_routes.append(element)
-    element_routes.append({
-        "component":{
-            'path': '/:catchAll(.*)',
-            'name': 'error',
-            'component': 'ErrorPageView'
-        },
-       "import": "import ErrorPageView from '@/views/ErrorPageView.vue';\n"
-    })
+    newx = None
+    for x in element_routes:
+        if(x["component"]['name']=="ErrorPage"):
+            newx = x
+            newx["component"]["path"]='/:catchAll(.*)'
+            element_routes.remove(x)
+            element_routes.append(newx)
+    if(newx==None):
+        element_routes.append({
+                    "component":{
+                        'path': '/:catchAll(.*)',
+                        'name': 'ErrorPage',
+                        'component': 'ErrorPageView'
+                    },
+                "import": "import ErrorPageView from '@/views/ErrorPageView.vue';\n"
+                })
+        errorpage= """<template>
+        <h4>ERROR PAGE</h4>
+    </template>
+
+<script>
+export default {
+    data(){
+        return {
+        }
+    },
+    methods:{
+    }
+}
+</script>
+
+"""
+        filerror = "../output/"+name+"/src/views/ErrorPageView.vue"
+        with open(filerror,"w") as f:
+            f.write(errorpage)
     allRoutes = ""
     allImports = ""
     for e in element_routes:  
@@ -43,35 +71,12 @@ const router = createRouter({
 })
 export default router
 """
-    errorpage= """<template>
-        <h4>ERROR PAGE</h4>
-    </template>
-
-<script>
-export default {
-    data(){
-        return {
-        }
-    },
-    methods:{
-    }
-}
-</script>
-
-"""
     filerouter = "../output/"+name+"/src/router/index.js"
-    if os.path.isfile(filerouter):
-        f = open(filerouter,"w")
+    with open(filerouter,"w") as f:
         f.write(router)
-        f.close()
-    else:
-        raise Exception("index.js from router folder not found!")
-    fileerror = "../output/"+name+"/src/views/ErrorPageView.vue"
-    f= open(fileerror,"w")
-    f.write(errorpage)
-    f.close()
 
 def getFormatedName(name):
-    pattern = "[\s\.\-;#:]"
+    name = re.sub('([0-9]*)(.*)',r'\2',name)
+    pattern = "[\s\.\-\/\\;#:]"
     name = re.sub(pattern,"",name)
     return name

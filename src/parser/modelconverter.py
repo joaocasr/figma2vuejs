@@ -44,6 +44,9 @@ overlayInsideInstances = {}
 pageOverlays = {}
 figmadata = {}
 
+batchi=0
+batchf=50
+
 def getFigmaData(prototype):
     global allpages, allcomponents,pageComponents, figmadata, refs, overlayInsideInstances, pageOverlays
     prototype1 = "../tests/prototype"+str(prototype)+".json"
@@ -94,7 +97,7 @@ def parsePageEntities(data):
     pages = []
     for page in data["document"]["children"][0]["children"]:
         if(page["type"]=="FRAME" and "#Page" in page["name"]):
-            pagina = Mpage(page["name"],"/"+page["name"],page["id"])
+            pagina = Mpage(page["name"],page["name"],page["id"])
             pages.append(pagina)
             allpages[pagina.getPagename()] = pagina
     iterate_nestedElements(data)
@@ -149,20 +152,27 @@ def iterate_nestedElements(data):
 
 def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstlevelelem,parent_data=None):
     global allcomponents,pageComponents,allpages,pageWidth, figmadata, allimages, allsvgs, refs, overlayInsideInstances, pageOverlays
-    children = []
-    elementwidth = data["absoluteRenderBounds"]["width"]
-    elementheight = data["absoluteRenderBounds"]["height"]
-    
-
-    xielem = data["absoluteRenderBounds"]["x"]
-    yielem = data["absoluteRenderBounds"]["y"]
+    children = []    
+    if(data["absoluteRenderBounds"]!=None):
+        elementwidth = data["absoluteRenderBounds"]["width"]
+        elementheight = data["absoluteRenderBounds"]["height"]
+        xielem = data["absoluteRenderBounds"]["x"]
+        yielem = data["absoluteRenderBounds"]["y"]
+    elif(data["absoluteBoundingBox"]!=None):
+        elementwidth = data["absoluteBoundingBox"]["width"]
+        elementheight = data["absoluteBoundingBox"]["height"]
+        xielem = data["absoluteBoundingBox"]["x"]
+        yielem = data["absoluteBoundingBox"]["y"]
 
     nrrows = 64
 
     # normalize the referencial coordinates
-    if(parent_data!=None):
+    if(parent_data!=None and parent_data["absoluteRenderBounds"]!=None):
         xielem -= parent_data["absoluteRenderBounds"]["x"]
         yielem -= parent_data["absoluteRenderBounds"]["y"]
+    elif(parent_data!=None and parent_data["absoluteBoundingBox"]!=None):
+        xielem -= parent_data["absoluteBoundingBox"]["x"]
+        yielem -= parent_data["absoluteBoundingBox"]["y"]
 
     else:
         if(pageX>0):
@@ -225,7 +235,10 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                 componentset = c
                 break
         melement = convertToSearchInput(componentset,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
-        allpages[pagename].addVariable({melement.vmodel:'""'})
+        if(not pagename in allpages):
+            addComponentVariable(pagename,{melement.vmodel:'""'})
+        else:
+            allpages[pagename].addVariable({melement.vmodel:'""'})
         return melement
     elif(data["name"]=="DatePicker" and data["type"]=="INSTANCE"):
         componentsetId = data["componentId"]
@@ -286,8 +299,8 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         return melement
     # handling VectorElements
     elif(data["type"]=="VECTOR"):
-        style = VectorStyle(data["absoluteRenderBounds"]["x"],
-                        data["absoluteRenderBounds"]["y"],
+        style = VectorStyle(xielem,
+                        yielem,
                         elementwidth,
                         elementheight,
                         nr_columnstart,
@@ -305,8 +318,8 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
     elif(data["type"]=="RECTANGLE" and any(("imageRef" in x) for x in data["fills"])):
         
         data["type"] = "IMAGE"
-        style = ImageStyle(data["absoluteRenderBounds"]["x"],
-                        data["absoluteRenderBounds"]["y"],
+        style = ImageStyle(xielem,
+                        yielem,
                         elementwidth,
                         elementheight,
                         nr_columnstart,
@@ -362,8 +375,8 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                                                 fill["gradientStops"][1],
                                                 fill["gradientStops"][0])
 
-        shapestyle = ShapeStyle(data["absoluteRenderBounds"]["x"],
-                        data["absoluteRenderBounds"]["y"],
+        shapestyle = ShapeStyle(xielem,
+                        yielem,
                         elementwidth,
                         elementheight,
                         nr_columnstart,
@@ -410,8 +423,8 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         autoresize = None
         if("textAutoResize" in data["style"]):
             autoresize = data["style"]["textAutoResize"]
-        style = TextStyle(data["absoluteRenderBounds"]["x"],
-                        data["absoluteRenderBounds"]["y"],
+        style = TextStyle(xielem,
+                        yielem,
                         elementwidth,
                         elementheight,
                         data["style"]["textAlignHorizontal"],
@@ -442,6 +455,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         componentStyle.setPosition(scrollBehaviour)
         componentStyle.setinstanceFromComponentId(data["componentId"])
 
+        resolveNameConflit(componentelement,componentStyle,pagename)
         assignComponentData(componentelement)
         componentelement.setComponentStyle(componentStyle)
         pageComponents.setdefault(pagename, []).append(componentelement)
@@ -469,10 +483,10 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         if(rgba!=None): style.setBackgroundColor("rgba("+','.join(str(val) for val in rgba)+")")
         if(lineargradient!=None): style.setBackground(lineargradient)
 
-        style.setX(data["absoluteRenderBounds"]["x"])
-        style.setY(data["absoluteRenderBounds"]["y"])
-        style.setHeight(data["absoluteRenderBounds"]["height"])
-        style.setWidth(data["absoluteRenderBounds"]["width"])
+        style.setX(xielem)
+        style.setY(yielem)
+        style.setHeight(elementheight)
+        style.setWidth(elementwidth)
         style.setGridcolumnStart(nr_columnstart)
         style.setGridcolumnEnd(nr_columnend)
         style.setGridrowStart(nr_rowstart)
@@ -590,15 +604,17 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             style.setGridTemplateColumns("repeat(64,1fr)")
             style.setGridTemplateRows("repeat(64,1fr)")
         for element in data["children"]:
-            nestedelem = processElement(pagename,element["name"],element,data["absoluteRenderBounds"]["width"],data["absoluteRenderBounds"]["height"],pageX,pageY,firstlevelelem,myparent_data)
+            nestedelem = processElement(pagename,element["name"],element,elementwidth,elementheight,pageX,pageY,firstlevelelem,myparent_data)
             children.append(nestedelem)
 
         if(melement!=None): melement.setChildren(children)
     return melement
 
-# auxiliar funcion to calculate
+# auxiliar function to calculate element positioning
 def getPosition(xielem,yielem,elementwidth,elementheight,page_width,page_height, nrrows):
 
+    if(page_height==0): page_height+=10
+    if(page_width==0): page_width+=10
     nr_columnstart = max(round((xielem / page_width) * 64 ) + 1,1)
     nr_columnend = min(round((elementwidth / page_width) * 64) + 1 + nr_columnstart,65)
 
@@ -659,11 +675,22 @@ def setComponentStyle(component):
         rgba = (component["backgroundColor"]["r"] * 255 , component["backgroundColor"]["g"] * 255 , component["backgroundColor"]["b"] * 255 , component["backgroundColor"]["a"])
     id = component["id"]
 
+    if(component["absoluteRenderBounds"]!=None):
+        elementwidth = component["absoluteRenderBounds"]["width"]
+        elementheight = component["absoluteRenderBounds"]["height"]
+        xielem = component["absoluteRenderBounds"]["x"]
+        yielem = component["absoluteRenderBounds"]["y"]
+    elif(component["absoluteBoundingBox"]!=None):
+        elementwidth = component["absoluteBoundingBox"]["width"]
+        elementheight = component["absoluteBoundingBox"]["height"]
+        xielem = component["absoluteBoundingBox"]["x"]
+        yielem = component["absoluteBoundingBox"]["y"]
+
     componentStyle = ComponentStyle()
-    componentStyle.setX(component["absoluteRenderBounds"]["x"])
-    componentStyle.setY(component["absoluteRenderBounds"]["y"])
-    componentStyle.setWidth(component["absoluteRenderBounds"]["width"])
-    componentStyle.setHeight(component["absoluteRenderBounds"]["height"])
+    componentStyle.setX(xielem)
+    componentStyle.setY(yielem)
+    componentStyle.setWidth(elementwidth)
+    componentStyle.setHeight(elementheight)
     if(rgba!=None): componentStyle.setBackgroundColor("rgba("+','.join(str(val) for val in rgba)+")")
     if(lineargradient!=None): componentStyle.setBackground(lineargradient)
     componentStyle.setDisplay("grid")
@@ -692,7 +719,8 @@ def setComponentStyle(component):
 
         borderstyle = strokeWeight + stroketype + " rgba("+','.join(str(val) for val in rgba_stroke)+")"
         componentStyle.setBorderStyle(borderstyle)
-    
+    componentStyle.setinstanceFromComponentId(component["id"])
+
     if(id in allcomponents): allcomponents[id].setComponentStyle(componentStyle)
 
     return componentStyle
@@ -731,13 +759,11 @@ def getElementTag(elem):
     return tag
 
 def extractImages(projectname):
-    global allimages
+    global allimages,batchi,batchf
     load_dotenv(find_dotenv())
     FIGMA_API_KEY = os.environ.get("FIGMA_API_KEY")
     FILE_KEY = os.environ.get("FILE_KEY")
-    myimageids = ','.join(x["id"] for x in allimages)
     
-    url = f"https://api.figma.com/v1/images/"+FILE_KEY+"/?ids="+myimageids+"&format=png"
     headers = {"content-type": "application/json", "Accept-Charset": "UTF-8", 'X-FIGMA-TOKEN': FIGMA_API_KEY}
 
     resultingImages = []
@@ -750,31 +776,41 @@ def extractImages(projectname):
             resultingImages.extend(filteredImages)
 
     if(len(resultingImages)>0):
-        response = requests.get(url, headers=headers)
-        images = response.json()
-        if("err" in images and images["err"]==None):
-            for mimage in resultingImages:
-                imgurl = images["images"][str(mimage["id"])]
-                imgpath = re.sub(r"[\s,@\.-]","",mimage["name"])
-                if(imgurl!=None):
-                    destination = '../output/'+projectname+"/public/"+imgpath+".png"
-                    print("\nDownloading image "+imgpath+"...")
-                    if(not os.path.isfile(destination)):
-                        filename = wget.download(imgurl, out=destination)
-                else:
-                    destination = '../output/'+projectname+"/public/"+imgpath+".png"
-                    wget.download("https://demofree.sirv.com/nope-not-here.jpg",out=destination)
-        elif(images["status"]==403):
-            print("something went wrong...")
+        for it in range(0,len(resultingImages),50):
+            if(batchi<len(resultingImages)):
+                l = resultingImages[batchi:batchf]
+                myimageids = ','.join(x["id"] for x in l)
+                url = f"https://api.figma.com/v1/images/"+FILE_KEY+"/?ids="+myimageids+"&format=png"
+
+                response = requests.get(url, headers=headers)
+                images = response.json()
+                print(images)
+                if("err" in images and images["err"]==None):
+                    for mimage in resultingImages:
+                        imgurl = images["images"][str(mimage["id"])]
+                        imgpath = re.sub(r"[\s,@\.-]","",mimage["name"])
+                        if(imgurl!=None):
+                            destination = '../output/'+projectname+"/public/"+imgpath+".png"
+                            print("\nDownloading image "+imgpath+"...")
+                            if(not os.path.isfile(destination)):
+                                filename = wget.download(imgurl, out=destination)
+                        else:
+                            destination = '../output/'+projectname+"/public/"+imgpath+".png"
+                            wget.download("https://demofree.sirv.com/nope-not-here.jpg",out=destination)
+                elif(images["status"]==403):
+                    print("something went wrong...")
+                
+                batchi+=50
+                batchf+=50
+    batchi=0
+    batchf=50
 
 def extractSVGs(projectname):
-    global allsvgs
+    global allsvgs,batchi,batchf
     load_dotenv(find_dotenv())
     FIGMA_API_KEY = os.environ.get("FIGMA_API_KEY")
     FILE_KEY = os.environ.get("FILE_KEY")
-    mysvgsids = ','.join(x["id"] for x in allsvgs)
-    
-    url = f"https://api.figma.com/v1/images/"+FILE_KEY+"/?ids="+mysvgsids+"&format=svg"
+
     headers = {"content-type": "application/json", "Accept-Charset": "UTF-8", 'X-FIGMA-TOKEN': FIGMA_API_KEY}
 
     resultingSvgs = []
@@ -784,22 +820,35 @@ def extractSVGs(projectname):
         if(not os.path.isfile(destination)):
             filteredSvgs = list(filter(lambda x: x["name"]==msvg["name"],allsvgs))
             resultingSvgs.extend(filteredSvgs)
-
+    
     if(len(resultingSvgs)>0):
-        response = requests.get(url, headers=headers)
-        svgs = response.json()
-        if("err" in svgs and svgs["err"]==None):
-            for msvg in resultingSvgs:
-                svgurl = svgs["images"][str(msvg["id"])]
-                svgpath = re.sub(r"[\s,@\.-]","",msvg["name"])
+        for it in range(0,len(resultingSvgs),50):
+            if(batchi<len(resultingSvgs)):
+                l = resultingSvgs[batchi:batchf]
+                mysvgsids = ','.join(x["id"] for x in l)
+    
+                url = f"https://api.figma.com/v1/images/"+FILE_KEY+"/?ids="+mysvgsids+"&format=svg"
 
-                destination = '../output/'+projectname+"/public/"+svgpath+".svg"
-                print("\nDownloading image "+svgpath+"...")
-                if(not os.path.isfile(destination)):
-                    filename = wget.download(svgurl, out=destination)
-        elif(svgs["status"]==403):
-            print("something went wrong...")
+                response = requests.get(url, headers=headers)
+                svgs = response.json()
+                print(svgs)
+                if("err" in svgs and svgs["err"]==None):
+                    for msvg in resultingSvgs:
+                        svgurl = svgs["images"][str(msvg["id"])]
+                        svgpath = re.sub(r"[\s,@\.-]","",msvg["name"])
 
+                        destination = '../output/'+projectname+"/public/"+svgpath+".svg"
+                        print("\nDownloading image "+svgpath+"...")
+                        if(not os.path.isfile(destination)):
+                            filename = wget.download(svgurl, out=destination)
+                elif(svgs["status"]==403):
+                    print("something went wrong...")
+                    
+                batchi+=50
+                batchf+=50
+    batchi=0
+    batchf=50
+                
 def addComponentVariable(componentName,var):
     global pageComponents, componentVariables
     for idp in pageComponents:
@@ -822,7 +871,6 @@ def assignComponentDataById(id):
     for p in pageComponents:
         for c in pageComponents[p]:
             if(id==c.getIdComponent()):
-                print(c)
                 assignComponentData(c)
 
 def manipulateComponentDom(elems,i):
@@ -830,6 +878,15 @@ def manipulateComponentDom(elems,i):
         if(isinstance(el,Melement) and i[0]==el.idElement):
             el.addChildren(i[1])
         manipulateComponentDom(el.children,i)
+
+def resolveNameConflit(componentelement,style,pagename):
+    global pageComponents
+    if(pagename in pageComponents):
+        for c in pageComponents[pagename]:
+            if(c.getNameComponent()==componentelement.getNameComponent() and 
+                c.style.getinstanceFromComponentId()!=style.getinstanceFromComponentId()):
+                componentelement.setNameComponent(componentelement.getNameComponent()+getElemId(componentelement.getIdComponent()))
+    return componentelement
 
 def setHoverProperties(overlayElem,melement,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend):
     overlaps=True

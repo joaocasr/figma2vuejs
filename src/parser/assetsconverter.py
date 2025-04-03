@@ -259,7 +259,8 @@ def convertToMenu(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name
     return menu
 
 def getFormatedName(name):
-    pattern = "[\s\.\-;:]"
+    name = re.sub('([0-9]*)(.*)',r'\2',name)
+    pattern = "[\s\.\-\/\\;#:]"
     name = re.sub(pattern,"",name)
     return name
 

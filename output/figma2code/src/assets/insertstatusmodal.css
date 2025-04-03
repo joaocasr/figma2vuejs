@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@500&display=swap");
 
 .component2362628 {
   display:grid;
@@ -22,3 +24,65 @@
   height: 100%;
 }
   
+.text2362629 {
+	font-style: Bold;
+	font-weight: 700;
+	font-size: 1.9819819819819822vw;
+	font-family: Poppins;
+	text-align: left;
+	line-height: 50px;
+	color: rgba(255.0,255.0,255.0,1.0);
+	grid-column-start: 24;
+	grid-column-end: 42;
+	grid-row-start: 10;
+	grid-row-end: 17;
+	overflow-wrap: break-word;
+	white-space: normal;
+	width: 100%;
+	display: flex;
+	align-items: stretch;
+	justify-content: stretch;
+}
+
+
+.container2362630 {
+	grid-column-start: 30;
+	grid-column-end: 37;
+	grid-row-start: 23;
+	grid-row-end: 37;
+	display: grid;
+	grid-template-columns: repeat(64,1fr);
+	grid-template-rows: repeat(64,1fr);
+	padding: 0;
+}
+
+
+.ellipse2362631 {
+    grid-column-start: 1;
+    grid-column-end: 65;
+    grid-row-start: 1;
+    grid-row-end: 64;
+    aspect-ratio: 1;
+    clip-path: circle(50% at 50% 50%);
+    background-color:rgba(0.0,168.93750607967377,27.030014880001545,1.0);
+	}
+.text2362633 {
+	font-style: Medium;
+	font-weight: 500;
+	font-size: 1.3213213213213215vw;
+	font-family: Poppins;
+	text-align: left;
+	line-height: 33px;
+	color: rgba(255.0,255.0,255.0,1.0);
+	grid-column-start: 10;
+	grid-column-end: 58;
+	grid-row-start: 47;
+	grid-row-end: 54;
+	overflow-wrap: break-word;
+	white-space: normal;
+	width: 100%;
+	display: flex;
+	align-items: stretch;
+	justify-content: stretch;
+}
+

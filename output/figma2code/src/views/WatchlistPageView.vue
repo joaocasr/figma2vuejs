@@ -2,11 +2,11 @@
 <div class="grid-container">
  <div class="grid-item container2362475">
   <div class="grid-item rectangle2362476">
-   <p class="grid-item text2362511">
-    4.5
-   </p>
    <p class="grid-item text2362477">
     AVERAGE SCORE
+   </p>
+   <p class="grid-item text2362511">
+    4.5
    </p>
   </div>
  </div>
@@ -20,11 +20,11 @@
  </div>
  <div class="grid-item container2362482">
   <div class="grid-item rectangle2362483">
-   <p class="grid-item text2362486">
-    1
-   </p>
    <p class="grid-item text2362484">
     ITEMS ON LIST
+   </p>
+   <p class="grid-item text2362486">
+    1
    </p>
   </div>
  </div>
@@ -33,14 +33,14 @@
  </p>
  <div class="grid-item container2362489">
   <div class="grid-item rectangle2362490">
-   <v-rating :length="5" :model-value="starsSeletec2465466" :size="25" class="srating2465466"  half-increments hover readonly >
-   </v-rating>
+   <img class="grid-item container2362491" src="/poster31.png"/>
    <p class="grid-item text2362492">
     Fantastic Beasts: The Secrets of Dumbledore
     <br/>
     (2022)
    </p>
-   <img class="grid-item container2362491" src="/poster31.png"/>
+   <v-rating :length="5" :model-value="starsSeletec2465466" :size="25" class="srating2465466"  half-increments hover readonly >
+   </v-rating>
   </div>
  </div>
  <Footer class="grid-item-2362509 component2362509"></Footer>
@@ -52,14 +52,14 @@
 
 <script>
 import Footer from '@/components/Footer.vue';
-import Navbar from '@/components/Navbar.vue';
 import Deletionwatchlistmodal from '@/components/Deletionwatchlistmodal.vue';
+import Navbar from '@/components/Navbar.vue';
 
 export default {
     components:{
         Footer,
-        Navbar,
-        Deletionwatchlistmodal
+        Deletionwatchlistmodal,
+        Navbar
     },
     data(){
         return {
