@@ -27,6 +27,7 @@ from parser.model.OverlayAction import OverlayAction
 from parser.model.ScrollAction import ScrollAction
 from engine.stylegenerator import calculate_gradientDegree
 from parser.assetsconverter import convertToDropdown, convertToSearchInput, convertToDatePicker, convertToSlider, convertToRating, convertToPaginator, convertToForm, convertToCheckbox, convertToMenu
+from utils.processing import getFormatedName,getElemId
 
 allpages = {}
 allimages = []
@@ -179,9 +180,6 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             xielem -= pageX
         if(pageY!=0):
             yielem -= pageY
-        if(name=="Top Header"):
-            print(pageX,pageY)
-            print(elementwidth,elementheight,xielem,yielem)
               
         nrrows = 128 #if it is first level element, then position it in the grid of 48 rows
     if(firstlevelelem!=None and firstlevelelem["type"]=="COMPONENT"): nrrows=64
@@ -315,7 +313,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         svgpath = re.sub(r"[\s,@\.-]","",name)
 
         allsvgs.append({"id":data["id"],"name":name})
-        mvectorelement = VectorElement(data["id"],"img",data["name"],"/"+svgpath+getElemId(data["id"])+".svg",style)
+        mvectorelement = VectorElement(data["id"],"img",data["name"],"/"+getFormatedName(svgpath)+getElemId(data["id"])+".svg",style)
         melement = mvectorelement
     # handling ImageElement
     elif(data["type"]=="RECTANGLE" and any(("imageRef" in x) for x in data["fills"])):
@@ -349,7 +347,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         imgpath = re.sub(r"[\s,@\.-]","",name)
         allimages.append({"id":data["id"],"name":name})
         mimagelement = ImageElement(data["id"],tag,data["name"],data["fills"][0]["imageRef"],style)
-        mimagelement.setimgpath("/"+imgpath+getElemId(data["id"])+".png")
+        mimagelement.setimgpath("/"+getFormatedName(imgpath)+getElemId(data["id"])+".png")
         melement = mimagelement
 
     # handles shape elements
@@ -773,7 +771,7 @@ def extractImages(projectname):
     resultingImages = []
     for mimage in allimages:
         imgpath = re.sub(r"[\s,@\.-]","",mimage["name"])
-        destination = '../output/'+projectname+"/public/"+imgpath+getElemId(mimage["id"])+".png"
+        destination = '../output/'+projectname+"/public/"+getFormatedName(imgpath)+getElemId(mimage["id"])+".png"
 
         if(not os.path.isfile(destination)):
             filteredImages = list(filter(lambda x: x["name"]==mimage["name"] and x["id"]==mimage["id"],allimages))
@@ -795,7 +793,7 @@ def extractImages(projectname):
                         imgpath = re.sub(r"[\s,@\.-]","",mimage["name"])
                         if(imgurl!=None):
                             destination = '../output/'+projectname+"/public/"+getFormatedName(imgpath)+getElemId(mimage["id"])+".png"
-                            print("\nDownloading image "+imgpath+"...")
+                            print("\nDownloading image "+destination+"...")
                             print(imgurl,destination)
                             if not os.path.exists(destination):
                                 filename = wget.download(imgurl, out=destination)
@@ -821,7 +819,7 @@ def extractSVGs(projectname):
     resultingSvgs = []
     for msvg in allsvgs:
         svgpath = re.sub(r"[\s,@\.-]","",msvg["name"])
-        destination = '../output/'+projectname+"/public/"+svgpath+getElemId(msvg["id"])+".svg"
+        destination = '../output/'+projectname+"/public/"+getFormatedName(svgpath)+getElemId(msvg["id"])+".svg"
         if(not os.path.isfile(destination)):
             filteredSvgs = list(filter(lambda x: x["name"]==msvg["name"] and x["id"]==msvg["id"],allsvgs))
             resultingSvgs.extend(filteredSvgs)
@@ -844,13 +842,13 @@ def extractSVGs(projectname):
 
                         if(svgurl!=None):
                             destination = '../output/'+projectname+"/public/"+getFormatedName(svgpath)+getElemId(msvg["id"])+".svg"
-                            print("\nDownloading image "+svgpath+"...")
+                            print("\nDownloading image "+destination+"...")
                             print(svgurl,destination)
                             if not os.path.exists(destination):
                                 filename = wget.download(svgurl, out=destination)                            
                         else:
                             destination = '../output/'+projectname+"/public/"+getFormatedName(svgpath)+getElemId(msvg["id"])+".svg"
-                            wget.download("https://www.svgrepo.com/show/508699/landscape-placeholder.svg",out=destination)
+                            wget.download("https://placehold.co/300x200.svg?text=PLACEHOLDER",out=destination)
                 elif(svgs["status"]==403):
                     print("something went wrong...")
                     
@@ -923,18 +921,3 @@ def resetHoverProperties(el1,el2):
     el2.setinitialOpacity(1)
     el1.style.setOpacity(1)
     el2.style.setOpacity(1)
-
-def getElemId(id):
-    elemid = id
-    if(str(id).startswith("I")):
-        ids = id.split(";")
-        elemid = str(ids[len(ids)-1])
-    pattern = "[:;]"
-    elemid = re.sub(pattern,"",elemid)
-    return elemid
-
-def getFormatedName(name):
-    name = re.sub('([0-9]*)(.*)',r'\2',name)
-    pattern = "[\s\.\-\/\\;#:]"
-    name = re.sub(pattern,"",name)
-    return name

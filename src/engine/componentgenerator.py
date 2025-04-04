@@ -11,6 +11,7 @@ from parser.model.ShapeElement import ShapeElement
 from parser.model.Rating import Rating
 from parser.model.RatingStyle import RatingStyle
 from engine.assetshelper import getVuetifyMenu
+from utils.processing import getFormatedName,getElemId
 
 from bs4 import BeautifulSoup
 import itertools
@@ -249,18 +250,3 @@ def getValue(value):
     if(" span " in str(value)):
         realvalue = value.split(" span ")[1] 
         return int(realvalue)
-
-def getElemId(id):
-    elemid = id
-    if(str(id).startswith("I")):
-        ids = id.split(";")
-        elemid = str(ids[len(ids)-1])
-    pattern = "[:;]"
-    elemid = re.sub(pattern,"",elemid)
-    return elemid
-
-def getFormatedName(name):
-    name = re.sub('([0-9]*)(.*)',r'\2',name)
-    pattern = "[\s\.\-\/\\;#:]"
-    name = re.sub(pattern,"",name)
-    return name

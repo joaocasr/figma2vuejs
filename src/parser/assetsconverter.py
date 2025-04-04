@@ -16,8 +16,7 @@ from parser.model.MenuStyle import MenuStyle
 from parser.model.FormStyle import FormStyle
 from parser.model.Checkbox import Checkbox
 from parser.model.CheckboxStyle import CheckboxStyle
-
-import re 
+from utils.processing import getFormatedName,getElemId
 
 def convertToDropdown(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name):
     placeholder = ""
@@ -257,18 +256,3 @@ def convertToMenu(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name
     style = MenuStyle(nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
     menu = Menu(id,"",menuName,"COMPONENT_ASSET",options,iconImage,style)
     return menu
-
-def getFormatedName(name):
-    name = re.sub('([0-9]*)(.*)',r'\2',name)
-    pattern = "[\s\.\-\/\\;#:]"
-    name = re.sub(pattern,"",name)
-    return name
-
-def getElemId(id):
-    elemid = id
-    if(str(id).startswith("I")):
-        ids = id.split(";")
-        elemid = str(ids[len(ids)-1])
-    pattern = "[:;]"
-    elemid = re.sub(pattern,"",elemid)
-    return elemid

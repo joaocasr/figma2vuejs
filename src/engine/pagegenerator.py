@@ -11,6 +11,7 @@ from parser.model.Dropdown import Dropdown
 from parser.model.ShapeElement import ShapeElement
 from parser.model.ContainerElement import ContainerElement
 from parser.model.ImageElement import ImageElement
+from utils.processing import getFormatedName,getElemId
 
 from bs4 import BeautifulSoup
 import re
@@ -312,18 +313,3 @@ def getValue(value):
 def anyShapes(elementos):
     allShapes = list(filter(lambda x: (isinstance(x,ShapeElement)),list(itertools.chain(*([x] + x.children for x in elementos)))))
     return len(allShapes) > 0
-
-def getElemId(id):
-    elemid = id
-    if(str(id).startswith("I")):
-        ids = id.split(";")
-        elemid = str(ids[len(ids)-1])
-    pattern = "[:;]"
-    elemid = re.sub(pattern,"",elemid)
-    return elemid
-
-def getFormatedName(name):
-    name = re.sub('([0-9]*)(.*)',r'\2',name)
-    pattern = "[\s\.\-\/\\;#:]"
-    name = re.sub(pattern,"",name)
-    return name

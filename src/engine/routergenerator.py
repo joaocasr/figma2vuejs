@@ -1,6 +1,6 @@
-import os
 import json
 import re
+from utils.processing import getFormatedName
 
 def generate_routes(name,pages):
     print("Updating routes...")
@@ -74,9 +74,3 @@ export default router
     filerouter = "../output/"+name+"/src/router/index.js"
     with open(filerouter,"w") as f:
         f.write(router)
-
-def getFormatedName(name):
-    name = re.sub('([0-9]*)(.*)',r'\2',name)
-    pattern = "[\s\.\-\/\\;#:]"
-    name = re.sub(pattern,"",name)
-    return name

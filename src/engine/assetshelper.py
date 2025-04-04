@@ -1,3 +1,5 @@
+from utils.processing import getFormatedName,getElemId
+
 def getPrimeVueForm(elem,formid,inputsinfo,buttontext):
     template = f'''
     <div class="form{formid}">
@@ -33,7 +35,7 @@ def getVuetifyMenu(elem,menuid,idcomponent=None):
         <div v-bind="props">
         '''
     template+=f'''<img
-            src="/{elem.iconImage["name"]}.png"
+            src="/{getFormatedName(elem.iconImage["name"])+getElemId(elem.iconImage["id"])}.png"
           />
           '''
     template+=f'''   </div>
