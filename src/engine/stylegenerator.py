@@ -153,16 +153,20 @@ def generatePageStyle(name,page):
       newcsscontent += '@import url(' + '"' + font + '");\n'
   newcsscontent += css
 
-  with open("../output/"+name+"/src/assets/"+getFormatedName(page.getPagename().lower())+".css","r+") as f:
-    lines = f.readlines()  
-    lines.insert(0, newcsscontent)
-    f.seek(0)   
-    f.writelines(lines)
+  cssfile="../output/"+name+"/src/assets/"+getFormatedName(page.getPagename().lower())+".css"
+  if not os.path.isfile(cssfile):
+    with open(cssfile,"w") as f:
+      f.write(newcsscontent)
+  else:
+    with open("../output/"+name+"/src/assets/"+getFormatedName(page.getPagename().lower())+".css","r+") as f:
+      lines = f.readlines()  
+      lines.insert(0, newcsscontent)
+      f.seek(0)   
+      f.writelines(lines)
 
 def generateComponentStyle(name,component):
   global font_imports
-  pattern = "[:;]"
-  idcomponent = re.sub(pattern,"",component.idComponent)
+  idcomponent = getElemId(component.idComponent)
 
   width = component.style.width
   height = component.style.height
@@ -212,7 +216,7 @@ def generateComponentStyle(name,component):
     with open(cssfile,"w") as f:
       f.write(newcsscontent)
   else:
-    with open("../output/"+name+"/src/assets/"+getFormatedName(component.componentName.lower())+".css","r+") as f:
+    with open(cssfile,"r+") as f:
       lines = f.readlines()  
       lines.insert(0, newcsscontent)
       f.seek(0)   
@@ -490,7 +494,6 @@ def generateShapeCSS(projectname,pagename,cssclass,type,elem):
     grid-row-start: """+  str(elem.style.gridrowStart)+""";
     grid-row-end: """+  str(elem.style.gridrowEnd)+""";
     background: """+  str(elem.style.background)+""";
-    width:  """+  str(elem.style.width) + """px;
     display: block;
     height: 1px;
     border: 0;
@@ -657,3 +660,12 @@ def getFormatedName(name):
     pattern = "[\s\.\-\/\\;#:]"
     name = re.sub(pattern,"",name)
     return name
+
+def getElemId(id):
+    elemid = id
+    if(str(id).startswith("I")):
+        ids = id.split(";")
+        elemid = str(ids[len(ids)-1])
+    pattern = "[:;]"
+    elemid = re.sub(pattern,"",elemid)
+    return elemid

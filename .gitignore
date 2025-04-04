@@ -3,3 +3,4 @@ tests/shapes.json
 !tests/.gitkeep 
 .env
 .vscode
+output/

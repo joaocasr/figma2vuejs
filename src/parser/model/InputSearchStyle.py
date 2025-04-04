@@ -10,6 +10,7 @@ class InputSearchStyle(object):
 		self.gridcolumnEnd = gridcolumnEnd
 		self.gridrowStart = gridrowStart
 		self.gridrowEnd = gridrowEnd
+		self.position = None
 		self.gridArea = None
 
 	def getbackgroundcolor(self):
@@ -65,6 +66,15 @@ class InputSearchStyle(object):
 		"""@ParamType gridrowEnd String
 		@ReturnType void"""
 		self.gridrowEnd = gridrowEnd
+
+	def setPosition(self, position):
+		"""@ParamType position String
+		@ReturnType void"""
+		self.position = position
+
+	def getPosition(self):
+		"""@ReturnType String"""
+		return self.position
 
 	def getgridArea(self):
 		return self.gridArea

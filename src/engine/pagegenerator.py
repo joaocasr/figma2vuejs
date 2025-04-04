@@ -202,7 +202,7 @@ def applytransformation(elem,projectname,page):
 
 def writeVue(name,page,content):
     global allhooks, components
-    componentsimports=""
+    componentsimports="\n"
     for comp in components[page.getPagename()]:
         componentsimports += "import "+getFormatedName(str(comp).capitalize())+" from '@/components/"+getFormatedName(str(comp).capitalize())+".vue';\n" 
     for auximports in auxiliarImports[page.getPagename()]:
@@ -210,9 +210,10 @@ def writeVue(name,page,content):
     cssimport = "@import '../assets/"+getFormatedName(page.getPagename().lower())+".css';"
     template = '<div class="grid-container">'+ content + '</div>'
     pagehooks=""
+    pagecomponents = "\n"
     allcomponents = (x.capitalize() for x in components[page.getPagename()])
     allcomponents = list(allcomponents)
-    pagecomponents="""\n    components:{\n        """+ ',\n        '.join(allcomponents) +"""\n    },"""
+    if(len(allcomponents)>0): pagecomponents="""\n    components:{\n        """+ ',\n        '.join(allcomponents) +"""\n    },"""
     for hook in allhooks[page.getPagename()]:
         if("methods" in hook): pagehooks += hook + ":{\n"
         if("mounted" in hook): pagehooks += hook + "(){\n"
@@ -236,9 +237,7 @@ def writeVue(name,page,content):
     vuepage = """<template>\n""" + processTemplate(template,page.getPagename()) + """
 </template>
 
-<script>
-"""+ componentsimports +"""
-export default {"""+ pagecomponents +"""
+<script>"""+ componentsimports +"""export default {"""+ pagecomponents +"""
     data(){
         return {
             """ + ',\n            '.join(str(key)+":"+str(value) for variables in page.getData() for key, value in variables.items()) + """    
@@ -260,22 +259,22 @@ def processTemplate(html_string,page):
     soup = BeautifulSoup(html_string, "html.parser")
     finalHtml = soup.prettify()
     for c in components[page]:
-        pattern = "<"+c.lower()+r"([\s]*.*?)"+">"+r"((\n|.)*?)"+r"<\/"+c.lower()+">"
-        processedTemplate = re.sub(pattern,"<"+c.capitalize()+ r'\1' +">"+"</"+c.capitalize()+">",finalHtml)
+        pattern = "<"+c.lower()+r" ([\s]*.*?)"+">"+r"((\n|.)*?)"+r"<\/"+c.lower()+">"
+        processedTemplate = re.sub(pattern,"<"+c.capitalize()+ r' \1' +">"+"</"+c.capitalize()+">",finalHtml)
         finalHtml = processedTemplate
     for c in componentAssets[page]:
         tag = c.split(" ")[1]
-        pattern = "<"+tag.lower()+r"([\s]*.*?)"+">"+r"((\n|.)*?)"+r"<\/"+tag.lower()+">"
-        processedTemplate = re.sub(pattern,"<"+tag+ r'\1' +">"+r'\2'+"</"+tag+">",finalHtml)
+        pattern = "<"+tag.lower()+r" ([\s]*.*?)"+">"+r"((\n|.)*?)"+r"<\/"+tag.lower()+">"
+        processedTemplate = re.sub(pattern,"<"+tag+ r' \1' +">"+r'\2'+"</"+tag+">",finalHtml)
         if(tag=="DatePicker"):
-            processedTemplate = re.sub('<DatePicker'+r"([\s]*.*?)"+'fluid="" showicon=""'+r'([\s]*.*?)'+'>',"<DatePicker"+r"\1 showIcon fluid \2>",processedTemplate)
+            processedTemplate = re.sub('<DatePicker'+r" ([\s]*.*?)"+'fluid="" showicon=""'+r'([\s]*.*?)'+'>',"<DatePicker"+r" \1 showIcon fluid \2>",processedTemplate)
         if(tag=="v-rating"):
             if(c.split(" ")[2]=="readonly"):
-                processedTemplate = re.sub('<v-rating'+r"([\s]*.*?)"+'half-increments="" hover="" readonly=""'+r'([\s]*.*?)'+'>',"<v-rating"+r"\1 half-increments hover readonly \2>",processedTemplate)
+                processedTemplate = re.sub('<v-rating'+r" ([\s]*.*?)"+'half-increments="" hover="" readonly=""'+r'([\s]*.*?)'+'>',"<v-rating"+r" \1 half-increments hover readonly \2>",processedTemplate)
         if(tag=="InputText"):
-            processedTemplate = re.sub('<InputText'+r"([\s]*.*?)"+'fluid=""'+r'([\s]*.*?)'+'>',"<InputText"+r"\1 fluid \2>",processedTemplate)
+            processedTemplate = re.sub('<InputText'+r" ([\s]*.*?)"+'fluid=""'+r'([\s]*.*?)'+'>',"<InputText"+r" \1 fluid \2>",processedTemplate)
         if(tag=="Form"):
-            processedTemplate = re.sub('<Form'+r"([\s]*.*?)"+':initialvalues'+r'([\s]*.*?)'+':validateonblur'+r'([\s]*.*?)'+'>',"<Form"+r"\1 :initialValues\2 :validateOnBlur\3>",processedTemplate)
+            processedTemplate = re.sub('<Form'+r" ([\s]*.*?)"+':initialvalues'+r'([\s]*.*?)'+':validateonblur'+r'([\s]*.*?)'+'>',"<Form"+r" \1 :initialValues\2 :validateOnBlur\3>",processedTemplate)
 
         finalHtml = processedTemplate
     return finalHtml

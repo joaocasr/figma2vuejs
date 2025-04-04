@@ -1,5 +1,5 @@
-from engine.stylegenerator import generatePageStyle, generateComponentStyle, generateElemCssProperties, generateShapeCSS, generateRatingCssProperties, generateMenuCssProperties
-from setup.vueprojectsetup import useRatingVuetifyPlugin,useMenuVuetifyPlugin
+from engine.stylegenerator import generatePageStyle, generateComponentStyle, generateElemCssProperties, generateShapeCSS, generateRatingCssProperties, generateMenuCssProperties, setComponentPositionCSS, generateInputSearchFilterCssProperties
+from setup.vueprojectsetup import useRatingVuetifyPlugin,useMenuVuetifyPlugin, useIconFieldPrimevuePlugin
 from engine.logicgenerator import handleBehaviour
 from parser.model.Mcomponent import Mcomponent
 from parser.model.Melement import Melement
@@ -20,12 +20,14 @@ allhooks = dict()
 allpagesInfo = {}
 componentAssets = dict()
 allrefs = {}
+nestedComponents = {}
 
 def buildcomponent(component,projectname,pagesInfo,refs):
-    global allhooks,allpagesInfo,allrefs
+    global allhooks,allpagesInfo,allrefs,nestedComponents
     name = component.componentName
     allhooks[name] = {}
     componentAssets[name] = []
+    nestedComponents[name] = set()
     allrefs = refs
     # build elements from the component  
     allpagesInfo = pagesInfo
@@ -60,7 +62,7 @@ def processChildren(data,projectname,name,idcomponent):
         return output
 
 def applytransformation(elem,projectname,pagename,idcomponent):
-    global allhooks, allpagesInfo, allrefs
+    global allhooks, allpagesInfo, allrefs, nestedComponents
     cssclass = ""
     if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.idElement)
     else: cssclass = getElemId(elem.idComponent)
@@ -121,13 +123,37 @@ def applytransformation(elem,projectname,pagename,idcomponent):
         componentAssets[pagename].extend([" v-menu"," v-list"])
         return menu
 
+    if(isinstance(elem, Mcomponent) and elem.getNameComponent()=="InputSearch"):
+        useIconFieldPrimevuePlugin(projectname)
+        cssclass= "ssearchinputfilter" + cssclass
+        vmodel = 'v-model="'+str(elem.vmodel)+'"'
+        placeholder = 'placeholder="'+str(elem.placeholder)+'"'
+        generateInputSearchFilterCssProperties(projectname,pagename,cssclass,elem)
+        componentAssets[pagename].extend([" IconField"," InputIcon"," InputText"])
+        return (f'<IconField class="{cssclass}"><InputIcon class="pi pi-search"/><InputText {vmodel} {placeholder} />','</IconField>')
+
+    if(isinstance(elem, Mcomponent)):
+        componentName = getFormatedName(elem.componentName.capitalize())
+        classname = ' class="'+"grid-item-"+getElemId(elem.idComponent)+' component'+ getElemId(elem.idComponent)     
+        if(elem.style.getPosition()!=None):
+            classname += " pos"+componentName.lower()
+            setComponentPositionCSS(projectname,pagename,"pos"+componentName.lower(),elem)
+        nestedComponents.setdefault(pagename, {}).add(getFormatedName(elem.componentName.lower()))
+        return ("<"+componentName+f"{ref}{classname}"+'" '+ ' '.join(d for d in directives) + ">","</"+componentName+">")
+
     return ("","")
 
 def writeVueComponent(name,project_name,content,component,pagesInfo):
     global allhooks 
-    idcomponent = getElemId(component.idComponent)
+    componentsimports="\n"
+    for comp in nestedComponents[name]:
+        componentsimports += "import "+getFormatedName(str(comp).capitalize())+" from '@/components/"+getFormatedName(str(comp).capitalize())+".vue';\n" 
     cssimport = "@import '../assets/"+getFormatedName(name.lower())+".css';"
     pagehooks=""
+    pagecomponents = ""
+    allcomponents = (x.capitalize() for x in nestedComponents[name])
+    allcomponents = list(allcomponents)
+    if(len(allcomponents)>0): pagecomponents="""\n    components:{\n        """+ ',\n        '.join(allcomponents) +"""\n    },"""
     for hook in allhooks[name]:
         pagehooks = hook + ":{\n"
         for chook in allhooks[name][hook]:
@@ -139,8 +165,7 @@ def writeVueComponent(name,project_name,content,component,pagesInfo):
     componentpage = """<template>\n""" + processTemplate(template,name) + """
 </template>
 
-<script>
-export default {
+<script>"""+ componentsimports +"""export default {"""+ pagecomponents +"""
     data(){
         return {
         """ + ',\n            '.join(str(key)+":"+str(value) for variables in component.getData() for key, value in variables.items()) + """   
@@ -159,15 +184,19 @@ export default {
 def processTemplate(html_string,name):
     soup = BeautifulSoup(html_string, "html.parser")
     finalHtml = soup.prettify()
+    for c in nestedComponents[name]:
+        pattern = "<"+c.lower()+r" ([\s]*.*?)"+">"+r"((\n|.)*?)"+r"<\/"+c.lower()+">"
+        processedTemplate = re.sub(pattern,"<"+c.capitalize()+ r' \1' +">"+"</"+c.capitalize()+">",finalHtml)
+        finalHtml = processedTemplate
     for c in componentAssets[name]:
         tag = c.split(" ")[1]
-        pattern = "<"+tag.lower()+r"([\s]*.*?)"+">"+r"((\n|.)*?)"+r"<\/"+tag.lower()+">"
-        processedTemplate = re.sub(pattern,"<"+tag+ r'\1' +">"+r'\2'+"</"+tag+">",finalHtml)
+        pattern = "<"+tag.lower()+r" ([\s]*.*?)"+">"+r"((\n|.)*?)"+r"<\/"+tag.lower()+">"
+        processedTemplate = re.sub(pattern,"<"+tag+ r' \1' +">"+r'\2'+"</"+tag+">",finalHtml)
         if(tag=="DatePicker"):
-            processedTemplate = re.sub('<DatePicker'+r"([\s]*.*?)"+'fluid="" showicon=""'+r'([\s]*.*?)'+'>',"<DatePicker"+r"\1 showIcon fluid \2>",processedTemplate)
+            processedTemplate = re.sub('<DatePicker'+r" ([\s]*.*?)"+'fluid="" showicon=""'+r'([\s]*.*?)'+'>',"<DatePicker"+r" \1 showIcon fluid \2>",processedTemplate)
         if(tag=="v-rating"):
             if(c.split(" ")[2]=="readonly"):
-                processedTemplate = re.sub('<v-rating'+r"([\s]*.*?)"+'half-increments="" hover="" readonly=""'+r'([\s]*.*?)'+'>',"<v-rating"+r"\1 half-increments hover readonly \2>",processedTemplate)
+                processedTemplate = re.sub('<v-rating'+r" ([\s]*.*?)"+'half-increments="" hover="" readonly=""'+r'([\s]*.*?)'+'>',"<v-rating"+r" \1 half-increments hover readonly \2>",processedTemplate)
         finalHtml = processedTemplate
     return finalHtml
 
