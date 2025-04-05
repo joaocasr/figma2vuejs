@@ -11,8 +11,9 @@ from parser.model.Dropdown import Dropdown
 from parser.model.ShapeElement import ShapeElement
 from parser.model.ContainerElement import ContainerElement
 from parser.model.ImageElement import ImageElement
-from utils.processing import getFormatedName,getElemId
+from utils.processing import getFormatedName,getElemId,doesImageExist
 
+import os
 from bs4 import BeautifulSoup
 import re
 import itertools
@@ -168,9 +169,11 @@ def applytransformation(elem,projectname,page):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         if(elem.tag==""):
             elem.tag = "img"
+        doesImageExist(elem.getimgpath(),elem,projectname)
         return ("<"+elem.tag+ id + ref +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getimgpath() + '"' + ' '.join(d for d in directives) , "/>")
     if(isinstance(elem, VectorElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
+        doesImageExist(elem.getsvgpath(),elem,projectname)
         return ("<"+elem.tag+ id + ref +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getsvgpath() + '"' + ' '.join(d for d in directives) , "/>")
     if(isinstance(elem, VideoElement)):
         cssclass= "svideo" + cssclass

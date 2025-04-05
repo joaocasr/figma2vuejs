@@ -387,7 +387,11 @@ def generateInputSearchFilterCssProperties(projectname,pagename,cssclass,elem):
 }
 
 ."""+ str(cssclass) + """ .p-inputicon{
-   margin-top:calc(-1.4 * (var(--p-icon-size)));
+   margin-top:calc(-0.6 * (var(--p-icon-size)));
+}
+
+.p-iconfield .p-inputicon:first-child {
+  inset-inline-start: 4em;
 }
   """
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
@@ -584,7 +588,7 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     if(elem.style.getBorderBottomLeftRadius() != None and elem.style.getBorderBottomLeftRadius()!="0.0"): csskeyvalues+=f"border-bottom-left-radius: {elem.style.getBorderBottomLeftRadius()}px;{newline}"
     if(elem.style.getBorderBottomRightRadius() != None and elem.style.getBorderBottomRightRadius()!="0.0"): csskeyvalues+=f"border-bottom-right-radius: {elem.style.getBorderBottomRightRadius()}px;{newline}"
 
-    if(elem.style.gridcolumnEnd-elem.style.gridcolumnStart>60 or elem.style.gridrowEnd-elem.style.gridrowStart>60): csskeyvalues +=f"width: 100%;{newline}height: 100%;{newline}display: block;{newline}object-fit: cover;{newline}"
+    #if(elem.style.gridcolumnEnd-elem.style.gridcolumnStart>60 or elem.style.gridrowEnd-elem.style.gridrowStart>60): csskeyvalues +=f"width: 100%;{newline}height: 100%;{newline}display: block;{newline}object-fit: cover;{newline}"
 
     css = "."+cssclass+" {\n\t"+ csskeyvalues[:-1] +"}\n\n"
 
@@ -594,7 +598,7 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     if elem.style.gridrowStart != None: csskeyvalues+=f"grid-row-start: {str(elem.style.gridrowStart)};{newline}"
     if elem.style.gridrowEnd != None: csskeyvalues+=f"grid-row-end: {str(elem.style.gridrowEnd)};{newline}"
     if elem.style.boxShadow != None: csskeyvalues+=f"box-shadow: {elem.style.boxShadow};{newline}"
-    if(elem.style.gridcolumnEnd-elem.style.gridcolumnStart>60 or elem.style.gridrowEnd-elem.style.gridrowStart>60): csskeyvalues +=f"width: 100%;{newline}height: 100%;{newline}display: block;{newline}object-fit: cover;{newline}"
+    #if(elem.style.gridcolumnEnd-elem.style.gridcolumnStart>60 or elem.style.gridrowEnd-elem.style.gridrowStart>60): csskeyvalues +=f"width: 100%;{newline}height: 100%;{newline}display: block;{newline}object-fit: cover;{newline}"
 
     css = "."+cssclass+" {\n\t"+"min-width: 100%;\n\tmin-height: 100%;"+ csskeyvalues[:-1] +"}\n\n"
   

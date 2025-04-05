@@ -2,7 +2,7 @@
 os ficheiros na pasta teste irão simular por enquanto os dados obtidos da api
 para nesta fase de development e debug nao atingir o limite da chamadas com o token obtido do figma
 """
-import math,json,re,os,time,requests,wget
+import json,re,os,requests,wget
 from dotenv import load_dotenv, find_dotenv
 from parser.model.Mpage import Mpage
 from parser.model.Melement import Melement
@@ -776,7 +776,7 @@ def extractImages(projectname):
         if(not os.path.isfile(destination)):
             filteredImages = list(filter(lambda x: x["name"]==mimage["name"] and x["id"]==mimage["id"],allimages))
             resultingImages.extend(filteredImages)
-
+    print("Resulting Images:"+str(len(resultingImages)))
     if(len(resultingImages)>0):
         for it in range(0,len(resultingImages),50):
             if(batchi<len(resultingImages)):
@@ -788,10 +788,11 @@ def extractImages(projectname):
                 images = response.json()
                 print(images)
                 if("err" in images and images["err"]==None):
-                    for mimage in resultingImages:
-                        imgurl = images["images"][str(mimage["id"])]
-                        imgpath = re.sub(r"[\s,@\.-]","",mimage["name"])
-                        if(imgurl!=None):
+                    for mimage in l:
+                        if(str(mimage["id"]) in images["images"] and images["images"][str(mimage["id"])]!=None):
+                            imgurl = images["images"][str(mimage["id"])]
+                            imgpath = re.sub(r"[\s,@\.-]","",mimage["name"])
+
                             destination = '../output/'+projectname+"/public/"+getFormatedName(imgpath)+getElemId(mimage["id"])+".png"
                             print("\nDownloading image "+destination+"...")
                             print(imgurl,destination)
@@ -823,7 +824,7 @@ def extractSVGs(projectname):
         if(not os.path.isfile(destination)):
             filteredSvgs = list(filter(lambda x: x["name"]==msvg["name"] and x["id"]==msvg["id"],allsvgs))
             resultingSvgs.extend(filteredSvgs)
-    
+    print("Resulting Svgs:"+str(len(resultingSvgs)))
     if(len(resultingSvgs)>0):
         for it in range(0,len(resultingSvgs),50):
             if(batchi<len(resultingSvgs)):
@@ -836,11 +837,11 @@ def extractSVGs(projectname):
                 svgs = response.json()
                 print(svgs)
                 if("err" in svgs and svgs["err"]==None):
-                    for msvg in resultingSvgs:
-                        svgurl = svgs["images"][str(msvg["id"])]
-                        svgpath = re.sub(r"[\s,@\.-]","",msvg["name"])
-
-                        if(svgurl!=None):
+                    for msvg in l:
+                        if(str(msvg["id"]) in svgs["images"] and svgs["images"][str(msvg["id"])]!=None):
+                            svgurl = svgs["images"][str(msvg["id"])]
+                            svgpath = re.sub(r"[\s,@\.-]","",msvg["name"])
+                            
                             destination = '../output/'+projectname+"/public/"+getFormatedName(svgpath)+getElemId(msvg["id"])+".svg"
                             print("\nDownloading image "+destination+"...")
                             print(svgurl,destination)
@@ -921,3 +922,9 @@ def resetHoverProperties(el1,el2):
     el2.setinitialOpacity(1)
     el1.style.setOpacity(1)
     el2.style.setOpacity(1)
+    
+def isAllImages(elem):
+    allVectors = True
+    for ch in elem["children"]:
+        if(ch["type"]!="VECTOR" or ch["type"]!="IMAGE"): allVectors=False
+    return allVectors

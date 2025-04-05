@@ -11,7 +11,7 @@ from parser.model.ShapeElement import ShapeElement
 from parser.model.Rating import Rating
 from parser.model.RatingStyle import RatingStyle
 from engine.assetshelper import getVuetifyMenu
-from utils.processing import getFormatedName,getElemId
+from utils.processing import getFormatedName,getElemId,doesImageExist
 
 from bs4 import BeautifulSoup
 import itertools
@@ -98,10 +98,12 @@ def applytransformation(elem,projectname,pagename,idcomponent):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         if(elem.tag==""):
             elem.tag = "img"
+        doesImageExist(elem.getimgpath(),elem,projectname)
         return ("<"+elem.tag +f" {ref}class="+'"grid-item-'+ idcomponent + ' container'+ cssclass + '" '+ 'src="' + elem.getimgpath() + '"' + ' '.join(d for d in directives) , "/>")
     
     if(isinstance(elem, VectorElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
+        doesImageExist(elem.getsvgpath(),elem,projectname)
         return ("<"+elem.tag +f" {ref}class="+'"grid-item-'+idcomponent+' container'+ cssclass + '" '+ 'src="' + elem.getsvgpath() + '"' + ' '.join(d for d in directives) , "/>")
 
     if(isinstance(elem, Mcomponent) and (elem.getNameComponent()=="ReadOnlyRating" or elem.getNameComponent()=="InteractiveRating")):
