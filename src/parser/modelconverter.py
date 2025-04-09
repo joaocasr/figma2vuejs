@@ -25,6 +25,7 @@ from parser.model.NavigationAction import NavigationAction
 from parser.model.CloseAction import CloseAction
 from parser.model.OverlayAction import OverlayAction
 from parser.model.ScrollAction import ScrollAction
+from parser.model.ChangeAction import ChangeAction
 from engine.stylegenerator import calculate_gradientDegree
 from parser.assetsconverter import convertToDropdown, convertToSearchInput, convertToDatePicker, convertToSlider, convertToRating, convertToPaginator, convertToForm, convertToCheckbox, convertToMenu
 from utils.processing import getFormatedName,getElemId
@@ -34,6 +35,7 @@ allimages = []
 allsvgs = []
 refs = {}
 componentVariables = {}
+variants = {}
 # key: component_id ; value: MComponent
 allcomponents = {}
 pageComponents = {}
@@ -49,7 +51,7 @@ batchi=0
 batchf=50
 
 def getFigmaData(prototype):
-    global allpages, allcomponents,pageComponents, figmadata, refs, overlayInsideInstances, pageOverlays
+    global allpages, allcomponents,pageComponents, figmadata, refs, overlayInsideInstances, pageOverlays, variants
     prototype1 = "../tests/prototype"+str(prototype)+".json"
 
     with open(prototype1,"r") as file:
@@ -70,11 +72,15 @@ def getFigmaData(prototype):
                     if(i[0]==c.getIdComponent()):
                         c.addChildren(i[1])
                     manipulateComponentDom(c.children,i)
+    # insert variants
+    #for page in variants:
+    #    if(page in variants and len(variants)>0):
+    #        insertVariantComponents(allpages[page].elements,variants[page])
     # insert overlay frame elements on page
     for p in pageOverlays:
         for el in pageOverlays[p]:
             allpages[p].addElement(el)
-    #"""
+
     # assign the components for each page
     for p in pageComponents:
         if(p in allpages):
@@ -115,7 +121,7 @@ def iterate_nestedElements(data):
     #iterate first for all the components nodes (except primevue components)
     for melement in data["document"]["children"][0]["children"]:
         elements = []
-        if(melement["type"]=="COMPONENT" and "children" in melement and melement["name"] not in assetComponents):
+        if((melement["type"]=="COMPONENT" or isComponentVariant(melement)==True) and "children" in melement and melement["name"] not in assetComponents):
             pageWidth = melement["absoluteRenderBounds"]["width"]*1.2
             for element in melement["children"]:
                 component_width = melement["absoluteRenderBounds"]["width"]
@@ -152,7 +158,7 @@ def iterate_nestedElements(data):
 
 
 def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstlevelelem,parent_data=None):
-    global allcomponents,pageComponents,allpages,pageWidth, figmadata, allimages, allsvgs, refs, overlayInsideInstances, pageOverlays
+    global allcomponents,pageComponents,allpages,pageWidth, figmadata, allimages, allsvgs, refs, overlayInsideInstances, pageOverlays, variants
     children = []    
     if(data["absoluteRenderBounds"]!=None):
         elementwidth = data["absoluteRenderBounds"]["width"]
@@ -196,6 +202,22 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
     scrollBehaviour = None
 
     melement = None
+    if(data["type"]=="COMPONENT"):
+        elements = []
+        for element in data["children"]:
+            component_width = data["absoluteRenderBounds"]["width"]
+            component_height = data["absoluteRenderBounds"]["height"]
+            componentX = data["absoluteRenderBounds"]["x"]
+            componentY = data["absoluteRenderBounds"]["y"]
+                
+            p = processElement(data["name"],element["name"],element,component_width,component_height,componentX,componentY,data)
+            if(p!=None): elements.append(p)
+
+        tag = getElementTag(data)
+        style = setComponentStyle(data)
+        allcomponents[data["id"]] = Mcomponent(data["id"],data["name"],tag,"",elements)
+        allcomponents[data["id"]].setComponentStyle(style)
+
     # handling assets from components created
     if(data["name"]=="Dropdown" and data["type"]=="INSTANCE"):
         componentsetId = ""
@@ -583,6 +605,20 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
 
                     overlayAction = OverlayAction(action["destinationId"])
                     interactionelement.addAction(overlayAction)
+            if(action!=None and action["type"]=="NODE" and action["navigation"]=="CHANGE_TO"):
+                if(action["destinationId"] in allcomponents):
+                    
+                    compstyle = allcomponents[action["destinationId"]].getComponentStyle()
+                    compstyle.setGridcolumnStart(nr_columnstart)
+                    compstyle.setGridcolumnEnd(nr_columnend)
+                    compstyle.setGridrowStart(nr_rowstart)
+                    compstyle.setGridrowEnd(nr_rowend)
+                    allcomponents[action["destinationId"]].setComponentStyle(compstyle)
+                    changeAction = ChangeAction(action["destinationId"])
+                    interactionelement.addAction(changeAction)
+                    if(firstlevelelem!=None): variants.setdefault(pagename, []).append((firstlevelelem["id"],allcomponents[action["destinationId"]]))
+                    elif(parent_data!=None): variants.setdefault(pagename, []).append((parent_data["id"],allcomponents[action["destinationId"]]))
+
             if(action!=None and action["type"]=="NODE" and action["navigation"]=="SCROLL_TO"):
                 refs.setdefault(pagename, []).append(getElemId(action["destinationId"]))
                 scrollAction = ScrollAction(action["destinationId"])
@@ -922,7 +958,30 @@ def resetHoverProperties(el1,el2):
     el2.setinitialOpacity(1)
     el1.style.setOpacity(1)
     el2.style.setOpacity(1)
+
+def insertVariantComponents(elements,variants):
+    for variant in variants:
+        for el in elements:
+            if(isinstance(el,Melement) and el.getIdElement()==variant[0]):
+                el.addChildren(variant[1])
+            if(len(el.children)>0):
+                insertVariantComponents(el.children,variants)
     
+def getVariantElement(id,data):
+    if(data["id"]==id):
+        return data
+    if("children" in data):
+        for c in data["children"]:
+            elem = getVariantElement(id, c)
+            if(elem): return elem
+
+def isComponentVariant(c):
+    r = False
+    if((c["type"]=="COMPONENT_SET" or c["type"]=="COMPONENT") and 
+       "componentPropertyDefinitions" in c):
+        r = True
+    return r
+
 def isAllImages(elem):
     allVectors = True
     for ch in elem["children"]:

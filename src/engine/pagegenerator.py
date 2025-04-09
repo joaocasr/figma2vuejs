@@ -1,6 +1,6 @@
 from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties, generatePaginatorCssProperties, generateFormCssProperties, generateCheckboxCssProperties, generateVideoCssProperties, generateMenuCssProperties
 from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin, useRatingVuetifyPlugin, usePaginatorVuetifyPlugin, useFormPrimeVuePlugin, useCheckboxPrimeVuePlugin, useMenuVuetifyPlugin
-from engine.logicgenerator import handleBehaviour,getpopulateDropdownFunction
+from engine.logicgenerator import handleBehaviour
 from engine.assetshelper import getPrimeVueForm, getPrimeVueCheckbox, getVuetifyMenu
 from parser.model.Mcomponent import Mcomponent
 from parser.model.Melement import Melement
@@ -313,6 +313,12 @@ def getValue(value):
         realvalue = value.split(" span ")[1] 
         return int(realvalue)
 
+def flatTree(elementos):
+    for node in elementos:
+        yield node
+        if node.children:
+            yield from flatTree(node.children)
+
 def anyShapes(elementos):
-    allShapes = list(filter(lambda x: (isinstance(x,ShapeElement)),list(itertools.chain(*([x] + x.children for x in elementos)))))
+    allShapes = list(filter(lambda x: (isinstance(x,ShapeElement)),list(flatTree(elementos))))
     return len(allShapes) > 0

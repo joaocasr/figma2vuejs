@@ -206,20 +206,33 @@ def convertToForm(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name
     inputbackgroundcolor=""
     btnbackgroundcolor=""
     widthInput = ""
+    formname=data["name"]
+    placeholder = ""
+    label={"for":"","text":""}
     data["children"].reverse()
     for i in data["children"]:
         if(i["name"]!="submitbtn"):
-            inputs.append({"name":getFormatedName(i["name"]),"placeholder":i["children"][0]["characters"]})
-            color = i["background"][0]["color"]
-            inputbackgroundcolor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
-            widthInput = i["absoluteBoundingBox"]["width"]
+            for j in i["children"]:
+                name = ""
+                if("label" not in j["name"]):
+                    name = j["name"]
+                    placeholder = j["children"][0]["characters"]
+                    color = j["background"][0]["color"]
+                    inputbackgroundcolor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
+                    widthInput = j["absoluteBoundingBox"]["width"]
+                else:
+                    name = j["name"]
+                    text = j["characters"]
+                    label = {"for":name,"text":text}      
+                    
+            inputs.append({"name":getFormatedName(name),"placeholder":placeholder,"label":label})
         else:
             buttontxt = i["children"][0]["characters"]
             color = i["background"][0]["color"]
             btnbackgroundcolor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
 
     style = FormStyle(inputbackgroundcolor,btnbackgroundcolor,widthInput,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
-    form =  Form(id,"",name,"COMPONENT_ASSET",inputs,buttontxt,style)
+    form =  Form(id,"",formname,"COMPONENT_ASSET",inputs,buttontxt,style)
     return form
 
 def convertToCheckbox(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name):

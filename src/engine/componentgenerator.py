@@ -36,10 +36,7 @@ def buildcomponent(component,projectname,pagesInfo,refs):
     idcomponent = getElemId(component.idComponent)
 
     
-    #(flattenElements,allShapes) = flattenAndShapes(component)
-    onstack = []
-    filterOverlapingElements(component,onstack)
-    handleClipPathOverlaping(component,onstack)
+    if(anyShapes(component.children)==True): handleClipPathOverlaping(component.children)
 
     for element in component.children:
         output += processChildren(element,projectname,name,idcomponent)
@@ -226,25 +223,36 @@ def filterOverlapingElements(component,onstack):
 def getShapes(elementos):
     return list(filter(lambda x: (isinstance(x,ShapeElement)),elementos))
 
-def handleClipPathOverlaping(component,onstack):
-    component.children.reverse()
-    toremove = set()
-    for i in component.children:
-        for s in onstack:
-            if(isinstance(i,Melement) and isinstance(s[0],Melement) and i.idElement==s[0].idElement):
-                toremove.add(i) 
-            if(isinstance(i,Melement) and isinstance(s[1],ShapeElement) and i.idElement==s[1].idElement):
-                i.style.setDisplay("grid")
-                i.children.append(s[0])
-        for c in i.children:
-            handleClipPathOverlaping(c,onstack)
-    component.children = [child for child in component.children if child not in toremove]
-    component.children.reverse()
+def handleClipPathOverlaping(elementos):
+    repeatedElements = []
+    for i, elem2 in enumerate(elementos):
+        for j, elem1 in enumerate(elementos):
+            if i != j:
+                if (getValue(elem1.style.gridcolumnStart) >= getValue(elem2.style.gridcolumnStart) and
+                    getValue(elem1.style.gridcolumnEnd) <= getValue(elem2.style.gridcolumnEnd) and
+                    getValue(elem1.style.gridrowStart) >= getValue(elem2.style.gridrowStart) and
+                    getValue(elem1.style.gridrowEnd) <= getValue(elem2.style.gridrowEnd) and
+                    isinstance(elem2, ShapeElement)):
+                    elem2.children.append(elem1)
+                    elem2.style.setDisplay("grid")
+                    repeatedElements.append(j)
+
+    for index in sorted(set(repeatedElements), reverse=True):
+        del elementos[index]
+
+    for c in elementos:
+        if(len(c.children)>0):
+            handleClipPathOverlaping(c.children)
     
-def flattenAndShapes(component):    
-    flattenElements = list(itertools.chain(*([x] + x.children for x in component.children)))
-    allShapes = list(filter(lambda x: (isinstance(x,ShapeElement)),flattenElements))
-    return (flattenElements,allShapes)
+def flatTree(elementos):
+    for node in elementos:
+        yield node
+        if node.children:
+            yield from flatTree(node.children)
+
+def anyShapes(elementos):
+    allShapes = list(filter(lambda x: (isinstance(x,ShapeElement)),list(flatTree(elementos))))
+    return len(allShapes) > 0
 
 def getValue(value):
     if(isinstance(value, int)): return value

@@ -6,7 +6,9 @@ def getPrimeVueForm(elem,formid,inputsinfo,buttontext):
     <Form v-slot="$form{formid}" :initialValues="initialValues{formid}" :resolver="resolver{formid}" :validateOnBlur="true" @submit="onFormSubmit{formid}">
     '''
     for minput in inputsinfo:
-        template+=f'''<div class="inputform{formid}">
+      if("label" in minput):
+        template+=f'<label for="{minput["label"]["for"]}">{minput["label"]["text"]}</label><br>'
+      template+=f'''<div class="inputform{formid}">
                 <InputText name="{minput["name"]}" type="text" placeholder="{minput["placeholder"]}" fluid />
                 '''+f'''<Message v-if="'''+f'$form{formid}.{minput["name"]}?.invalid" severity="error" size="small" variant="simple">'+'{{'+f'$form{formid}.{minput["name"]}?.error.message'+'}}'+"""</Message> 
             </div>
