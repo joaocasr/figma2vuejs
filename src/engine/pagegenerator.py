@@ -1,4 +1,4 @@
-from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties, generatePaginatorCssProperties, generateFormCssProperties, generateCheckboxCssProperties, generateVideoCssProperties, generateMenuCssProperties
+from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties, generatePaginatorCssProperties, generateFormCssProperties, generateCheckboxCssProperties, generateVideoCssProperties, generateMenuCssProperties, generateScrollCSS
 from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin, useRatingVuetifyPlugin, usePaginatorVuetifyPlugin, useFormPrimeVuePlugin, useCheckboxPrimeVuePlugin, useMenuVuetifyPlugin
 from engine.logicgenerator import handleBehaviour
 from engine.assetshelper import getPrimeVueForm, getPrimeVueCheckbox, getVuetifyMenu
@@ -160,11 +160,16 @@ def applytransformation(elem,projectname,page):
         txt = re.sub(r"\n", "<br/>",elem.text)
         return ("<"+ elem.tag + id + ref +" class="+'"grid-item text'+ cssclass  + '" '+ ' '.join(d for d in directives) +">"+txt, "</"+elem.tag+">")
     if(isinstance(elem, ContainerElement)):
-
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         if(elem.tag==""):
             elem.tag = "div"
-        return ("<"+elem.tag + id + ref +" class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) +">", "</"+elem.tag+">")
+        bgtag = "<"+elem.tag + id + ref +" class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) +">"
+        edtag = "</"+elem.tag+">"
+        if(elem.style.getOverflowDirection()!=None):
+            generateScrollCSS(projectname,pagename, cssclass,elem)
+            bgtag = f''' <div class="scroll-wrapper{cssclass}">'''+bgtag
+            edtag += "</div>"
+        return (bgtag,edtag)
     if(isinstance(elem, ImageElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         if(elem.tag==""):
@@ -307,6 +312,7 @@ def handleClipPathOverlaping(elementos):
             handleClipPathOverlaping(c.children)
 
 def getValue(value):
+    if(value==None): return 0
     if(isinstance(value, int)): return value
     if(value.isnumeric()): return int(value)
     if(" span " in str(value)):

@@ -36,6 +36,7 @@ allsvgs = []
 refs = {}
 componentVariables = {}
 variants = {}
+scrollElements = {}
 # key: component_id ; value: MComponent
 allcomponents = {}
 pageComponents = {}
@@ -51,7 +52,7 @@ batchi=0
 batchf=50
 
 def getFigmaData(prototype):
-    global allpages, allcomponents,pageComponents, figmadata, refs, overlayInsideInstances, pageOverlays, variants
+    global allpages, allcomponents,pageComponents, figmadata, refs, overlayInsideInstances, pageOverlays, variants, scrollElements
     prototype1 = "../tests/prototype"+str(prototype)+".json"
 
     with open(prototype1,"r") as file:
@@ -86,6 +87,11 @@ def getFigmaData(prototype):
         if(p in allpages):
             allpages[p].components = pageComponents[p]
 
+    # update inner scroll elements
+    for page in scrollElements:
+        for el in scrollElements[page]:
+            updateInnerChildren(allpages[page].elements,el)
+    
     orphanComponents = []
     for id in allcomponents:
         l = []
@@ -158,7 +164,7 @@ def iterate_nestedElements(data):
 
 
 def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstlevelelem,parent_data=None):
-    global allcomponents,pageComponents,allpages,pageWidth, figmadata, allimages, allsvgs, refs, overlayInsideInstances, pageOverlays, variants
+    global allcomponents,pageComponents,allpages,pageWidth,figmadata,allimages,allsvgs,refs,overlayInsideInstances,pageOverlays,variants,scrollElements
     children = []    
     if(data["absoluteRenderBounds"]!=None):
         elementwidth = data["absoluteRenderBounds"]["width"]
@@ -505,6 +511,8 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         
         if(rgba!=None): style.setBackgroundColor("rgba("+','.join(str(val) for val in rgba)+")")
         if(lineargradient!=None): style.setBackground(lineargradient)
+        if("overflowDirection" in data and data["overflowDirection"]=="HORIZONTAL_SCROLLING"): style.setOverflowDirection("HORIZONTAL")
+        if("overflowDirection" in data and data["overflowDirection"]=="VERTICAL_SCROLLING"): style.setOverflowDirection("VERTICAL")
 
         style.setX(xielem)
         style.setY(yielem)
@@ -514,6 +522,11 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         style.setGridcolumnEnd(nr_columnend)
         style.setGridrowStart(nr_rowstart)
         style.setGridrowEnd(nr_rowend)
+
+        if("overflowDirection" in data):
+            style.setHeight(elementheight)
+            style.setDisplay("flex")
+            scrollElements.setdefault(pagename,[]).append(data["id"])
         if(data["scrollBehavior"]=="FIXED"): scrollBehaviour = "sticky"
         style.setPosition(scrollBehaviour)
 
@@ -637,7 +650,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
     # Iterates for all nested children of each element
     if("children" in data):
         if(data["type"]=="FRAME" or data["type"]=="GROUP"):
-            style.setDisplay("grid")
+            if(style.getDisplay()!="flex"): style.setDisplay("grid")
             style.setGridTemplateColumns("repeat(64,1fr)")
             style.setGridTemplateRows("repeat(64,1fr)")
         for element in data["children"]:
@@ -987,3 +1000,17 @@ def isAllImages(elem):
     for ch in elem["children"]:
         if(ch["type"]!="VECTOR" or ch["type"]!="IMAGE"): allVectors=False
     return allVectors
+
+def updateInnerChildren(elements,el):
+    for element in elements:
+        if(isinstance(element,ContainerElement) and element.getIdElement()==el):
+            for innerchildren in element.children:
+                innerchildren.style.setGridcolumnEnd(None)
+                innerchildren.style.setGridcolumnStart(None)
+                innerchildren.style.setGridrowStart(None)
+                innerchildren.style.setGridrowEnd(None)
+                innerchildren.style.setMinHeight(innerchildren.style.getHeight())
+                innerchildren.style.setMinWidth(innerchildren.style.getWidth())
+                innerchildren.style.setMargin("1em")
+        if(len(element.children)>0): updateInnerChildren(element.children,el)
+        

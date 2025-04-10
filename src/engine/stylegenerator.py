@@ -468,6 +468,52 @@ def generateDatePickerCssProperties(projectname,pagename,cssclass,elem):
   with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
     f.write(css)
 
+def generateScrollCSS(projectname,pagename,cssclass,elem):
+  if(elem.style.getOverflowDirection()=="HORIZONTAL"):
+    css=""".scroll-wrapper"""+ str(cssclass) +""" {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    cursor: grab;
+    user-select: none;
+    width: """+  str(elem.style.width) +"""px;
+    height: """+  str(elem.style.height) +"""px;
+    grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
+    grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
+    grid-row-start: """+  str(elem.style.gridrowStart)+""";
+    grid-row-end: """+  str(elem.style.gridrowEnd)+""";
+  }
+
+  .scroll-wrapper"""+ str(cssclass) +""".active {
+    cursor: grabbing;
+  }
+"""
+  if(elem.style.getOverflowDirection()=="VERTICAL"):
+    css=""".scroll-wrapper"""+ str(cssclass) +""" {
+    overflow-x: hidden;
+    overflow-y: auto;
+    white-space: nowrap;
+    cursor: grab;
+    user-select: none;
+    width: """+  str(elem.style.width) +"""px;
+    height: """+  str(elem.style.height) +"""px;
+    grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
+    grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
+    grid-row-start: """+  str(elem.style.gridrowStart)+""";
+    grid-row-end: """+  str(elem.style.gridrowEnd)+""";
+  }
+
+  .scroll-wrapper"""+ str(cssclass) +""".active {
+    cursor: grabbing;
+  }
+"""
+  cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
+  mode = "w"
+  if os.path.isfile(cssfile):
+    mode = "a"
+  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
+    f.write(css)
+
 def generateShapeCSS(projectname,pagename,cssclass,type,elem):
   clippath=""
   if(type=="STAR"):
@@ -606,10 +652,13 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     css = "."+cssclass+" {\n\t"+"min-width: 100%;\n\tmin-height: 100%;"+ csskeyvalues[:-1] +"}\n\n"
   
   if isinstance(elem,ContainerElement): 
-
+    if(elem.style.gridrowStart==None and elem.style.gridrowEnd==None and elem.style.getHeight()!=None):
+      csskeyvalues+=f"height: {elem.style.getHeight()}px;{newline}"
+  
     if elem.style.backgroundColor != None: csskeyvalues+=f"background-color: {elem.style.backgroundColor};{newline}"
     if elem.style.background != None: csskeyvalues+=f"background: {elem.style.background};{newline}"
     if elem.style.boxShadow != None: csskeyvalues+=f"box-shadow: {elem.style.boxShadow};{newline}"
+    if elem.style.margin != None: csskeyvalues+=f"margin: {elem.style.margin};{newline}"
     if elem.style.borderStyle != None: csskeyvalues+=f"border: {elem.style.borderStyle};{newline}"
     if elem.style.borderRadius != None: csskeyvalues+=f"border-radius: {elem.style.borderRadius}px;{newline}"
     if elem.style.gridcolumnStart != None: csskeyvalues+=f"grid-column-start: {str(elem.style.gridcolumnStart)};{newline}"
@@ -620,6 +669,8 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     if(elem.style.getBorderTopRightRadius() != None and elem.style.getBorderTopRightRadius()!="0.0"): csskeyvalues+=f"border-top-right-radius: {elem.style.getBorderTopRightRadius()}px;{newline}"
     if(elem.style.getBorderBottomLeftRadius() != None and elem.style.getBorderBottomLeftRadius()!="0.0"): csskeyvalues+=f"border-bottom-left-radius: {elem.style.getBorderBottomLeftRadius()}px;{newline}"
     if(elem.style.getBorderBottomRightRadius() != None and elem.style.getBorderBottomRightRadius()!="0.0"): csskeyvalues+=f"border-bottom-right-radius: {elem.style.getBorderBottomRightRadius()}px;{newline}"
+    if(elem.style.getMinHeight() != None): csskeyvalues+=f"min-height: {elem.style.getMinHeight()}px;{newline}"
+    if(elem.style.getMinWidth() != None): csskeyvalues+=f"min-width: {elem.style.getMinWidth()}px;{newline}"
     if(elem.style.getPosition() != None): csskeyvalues+=f"position: {elem.style.getPosition()};{newline}"
 
     if(elem.getinitialOpacity()!=None): csskeyvalues+=f"opacity: {str(elem.getinitialOpacity())};{newline}"

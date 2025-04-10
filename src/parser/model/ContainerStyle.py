@@ -34,6 +34,10 @@ class ContainerStyle(object):
 		self.borderBottomRightRadius = None
 		self.hashover = False
 		self.opacity = None
+		self.marginLeft = None
+		self.overflowDirection = None
+		self.minHeight = None
+		self.minWidth = None
 		self.gap = None
 
 	def getX(self):
@@ -105,6 +109,12 @@ class ContainerStyle(object):
 	def setOpacity(self,opacity):
 		self.opacity=opacity
   
+	def getOverflowDirection(self):
+		return self.overflowDirection
+
+	def setOverflowDirection(self,overflowDirection):
+		self.overflowDirection=overflowDirection
+  
 	def gethashoverProperty(self):
 		return self.hashover
 
@@ -123,6 +133,13 @@ class ContainerStyle(object):
 	def getMargin(self):
 		"""@ReturnType String"""
 		return self.margin
+
+	def getMarginLeft(self):
+		"""@ReturnType marginLeft String"""
+		return self.marginLeft
+
+	def setMarginLeft(self,marginLeft):
+		self.marginLeft = marginLeft
 
 	def setPosition(self, position):
 		"""@ParamType position String
@@ -260,6 +277,18 @@ class ContainerStyle(object):
 
 	def setGap(self, gap):
 		self.gap = gap
+
+	def getMinHeight(self):
+		return self.minHeight
+
+	def setMinHeight(self, minHeight):
+		self.minHeight = minHeight
+
+	def getMinWidth(self):
+		return self.minWidth
+
+	def setMinWidth(self, minWidth):
+		self.minWidth = minWidth
 
 	def getBorderTopLeftRadius(self):
 		return self.borderTopLeftRadius

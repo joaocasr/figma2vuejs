@@ -255,6 +255,7 @@ def anyShapes(elementos):
     return len(allShapes) > 0
 
 def getValue(value):
+    if(value==None): return 0
     if(isinstance(value, int)): return value
     if(value.isnumeric()): return int(value)
     if(" span " in str(value)):
