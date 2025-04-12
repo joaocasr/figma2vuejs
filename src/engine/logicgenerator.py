@@ -5,6 +5,7 @@ from parser.model.CloseAction import CloseAction
 from parser.model.ScrollAction import ScrollAction
 from parser.model.Mcomponent import Mcomponent
 from parser.model.Melement import Melement
+from parser.model.ContainerElement import ContainerElement
 import re
 import itertools
 
@@ -61,6 +62,9 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender):
                     insertFunction("methods",hooks,methodName,closeOverlay(methodName,"close-from"+str(originid)+"-to"+str(destinationid)))
                     elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                     elemBehaviour[1] = hooks
+    # HANDLE SCROLL BEHAVIOUR
+    if(isinstance(elem,ContainerElement) and elem.style.getOverflowDirection()!=None):
+        elemBehaviour = handleScrollBehaviour(elem,hooks,elemBehaviour)        
     # HANDLE MENU LOGIC
     if(isinstance(elem,Mcomponent) and elem.getNameComponent()=="Menu"):
         elemBehaviour = insertMenuLogic(elem,allPagesInfo,hooks,elemBehaviour)
@@ -222,7 +226,47 @@ def insertMenuLogic(elem,allPagesInfo,hooks,elemBehaviour):
     elemBehaviour[1] = hooks
     return elemBehaviour
 
+def handleScrollBehaviour(elem,hooks,elemBehaviour):
+    mountedFunction = f'window.addEventListener("mouseup", this.onMouseUp{getElemId(elem.idElement)});'
+    destroyedFunction = f'window.removeEventListener("mouseup", this.onMouseUp{getElemId(elem.idElement)});'
 
+    elemBehaviour[0] = []
+    hooks.setdefault("mounted", []).append((f"getMountedFunction{getElemId(elem.idElement)}",mountedFunction))
+    hooks.setdefault("destroyed", []).append((f"getDestroyedFunction{getElemId(elem.idElement)}",destroyedFunction))
+    
+    mousedownFunction = f'''onMouseDown{getElemId(elem.idElement)}(ev)'''+'''{
+            this.cursorPos = [ev.pageX, ev.pageY];
+            this.isDragging = true;
+
+            '''+f'window.addEventListener("mousemove", this.onMouseHold{getElemId(elem.idElement)});'+'''
+        }'''
+    hooks.setdefault("methods", []).append((f"onMouseDown{getElemId(elem.idElement)}",mousedownFunction))
+    
+    mouseupFunction = f'''onMouseUp{getElemId(elem.idElement)}(ev)'''+'''{
+            '''+f'window.removeEventListener("mousemove", this.onMouseHold{getElemId(elem.idElement)});'+f'''
+            this.isDragging = false;'''+'''
+        }'''
+    hooks.setdefault("methods", []).append((f"onMouseUp{getElemId(elem.idElement)}",mouseupFunction))
+
+    mouseholdFunction = f'''onMouseHold{getElemId(elem.idElement)}(ev)'''+'''{
+            ev.preventDefault();
+
+            requestAnimationFrame(() => {
+                    const delta = [ev.pageX - this.cursorPos[0], ev.pageY - this.cursorPos[1]];
+
+                    this.cursorPos = [ev.pageX, ev.pageY];
+
+                    '''+f'''if (!this.$refs.ref{getElemId(elem.idElement)}) return;
+                    this.$refs.ref{getElemId(elem.idElement)}.scrollBy('''+'''{
+                    left: -delta[0],
+                    top: -delta[1],
+                    });
+            });
+        }'''
+    hooks.setdefault("methods", []).append((f"onMouseHold{getElemId(elem.idElement)}",mouseholdFunction))
+    elemBehaviour[1] = hooks
+    return elemBehaviour
+    
 def getElemId(id):
     elemid = id
     if(str(id).startswith("I")):

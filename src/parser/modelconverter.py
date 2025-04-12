@@ -439,6 +439,8 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         if("cornerRadius" in data): shapestyle.setborderRadius(str(data["cornerRadius"]))
 
         if(data["type"]=="RECTANGLE" and "rectangleCornerRadii" in data): setCornerRadius(shapestyle,data["rectangleCornerRadii"])
+        if("visible" in data and data["visible"]==False): shapestyle.setDisplay("none")
+        if("opacity" in data): shapestyle.setOpacity(str(data["opacity"]*100)+"%")
         mshapeelement = ShapeElement(data["id"],tag,data["name"],data["type"],shapestyle)
         melement = mshapeelement
                   
@@ -468,6 +470,8 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                         nr_columnend,
                         nr_rowstart,
                         nr_rowend)
+        if("visible" in data and data["visible"]==False): style.setDisplay("none")
+        if("opacity" in data): style.setOpacity(str(data["opacity"]*100)+"%")
         mtextelement = TextElement(data["id"],tag,data["name"],data["characters"],style)
         melement = mtextelement
     
@@ -650,7 +654,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
     # Iterates for all nested children of each element
     if("children" in data):
         if(data["type"]=="FRAME" or data["type"]=="GROUP"):
-            if(style.getDisplay()!="flex"): style.setDisplay("grid")
+            if(style.getDisplay()==None): style.setDisplay("grid")
             style.setGridTemplateColumns("repeat(64,1fr)")
             style.setGridTemplateRows("repeat(64,1fr)")
         for element in data["children"]:

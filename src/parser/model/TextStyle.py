@@ -22,6 +22,7 @@ class TextStyle(object):
 		self.transition = None
 		self.hashover = False
 		self.opacity = None
+		self.display = None
 		self.gridcolumnStart = gridcolumnStart
 		self.gridcolumnEnd = gridcolumnEnd
 		self.gridrowStart = gridrowStart
@@ -202,6 +203,11 @@ class TextStyle(object):
 	def sethashoverProperty(self,hashover):
 		self.hashover = hashover
 
+	def getDisplay(self):
+		return self.display
+
+	def setDisplay(self,display):
+		self.display=display
 
 	def getGridcolumnStart(self):
 		"""@ReturnType String"""

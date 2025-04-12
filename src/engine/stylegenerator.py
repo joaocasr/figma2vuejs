@@ -476,6 +476,8 @@ def generateScrollCSS(projectname,pagename,cssclass,elem):
     white-space: nowrap;
     cursor: grab;
     user-select: none;
+  	display: flex;
+    overflow: auto;
     width: """+  str(elem.style.width) +"""px;
     height: """+  str(elem.style.height) +"""px;
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
@@ -494,6 +496,8 @@ def generateScrollCSS(projectname,pagename,cssclass,elem):
     overflow-y: auto;
     white-space: nowrap;
     cursor: grab;
+  	display: block;
+    overflow: auto;
     user-select: none;
     width: """+  str(elem.style.width) +"""px;
     height: """+  str(elem.style.height) +"""px;
@@ -548,7 +552,6 @@ def generateShapeCSS(projectname,pagename,cssclass,type,elem):
     grid-row-start: """+  str(elem.style.gridrowStart)+""";
     grid-row-end: """+  str(elem.style.gridrowEnd)+""";
     background: """+  str(elem.style.background)+""";
-    display: block;
     height: 1px;
     border: 0;
     padding: 0;
@@ -561,7 +564,11 @@ def generateShapeCSS(projectname,pagename,cssclass,type,elem):
   if(elem.style.getBorderTopRightRadius() != None and elem.style.getBorderTopRightRadius()!="0.0"): css+=f"border-top-right-radius: {elem.style.getBorderTopRightRadius()}px;"+'\n\t'
   if(elem.style.getBorderBottomLeftRadius() != None and elem.style.getBorderBottomLeftRadius()!="0.0"): css+=f"border-bottom-left-radius: {elem.style.getBorderBottomLeftRadius()}px;"+'\n\t'
   if(elem.style.getBorderBottomRightRadius() != None and elem.style.getBorderBottomRightRadius()!="0.0"): css+=f"border-bottom-right-radius: {elem.style.getBorderBottomRightRadius()}px;"+'\n\t'
-  if(elem.style.getDisplay() != None): css+=f"display: {elem.style.getDisplay()};"+'\n\t'
+  if(elem.style.getDisplay() != None):
+    css+=f"display: {elem.style.getDisplay()};"+'\n\t'
+  else:
+    css+=f"display: block;"+'\n\t'
+  if(elem.style.getOpacity() != None): css+=f"opacity: {elem.style.getOpacity()};"+'\n\t'
   if(elem.style.getBorderColor()!=None):
     css+="    border: solid;\n"+'    '+ f"border-color: {elem.style.getBorderColor()};"+'    '+ f"border-radius: {elem.style.getborderRadius()}px;"+'    '+ f"border-width: {elem.style.getborderWidth()}px;"+'\n'
   css = css + "}"
@@ -597,6 +604,7 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     if elem.style.fontStyle != None: csskeyvalues+=f"font-style: {elem.style.fontStyle};{newline}"
     if elem.style.fontWeight != None: csskeyvalues+=f"font-weight: {elem.style.fontWeight};{newline}"
     if elem.style.fontSize != None: csskeyvalues+=f"font-size: {elem.style.fontSize};{newline}"
+    if elem.style.opacity != None: csskeyvalues+=f"opacity: {elem.style.opacity};{newline}"
     if elem.style.fontFamily != None: csskeyvalues+=f"font-family: {elem.style.fontFamily};{newline}"
     if elem.style.textHorizontalAlign != None: csskeyvalues+=f"text-align: {elem.style.textHorizontalAlign.lower()};{newline}"
     if elem.style.lineHeight != None: csskeyvalues+=f"line-height: {str(elem.style.lineHeight)};{newline}"
@@ -605,6 +613,11 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     if elem.style.gridcolumnEnd != None: csskeyvalues+=f"grid-column-end: {str(elem.style.gridcolumnEnd)};{newline}"
     if elem.style.gridrowStart != None: csskeyvalues+=f"grid-row-start: {str(elem.style.gridrowStart)};{newline}"
     if elem.style.gridrowEnd != None: csskeyvalues+=f"grid-row-end: {str(elem.style.gridrowEnd)};{newline}"
+    if(elem.style.getOpacity() != None): csskeyvalues+=f"opacity: {elem.style.getOpacity()};{newline}"
+    if elem.style.display != None:
+      csskeyvalues+=f"display: {str(elem.style.display)};{newline}"
+    else:
+      csskeyvalues+=f"display: flex;{newline}"
     csskeyvalues+=f"overflow-wrap: break-word;{newline}" #word-break: break-word;{newline}
 
     if(elem.style.textAutoResize == "WIDTH_AND_HEIGHT"):
@@ -616,7 +629,7 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
 
     alignment = "stretch"
     if(elem.style.textHorizontalAlign.lower()=="center"): alignment = "center"
-    csskeyvalues +=f"width: 100%;{newline}display: flex;{newline}align-items: {alignment};{newline}justify-content: stretch;{newline}"
+    csskeyvalues +=f"width: 100%;{newline}align-items: {alignment};{newline}justify-content: stretch;{newline}"
     #height:auto
     font = "https://fonts.googleapis.com/css2?family="+elem.style.fontFamily+":wght@"+ str(elem.style.fontWeight) +"&display=swap"
     if((pagename in font_imports) and (font not in font_imports[pagename])):

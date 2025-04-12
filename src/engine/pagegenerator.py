@@ -167,7 +167,11 @@ def applytransformation(elem,projectname,page):
         edtag = "</"+elem.tag+">"
         if(elem.style.getOverflowDirection()!=None):
             generateScrollCSS(projectname,pagename, cssclass,elem)
-            bgtag = f''' <div class="scroll-wrapper{cssclass}">'''+bgtag
+            style = ''' :style="{
+                    cursor: isDragging ? 'grabbing' : 'grab',
+                    scrollSnapType: isDragging ? '' : '',
+            }"'''
+            bgtag = f''' <div @mousedown="onMouseDown{cssclass}" @mouseup="onMouseUp{cssclass}" {style} ref="ref{cssclass}" class="scroll-wrapper{cssclass}">'''+bgtag
             edtag += "</div>"
         return (bgtag,edtag)
     if(isinstance(elem, ImageElement)):
@@ -225,14 +229,11 @@ def writeVue(name,page,content):
     if(len(allcomponents)>0): pagecomponents="""\n    components:{\n        """+ ',\n        '.join(allcomponents) +"""\n    },"""
     for hook in allhooks[page.getPagename()]:
         if("methods" in hook): pagehooks += hook + ":{\n"
-        if("mounted" in hook): pagehooks += hook + "(){\n"
-        if("setup" in hook): pagehooks += hook + "(){\n"
+        if("mounted" in hook or "destroyed" in hook or "setup" in hook): pagehooks += hook + "(){\n"
         for content in allhooks[page.getPagename()][hook]:
             if("methods" in hook): 
                 pagehooks += content[1] + ",\n"
-            if("mounted" in hook): 
-                pagehooks += content[1] + "\n\n"
-            if("setup" in hook): 
+            if("mounted" in hook or "setup" in hook or "destroyed" in hook): 
                 pagehooks += content[1] + "\n\n"
         if(hook=="setup"): #writing the return statements from setup content
             pagehooks+="        return {\n          """
