@@ -49,3 +49,13 @@ def getVuetifyMenu(elem,menuid,idcomponent=None):
       </v-list>
     '''
     return (template,"</v-menu></div>")
+
+def getPrimeVueDataTable(elem,tableid):
+  template = f'''<DataTable class="stable{tableid}" :value="tablevalues{tableid}" :rows="{elem.nrrows}">'''
+  for c in elem.header:
+    if(elem.header[c]["type"]=="TEXT"): #handle different data types
+      template+=f'''  <Column field="{elem.header[c]["name"]}" header="{elem.header[c]["name"].capitalize()}" style="width: 25%"></Column>
+      '''
+  template+='''</DataTable>
+    '''
+  return (template,"</div>")

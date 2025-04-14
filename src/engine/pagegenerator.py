@@ -1,7 +1,7 @@
-from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties, generatePaginatorCssProperties, generateFormCssProperties, generateCheckboxCssProperties, generateVideoCssProperties, generateMenuCssProperties, generateScrollCSS
-from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin, useRatingVuetifyPlugin, usePaginatorVuetifyPlugin, useFormPrimeVuePlugin, useCheckboxPrimeVuePlugin, useMenuVuetifyPlugin
+from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties, generatePaginatorCssProperties, generateFormCssProperties, generateCheckboxCssProperties, generateVideoCssProperties, generateMenuCssProperties, generateScrollCSS, generateTableCssProperties
+from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin, useRatingVuetifyPlugin, usePaginatorVuetifyPlugin, useFormPrimeVuePlugin, useCheckboxPrimeVuePlugin, useMenuVuetifyPlugin, useDataTablePrimevuePlugin
 from engine.logicgenerator import handleBehaviour
-from engine.assetshelper import getPrimeVueForm, getPrimeVueCheckbox, getVuetifyMenu
+from engine.assetshelper import getPrimeVueForm, getPrimeVueCheckbox, getVuetifyMenu, getPrimeVueDataTable
 from parser.model.Mcomponent import Mcomponent
 from parser.model.Melement import Melement
 from parser.model.TextElement import TextElement
@@ -152,6 +152,12 @@ def applytransformation(elem,projectname,page):
             generateMenuCssProperties(projectname,pagename,"smenu"+cssclass,elem)
             componentAssets[pagename].extend([" v-menu"," v-list"])
             return menu
+        if(elem.getNameComponent()=="Table" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+            useDataTablePrimevuePlugin(projectname)
+            table = getPrimeVueDataTable(elem,cssclass)
+            generateTableCssProperties(projectname,pagename,"stable"+cssclass,elem)
+            componentAssets[pagename].extend([" DataTable"," Column"])
+            return table
 
     if(isinstance(elem, TextElement)):
         generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)

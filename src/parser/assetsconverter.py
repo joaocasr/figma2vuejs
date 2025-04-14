@@ -13,6 +13,8 @@ from parser.model.SliderStyle import SliderStyle
 from parser.model.Form import Form
 from parser.model.Menu import Menu
 from parser.model.MenuStyle import MenuStyle
+from parser.model.Table import Table
+from parser.model.TableStyle import TableStyle
 from parser.model.FormStyle import FormStyle
 from parser.model.Checkbox import Checkbox
 from parser.model.CheckboxStyle import CheckboxStyle
@@ -269,3 +271,36 @@ def convertToMenu(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name
     style = MenuStyle(nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
     menu = Menu(id,"",menuName,"COMPONENT_ASSET",options,iconImage,style)
     return menu
+
+def convertToTable(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name):
+    values = []
+    header = {}
+    headerColor = ""
+    bodyColor = ""
+    headertextColor = ""
+    nrrows = 0
+    for c in data["children"]:
+        if("th" in c["name"]):
+            for t in c["children"]:
+                color = t["fills"][0]["color"]
+                headerColor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
+                col = "col"+t["name"].split("th")[1]
+                header[col] = {"name":t["children"][0]["characters"]}
+                txtcolor = t["children"][0]["fills"][0]["color"]
+                headertextColor = "rgba("+str(txtcolor["r"] * 255)+","+str(txtcolor["g"] * 255)+","+str(txtcolor["b"] * 255)+","+str(txtcolor["a"])+")"
+    for c in data["children"]:
+        if("row" in c["name"]):
+            nrrows+=1
+            value={}
+            for col in c["children"]:
+                if(col["children"][0]["type"]=="TEXT"):
+                    value[header[col["name"]]["name"]] = col["children"][0]["characters"]
+                    header[col["name"]]["type"] = "TEXT"
+                    color = col["children"][0]["fills"][0]["color"]
+                    textColor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
+            values.append(value)
+    color = data["background"][0]["color"]
+    bodyColor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
+    style = TableStyle(headerColor,bodyColor,textColor,headertextColor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
+    table = Table(id,"",name,"COMPONENT_ASSET",values,header,nrrows,style)
+    return table

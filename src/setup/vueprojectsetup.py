@@ -458,3 +458,31 @@ def useSliderPrimevuePlugin(name):
     f.write(content)
     f.close()
     allDependencies["slider"]=True
+
+def useDataTablePrimevuePlugin(name):
+  global allDependencies
+  content =""
+  if("datatable" not in allDependencies or "column" not in allDependencies):
+    filemain = "../output/"+name+"/src/plugins/primevue.js"
+    primeimport = ""
+    primecomponent = ""
+    if("datatable" not in allDependencies): 
+      primeimport+="""import DataTable from 'primevue/datatable';\n"""
+      primecomponent+="""app.component('DataTable',DataTable)\n"""
+    if("column" not in allDependencies):
+      primeimport+="""import Column from 'primevue/column';\n"""
+      primecomponent+="""app.component('Column',Column)\n"""
+    f = open(filemain, "r")
+    for l in f.readlines():
+      l = l.strip()
+      content+=l+"\n"
+      if(l=="import 'primeicons/primeicons.css';"):
+        content+=primeimport
+      if(l=="});"):
+        content+=primecomponent
+    f.close()
+    f= open(filemain,"w")
+    f.write(content)
+    f.close()
+    allDependencies["datatable"]=True
+    allDependencies["column"]=True

@@ -1,54 +1,41 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
+class TableStyle(object):
 
-import TableElement
-import ContainerStyle
+	def __init__(self,backgroundHeader,backgroundBody,textColor,headertextColor,gridcolumnStart,gridcolumnEnd,gridrowStart,gridrowEnd):
+		self.backgroundHeader = backgroundHeader
+		self.backgroundBody = backgroundBody
+		self.textColor = textColor
+		self.headertextColor = headertextColor
+		self.gridcolumnStart = gridcolumnStart
+		self.gridcolumnEnd = gridcolumnEnd
+		self.gridrowStart = gridrowStart
+		self.gridrowEnd = gridrowEnd
+		self.gridArea = None
 
-class TableStyle(ContainerStyle):
-	def getBorderCollapse(self):
-		"""@ReturnType String"""
-		return self.borderCollapse
+	def getbackgroundHeader(self):
+		return self.backgroundHeader
 
-	def setBorderCollapse(self, borderCollapse):
-		"""@ParamType borderCollapse String
-		@ReturnType void"""
-		self.borderCollapse = borderCollapse
+	def setbackgroundHeader(self, backgroundHeader):
+		self.backgroundHeader = backgroundHeader
 
-	def getWidth(self):
-		"""@ReturnType String"""
-		return self.width
+	def getbackgroundBody(self):
+		return self.backgroundBody
 
-	def setWidth(self, width):
-		"""@ParamType width String
-		@ReturnType void"""
-		self.width = width
+	def setbackgroundBody(self, backgroundBody):
+		self.backgroundBody = backgroundBody
 
-	def getBorder(self):
-		"""@ReturnType String"""
-		return self.border
+	def gettextColor(self):
+		return self.textColor
 
-	def setBorder(self, border):
-		"""@ParamType border String
-		@ReturnType void"""
-		self.border = border
+	def settextColor(self, textColor):
+		self.textColor = textColor
 
-	def getPadding(self):
-		"""@ReturnType String"""
-		return self.padding
+	def getheadertextColor(self):
+		return self.headertextColor
 
-	def setPadding(self, padding):
-		"""@ParamType padding String
-		@ReturnType void"""
-		self.padding = padding
-
-	def getListstylePadding(self):
-		"""@ReturnType String"""
-		return self.liststylePadding
-
-	def setListstylePadding(self, liststylePadding):
-		"""@ParamType liststylePadding String
-		@ReturnType void"""
-		self.liststylePadding = liststylePadding
+	def setheadertextColor(self, headertextColor):
+		self.headertextColor = headertextColor
 
 	def getGridcolumnStart(self):
 		"""@ReturnType String"""
@@ -63,10 +50,10 @@ class TableStyle(ContainerStyle):
 		"""@ReturnType String"""
 		return self.gridcolumnEnd
 
-	def setGridcolumnEnd(self, gridColumnEnd):
-		"""@ParamType gridColumnEnd String
+	def setGridcolumnEnd(self, gridcolumnEnd):
+		"""@ParamType gridcolumnEnd String
 		@ReturnType void"""
-		self.gridcolumnEnd = gridColumnEnd
+		self.gridcolumnEnd = gridcolumnEnd
 
 	def getGridrowStart(self):
 		"""@ReturnType String"""
@@ -86,26 +73,8 @@ class TableStyle(ContainerStyle):
 		@ReturnType void"""
 		self.gridrowEnd = gridrowEnd
 
-	def __init__(self):
-		self.borderCollapse = None
-		"""@AttributeType String"""
-		self.width = None
-		"""@AttributeType String"""
-		self.border = None
-		"""@AttributeType String"""
-		self.padding = None
-		"""@AttributeType String"""
-		self.liststylePadding = None
-		"""@AttributeType String"""
-		self.gridcolumnStart = None
-		"""@AttributeType String"""
-		self.gridcolumnEnd = None
-		"""@AttributeType String"""
-		self.gridrowStart = None
-		"""@AttributeType String"""
-		self.gridrowEnd = None
-		"""@AttributeType String"""
-		self.unnamed_TableElement_ = None
-		"""@AttributeType TableElement
-		# @AssociationType TableElement"""
+	def getgridArea(self):
+		return self.gridArea
 
+	def setgridArea(self, gridarea):
+		self.gridArea = gridarea

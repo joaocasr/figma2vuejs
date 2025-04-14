@@ -68,7 +68,10 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender):
     # HANDLE MENU LOGIC
     if(isinstance(elem,Mcomponent) and elem.getNameComponent()=="Menu"):
         elemBehaviour = insertMenuLogic(elem,allPagesInfo,hooks,elemBehaviour)
-    # HANDLE DROPDOWN LOGIC
+    # POPULATE DATATABLE
+    if(isinstance(elem,Mcomponent) and elem.getNameComponent()=="Table"):
+        elemBehaviour = insertTableLogic(elem,allPagesInfo,hooks,elemBehaviour)
+    # POPULATE DROPDOWN
     if(isinstance(elem,Mcomponent) and elem.getNameComponent()=="Dropdown"):
         elemBehaviour = insertDropdownLogic(getElemId(elem.idComponent),hooks,elemBehaviour)
     # HANDLE CHECKBOX LOGIC
@@ -227,14 +230,14 @@ def insertMenuLogic(elem,allPagesInfo,hooks,elemBehaviour):
     return elemBehaviour
 
 def handleScrollBehaviour(elem,hooks,elemBehaviour):
-    mountedFunction = f'window.addEventListener("mouseup", this.onMouseUp{getElemId(elem.idElement)});'
-    destroyedFunction = f'window.removeEventListener("mouseup", this.onMouseUp{getElemId(elem.idElement)});'
+    mountedFunction = f'        window.addEventListener("mouseup", this.onMouseUp{getElemId(elem.idElement)});'
+    destroyedFunction = f'      window.removeEventListener("mouseup", this.onMouseUp{getElemId(elem.idElement)});'
 
     elemBehaviour[0] = []
     hooks.setdefault("mounted", []).append((f"getMountedFunction{getElemId(elem.idElement)}",mountedFunction))
     hooks.setdefault("destroyed", []).append((f"getDestroyedFunction{getElemId(elem.idElement)}",destroyedFunction))
     
-    mousedownFunction = f'''onMouseDown{getElemId(elem.idElement)}(ev)'''+'''{
+    mousedownFunction = f'''        onMouseDown{getElemId(elem.idElement)}(ev)'''+'''{
             this.cursorPos = [ev.pageX, ev.pageY];
             this.isDragging = true;
 
@@ -242,13 +245,13 @@ def handleScrollBehaviour(elem,hooks,elemBehaviour):
         }'''
     hooks.setdefault("methods", []).append((f"onMouseDown{getElemId(elem.idElement)}",mousedownFunction))
     
-    mouseupFunction = f'''onMouseUp{getElemId(elem.idElement)}(ev)'''+'''{
+    mouseupFunction = f'''        onMouseUp{getElemId(elem.idElement)}(ev)'''+'''{
             '''+f'window.removeEventListener("mousemove", this.onMouseHold{getElemId(elem.idElement)});'+f'''
             this.isDragging = false;'''+'''
         }'''
     hooks.setdefault("methods", []).append((f"onMouseUp{getElemId(elem.idElement)}",mouseupFunction))
 
-    mouseholdFunction = f'''onMouseHold{getElemId(elem.idElement)}(ev)'''+'''{
+    mouseholdFunction = f'''        onMouseHold{getElemId(elem.idElement)}(ev)'''+'''{
             ev.preventDefault();
 
             requestAnimationFrame(() => {
@@ -258,15 +261,27 @@ def handleScrollBehaviour(elem,hooks,elemBehaviour):
 
                     '''+f'''if (!this.$refs.ref{getElemId(elem.idElement)}) return;
                     this.$refs.ref{getElemId(elem.idElement)}.scrollBy('''+'''{
-                    left: -delta[0],
-                    top: -delta[1],
-                    });
+                    left: -delta[0]});
             });
         }'''
     hooks.setdefault("methods", []).append((f"onMouseHold{getElemId(elem.idElement)}",mouseholdFunction))
     elemBehaviour[1] = hooks
     return elemBehaviour
+
+def getDatatableValuesFunction(tableid,values):
+    function = """\t\tgetDatatableValues""" + str(tableid) + "(){" + """
+            this.tablevalues""" + str(tableid) +f""" = {values};"""+"""
+        }""" 
+    return function
+
+def insertTableLogic(elem,allPagesInfo,hooks,elemBehaviour):
+    elemBehaviour[0] = []
     
+    hooks.setdefault("methods", []).append((f'getDatatableValues{getElemId(elem.idComponent)}',getDatatableValuesFunction(getElemId(elem.idComponent),elem.values)))
+    hooks.setdefault("mounted", []).append((f'getDatatableValues{getElemId(elem.idComponent)}',f"        this.getDatatableValues{getElemId(elem.idComponent)}();"))
+    elemBehaviour[1] = hooks
+    return elemBehaviour
+
 def getElemId(id):
     elemid = id
     if(str(id).startswith("I")):

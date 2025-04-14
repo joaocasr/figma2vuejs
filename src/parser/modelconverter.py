@@ -27,7 +27,7 @@ from parser.model.OverlayAction import OverlayAction
 from parser.model.ScrollAction import ScrollAction
 from parser.model.ChangeAction import ChangeAction
 from engine.stylegenerator import calculate_gradientDegree
-from parser.assetsconverter import convertToDropdown, convertToSearchInput, convertToDatePicker, convertToSlider, convertToRating, convertToPaginator, convertToForm, convertToCheckbox, convertToMenu
+from parser.assetsconverter import convertToDropdown, convertToSearchInput, convertToDatePicker, convertToSlider, convertToRating, convertToPaginator, convertToForm, convertToCheckbox, convertToMenu, convertToTable
 from utils.processing import getFormatedName,getElemId
 
 allpages = {}
@@ -40,7 +40,7 @@ scrollElements = {}
 # key: component_id ; value: MComponent
 allcomponents = {}
 pageComponents = {}
-assetComponents = ["InputSearch","DatePicker","Dropdown","ReadOnlyRating","InteractiveRating","Paginator","Form","Checkbox","Video","Menu"]
+assetComponents = ["InputSearch","DatePicker","Dropdown","ReadOnlyRating","InteractiveRating","Paginator","Form","Checkbox","Video","Menu","Table"]
 pageWidth = -1
 tags = ["nav","footer","main","section","aside","article","p","header","h1","h2","h3","h4","h5","h6","ul","li"]
 notPageElems = {}
@@ -326,6 +326,14 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         else:
             allpages[pagename].addVariable({f"menuoptions{menuid}":melement.options})
         return melement
+    elif(data["name"]=="Table" and data["type"]=="INSTANCE"):
+        melement = convertToTable(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
+        tableid = getElemId(data["id"])
+        if(not pagename in allpages):
+            addComponentVariable(pagename,{f"tablevalues{tableid}":[]})
+        else:
+            allpages[pagename].addVariable({f"tablevalues{tableid}":[]})
+        return melement
     # handling VectorElements
     elif(data["type"]=="VECTOR"):
         style = VectorStyle(xielem,
@@ -530,7 +538,15 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         if("overflowDirection" in data):
             style.setHeight(elementheight)
             style.setDisplay("flex")
+            style.setMarginLeft("200px")
             scrollElements.setdefault(pagename,[]).append(data["id"])
+            if(not pagename in allpages):
+                addComponentVariable(pagename,{"isDragging":"false"})
+                addComponentVariable(pagename,{"cursorPos":[0, 0]})
+            else:
+                allpages[pagename].addVariable({"isDragging":"false"})
+                allpages[pagename].addVariable({"cursorPos":[0, 0]})
+            
         if(data["scrollBehavior"]=="FIXED"): scrollBehaviour = "sticky"
         style.setPosition(scrollBehaviour)
 

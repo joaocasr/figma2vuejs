@@ -426,6 +426,29 @@ div:deep(."""+str(cssclass)+""" .p-slider-handle){
   with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
     f.write(css)
 
+def generateTableCssProperties(projectname,pagename,cssclass,elem):
+  css ="""\n."""+ str(cssclass) + """ {
+    grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
+    grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
+    grid-row-start: """+  str(elem.style.gridrowStart)+""";
+    grid-row-end: """+  str(elem.style.gridrowEnd)+""";
+    --p-datatable-row-background: """+  str(elem.style.getbackgroundBody())+""";
+    --p-datatable-body-cell-border-color: """+  str(elem.style.getbackgroundBody())+""";
+    --p-datatable-row-color: """+  str(elem.style.gettextColor())+""";
+}
+:deep(."""+str(cssclass)+""" .p-datatable-header-cell){
+  background:"""+  str(elem.style.getbackgroundHeader())+""";
+  color:""" +  str(elem.style.getheadertextColor())+""";
+}
+
+"""
+  cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
+  mode = "w"
+  if os.path.isfile(cssfile):
+    mode = "a"
+  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
+    f.write(css)
+
 def generateRatingCssProperties(projectname,pagename,cssclass,elem):
   css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
@@ -678,6 +701,7 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     if elem.style.gridcolumnEnd != None: csskeyvalues+=f"grid-column-end: {str(elem.style.gridcolumnEnd)};{newline}"
     if elem.style.gridrowStart != None: csskeyvalues+=f"grid-row-start: {str(elem.style.gridrowStart)};{newline}"
     if elem.style.gridrowEnd != None: csskeyvalues+=f"grid-row-end: {str(elem.style.gridrowEnd)};{newline}"
+    if(elem.style.getMarginLeft() != None): csskeyvalues+=f"margin-left: {str(elem.style.getMarginLeft())};{newline}"
     if(elem.style.getBorderTopLeftRadius() != None and elem.style.getBorderTopLeftRadius()!="0.0"): csskeyvalues+=f"border-top-left-radius: {elem.style.getBorderTopLeftRadius()}px;{newline}"
     if(elem.style.getBorderTopRightRadius() != None and elem.style.getBorderTopRightRadius()!="0.0"): csskeyvalues+=f"border-top-right-radius: {elem.style.getBorderTopRightRadius()}px;{newline}"
     if(elem.style.getBorderBottomLeftRadius() != None and elem.style.getBorderBottomLeftRadius()!="0.0"): csskeyvalues+=f"border-bottom-left-radius: {elem.style.getBorderBottomLeftRadius()}px;{newline}"
