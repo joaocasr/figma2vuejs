@@ -13,6 +13,7 @@ from parser.model.ImageElement import ImageElement
 from parser.model.ShapeElement import ShapeElement
 from parser.model.ShapeStyle import ShapeStyle
 from parser.model.Mcomponent import Mcomponent
+from parser.model.VariantComponent import VariantComponent
 from parser.model.TextElement import TextElement
 from parser.model.ContainerStyle import ContainerStyle
 from parser.model.ImageStyle import ImageStyle
@@ -35,7 +36,7 @@ allimages = []
 allsvgs = []
 refs = {}
 componentVariables = {}
-variants = {}
+variants = []
 scrollElements = {}
 # key: component_id ; value: MComponent
 allcomponents = {}
@@ -103,7 +104,7 @@ def getFigmaData(prototype):
             
     extractImages(project_name)
     extractSVGs(project_name)
-    return (project_name, allpages, orphanComponents, refs)
+    return (project_name, allpages, orphanComponents, refs, variants)
 
 def parsePageEntities(data):
     global allpages
@@ -141,8 +142,14 @@ def iterate_nestedElements(data):
                 #    raise Exception("Error while converting "+element["name"]+". Correct your prototype!")
 
             tag = getElementTag(melement)
-            allcomponents[melement["id"]] = Mcomponent(melement["id"],melement["name"],tag,"",elements)
+            if(isComponentVariant(melement)!=True):
+                allcomponents[melement["id"]] = Mcomponent(melement["id"],melement["name"],tag,"",elements)
+            if(isComponentVariant(melement)==True):
+                v = VariantComponent(melement["id"],tag,melement["name"],"",elements)
+                setVariantProperties(v,melement["componentPropertyDefinitions"])
+                variants.append(v)
             setComponentStyle(melement)
+                
 
     #iterate the frame nodes which represent PAGES
     for page in data["document"]["children"][0]["children"]:
@@ -223,7 +230,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         style = setComponentStyle(data)
         allcomponents[data["id"]] = Mcomponent(data["id"],data["name"],tag,"",elements)
         allcomponents[data["id"]].setComponentStyle(style)
-
+        melement = allcomponents[data["id"]]
     # handling assets from components created
     if(data["name"]=="Dropdown" and data["type"]=="INSTANCE"):
         componentsetId = ""
@@ -328,6 +335,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         return melement
     elif(data["name"]=="Table" and data["type"]=="INSTANCE"):
         melement = convertToTable(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
+        allimages.extend(melement.images)
         tableid = getElemId(data["id"])
         if(not pagename in allpages):
             addComponentVariable(pagename,{f"tablevalues{tableid}":[]})
@@ -488,17 +496,18 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         if(data["scrollBehavior"]=="FIXED"): scrollBehaviour = "sticky"
         componentelement = Mcomponent(data["id"],data["name"],tag,"")
         componentStyle = setComponentStyle(data)
-        componentStyle.setPosition(scrollBehaviour)
         componentStyle.setGridcolumnStart(nr_columnstart)
         componentStyle.setGridcolumnEnd(nr_columnend)
         componentStyle.setGridrowStart(nr_rowstart)
         componentStyle.setGridrowEnd(nr_rowend)
         componentStyle.setPosition(scrollBehaviour)
         componentStyle.setinstanceFromComponentId(data["componentId"])
-
+        if(isComponentVariant(data)):
+            componentelement.setisVariant(True)
+            componentelement.setVariantName(getFormatedName(data["name"]))
         resolveNameConflit(componentelement,componentStyle,pagename)
         assignComponentData(componentelement)
-        componentelement.setComponentStyle(componentStyle)
+        componentelement.setComponentStyle(componentStyle)            
         pageComponents.setdefault(pagename, []).append(componentelement)
         melement = componentelement
 
@@ -639,19 +648,8 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                     overlayAction = OverlayAction(action["destinationId"])
                     interactionelement.addAction(overlayAction)
             if(action!=None and action["type"]=="NODE" and action["navigation"]=="CHANGE_TO"):
-                if(action["destinationId"] in allcomponents):
-                    
-                    compstyle = allcomponents[action["destinationId"]].getComponentStyle()
-                    compstyle.setGridcolumnStart(nr_columnstart)
-                    compstyle.setGridcolumnEnd(nr_columnend)
-                    compstyle.setGridrowStart(nr_rowstart)
-                    compstyle.setGridrowEnd(nr_rowend)
-                    allcomponents[action["destinationId"]].setComponentStyle(compstyle)
-                    changeAction = ChangeAction(action["destinationId"])
-                    interactionelement.addAction(changeAction)
-                    if(firstlevelelem!=None): variants.setdefault(pagename, []).append((firstlevelelem["id"],allcomponents[action["destinationId"]]))
-                    elif(parent_data!=None): variants.setdefault(pagename, []).append((parent_data["id"],allcomponents[action["destinationId"]]))
-
+                changeAction = ChangeAction(action["destinationId"])
+                interactionelement.addAction(changeAction)
             if(action!=None and action["type"]=="NODE" and action["navigation"]=="SCROLL_TO"):
                 refs.setdefault(pagename, []).append(getElemId(action["destinationId"]))
                 scrollAction = ScrollAction(action["destinationId"])
@@ -678,6 +676,15 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             children.append(nestedelem)
 
         if(melement!=None): melement.setChildren(children)
+    
+    if(data["type"]=="INSTANCE" and isComponentVariant(data)):
+        #update the default variant instances
+        updateDefaultVariants(melement,data["componentId"],variants)
+        if(pagename in allpages):
+            for v in variants:
+                for (index,c) in enumerate(v.variantComponents):
+                    allpages[pagename].addVariable({f"componentclass{getElemId(c.getIdComponent())}":f'"grid-item-{getElemId(c.getIdComponent())} component{getElemId(c.getIdComponent())}"'})
+            allpages[pagename].addVariable({f"selectedClass{getElemId(melement.getIdComponent())}":"''"})
     return melement
 
 # auxiliar function to calculate element positioning
@@ -964,6 +971,7 @@ def resolveNameConflit(componentelement,style,pagename):
             if(c.getNameComponent()==componentelement.getNameComponent() and 
                 c.style.getinstanceFromComponentId()!=style.getinstanceFromComponentId()):
                 componentelement.setNameComponent(componentelement.getNameComponent()+getElemId(componentelement.getIdComponent()))
+                print(componentelement.getNameComponent())
     return componentelement
 
 def setHoverProperties(overlayElem,melement,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend):
@@ -1010,8 +1018,8 @@ def getVariantElement(id,data):
 
 def isComponentVariant(c):
     r = False
-    if((c["type"]=="COMPONENT_SET" or c["type"]=="COMPONENT") and 
-       "componentPropertyDefinitions" in c):
+    if((c["type"]=="COMPONENT_SET" or c["type"]=="COMPONENT" or c["type"]=="INSTANCE") and 
+       ("componentPropertyDefinitions" in c or "componentProperties" in c)):
         r = True
     return r
 
@@ -1034,3 +1042,17 @@ def updateInnerChildren(elements,el):
                 innerchildren.style.setMargin("1em")
         if(len(element.children)>0): updateInnerChildren(element.children,el)
         
+def setVariantProperties(component,properties):
+    cproperties = {}
+    for property in properties:
+        val = properties[property]["variantOptions"]
+        cproperties[property] = val
+    component.setVariantProperties(cproperties)
+    
+def updateDefaultVariants(melement,componentId,variants):
+    for v in variants:
+        for (index,c) in enumerate(v.variantComponents):
+            if(componentId==c.getIdComponent()):
+                melement.setNameComponent(c.getNameComponent())
+                v.variantComponents[index] = melement
+                v.setDefaultComponent(getFormatedName(melement.getNameComponent()))

@@ -56,6 +56,12 @@ def getPrimeVueDataTable(elem,tableid):
     if(elem.header[c]["type"]=="TEXT"): #handle different data types
       template+=f'''  <Column field="{elem.header[c]["name"]}" header="{elem.header[c]["name"].capitalize()}" style="width: 25%"></Column>
       '''
+    if(elem.header[c]["type"]=="IMAGE"):
+      template+=f'''   <Column header="{elem.header[c]["name"].capitalize()}">
+        <template #body="{elem.header[c]["name"].capitalize()}">
+            <img :src="`{elem.header[c]["name"]}.png`" style="width: 25%"/>
+        </template>
+    </Column>'''
   template+='''</DataTable>
     '''
   return (template,"</div>")

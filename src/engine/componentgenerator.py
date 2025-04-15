@@ -2,6 +2,7 @@ from engine.stylegenerator import generatePageStyle, generateComponentStyle, gen
 from setup.vueprojectsetup import useRatingVuetifyPlugin,useMenuVuetifyPlugin, useIconFieldPrimevuePlugin
 from engine.logicgenerator import handleBehaviour
 from parser.model.Mcomponent import Mcomponent
+from parser.model.VariantComponent import VariantComponent
 from parser.model.Melement import Melement
 from parser.model.TextElement import TextElement
 from parser.model.VectorElement import VectorElement

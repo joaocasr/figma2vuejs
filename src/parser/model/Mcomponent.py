@@ -15,6 +15,8 @@ class Mcomponent(object):
 		self.zindex = 0
 		self.isComponentInstance = False
 		self.hasConditionalVisibility = False
+		self.isVariant = False
+		self.variantName = None
 
 	def getIdComponent(self):
 		"""@ReturnType String"""
@@ -62,6 +64,12 @@ class Mcomponent(object):
 		@ReturnType void"""
 		return self.style
 
+	def getisVariant(self):
+		return self.isVariant
+
+	def setisVariant(self, isVariant):
+		self.isVariant = isVariant
+
 	def getupperIdComponent(self):
 		return self.upperIdComponent
 
@@ -103,6 +111,12 @@ class Mcomponent(object):
 		"""@ParamType isComponentInstance String
 		@ReturnType void"""
 		self.isComponentInstance = isComponentInstance
+
+	def getVariantName(self):
+		return self.variantName
+
+	def setVariantName(self, variantName):
+		self.variantName = variantName
 
 	def gethascondvisib(self):
 		return self.hasConditionalVisibility

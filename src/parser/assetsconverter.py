@@ -279,6 +279,7 @@ def convertToTable(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,nam
     bodyColor = ""
     headertextColor = ""
     nrrows = 0
+    images = []
     for c in data["children"]:
         if("th" in c["name"]):
             for t in c["children"]:
@@ -298,6 +299,11 @@ def convertToTable(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,nam
                     header[col["name"]]["type"] = "TEXT"
                     color = col["children"][0]["fills"][0]["color"]
                     textColor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
+                if(col["children"][0]["type"]=="IMAGE"):
+                    value[header[col["name"]]["name"]] = getFormatedName(col["name"])
+                    header[col["name"]]["type"] = "IMAGE"
+                    images.append({"id":col["id"],"name":getFormatedName(col["name"])})                   
+                    
             values.append(value)
     color = data["background"][0]["color"]
     bodyColor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"

@@ -11,6 +11,7 @@ from parser.model.Dropdown import Dropdown
 from parser.model.ShapeElement import ShapeElement
 from parser.model.ContainerElement import ContainerElement
 from parser.model.ImageElement import ImageElement
+from parser.model.VariantComponent import VariantComponent
 from utils.processing import getFormatedName,getElemId,doesImageExist
 
 import os
@@ -159,6 +160,12 @@ def applytransformation(elem,projectname,page):
             componentAssets[pagename].extend([" DataTable"," Column"])
             return table
 
+    if(isinstance(elem, Mcomponent) and elem.getisVariant()==True):
+        component = getFormatedName("Variant"+elem.getVariantName().lower().capitalize())
+        components.setdefault(pagename, {}).add(component)
+        compbegin = f"""<{component} """+' '.join(d for d in directives)+f''' :variant="currentVariant{cssclass}"'''+f''' :componentProps="'''+"{"+f" class: selectedClass{cssclass} "+ '}">'
+        compend = f"""</{component}>"""
+        return (compbegin,compend)
     if(isinstance(elem, TextElement)):
         generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
         if(elem.tag==""):

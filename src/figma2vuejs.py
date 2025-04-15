@@ -1,11 +1,13 @@
 from setup.vueprojectsetup import setup_project, create_project, remove_boilerview, remove_boilercomponents, updateAppVue
 from engine.stylegenerator import overwrite_styling
 from engine.routergenerator import generate_routes
+from engine.variantgenerator import writeVariantComponent
 from engine.gridgenerator import generateGridTemplate
 from engine.pagegenerator import buildpage
 from engine.componentgenerator import buildcomponent
 from parser.modelconverter import getFigmaData
 from parser.model.Melement import Melement
+from parser.model.VariantComponent import VariantComponent
 
 import sys
 
@@ -15,7 +17,7 @@ else:
   prototype = sys.argv[1]
   # extract figma data and build intern model
   #try:
-  project_name, allpages, orphanComponents, refs = getFigmaData(prototype)
+  project_name, allpages, orphanComponents, refs, variants = getFigmaData(prototype)
   #except Exception as e:
   #  print(e)
   #  sys.exit()
@@ -42,17 +44,23 @@ else:
   if(len(sys.argv)==3): mypages = generateGridTemplate(sys.argv[2],allpages)
   if(mypages!=None):
     allcomponents=[]
+    allvariants=[]
     for page in pagesInfo:
       for x in pagesInfo[page]["components"]:
         if(not any(x==c for c in allcomponents)):
           allcomponents.append(x)
-
+   
     for component in allcomponents:
-      buildcomponent(component,project_name,pagesInfo,refs)
+      if(not isinstance(component,VariantComponent) and not component.getisVariant()==True):
+        buildcomponent(component,project_name,pagesInfo,refs)
 
     for orphan in orphanComponents:
-      buildcomponent(orphan,project_name,pagesInfo,refs)
-      
+      if(not isinstance(orphan,VariantComponent) and not orphan.getisVariant()==True):
+        buildcomponent(orphan,project_name,pagesInfo,refs)
+          
+    for v in variants:
+      writeVariantComponent(v.getNameComponent(),project_name,v.variantComponents)    
+          
     # build each page (elements within, styling and components)
     for page in mypages:
       buildpage(project_name,mypages[page],pagesInfo,refs)
