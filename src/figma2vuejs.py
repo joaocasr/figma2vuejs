@@ -51,18 +51,17 @@ else:
           allcomponents.append(x)
    
     for component in allcomponents:
-      if(not isinstance(component,VariantComponent) and not component.getisVariant()==True):
-        buildcomponent(component,project_name,pagesInfo,refs)
+      buildcomponent(component,project_name,pagesInfo,refs,variants)
 
     for orphan in orphanComponents:
       if(not isinstance(orphan,VariantComponent) and not orphan.getisVariant()==True):
-        buildcomponent(orphan,project_name,pagesInfo,refs)
+        buildcomponent(orphan,project_name,pagesInfo,refs,variants)
           
     for v in variants:
       writeVariantComponent(v.getNameComponent(),project_name,v.variantComponents)    
           
     # build each page (elements within, styling and components)
     for page in mypages:
-      buildpage(project_name,mypages[page],pagesInfo,refs)
+      buildpage(project_name,mypages[page],pagesInfo,refs,variants)
 
 

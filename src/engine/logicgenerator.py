@@ -3,6 +3,7 @@ from parser.model.NavigationAction import NavigationAction
 from parser.model.OverlayAction import OverlayAction 
 from parser.model.CloseAction import CloseAction
 from parser.model.ScrollAction import ScrollAction
+from parser.model.ChangeAction import ChangeAction
 from parser.model.Mcomponent import Mcomponent
 from parser.model.Melement import Melement
 from parser.model.ContainerElement import ContainerElement
@@ -12,7 +13,7 @@ import itertools
 # id: [vars]
 shareableEvents = {}
 
-def handleBehaviour(elem,allPagesInfo,pagename,isPageRender):
+def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants):
     global shareableEvents
     directives = []
     hooks = {}
@@ -62,6 +63,12 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender):
                     insertFunction("methods",hooks,methodName,closeOverlay(methodName,"close-from"+str(originid)+"-to"+str(destinationid)))
                     elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                     elemBehaviour[1] = hooks
+        # HANDLE EVENTS ON VARIANT COMPONENTS
+        if(isinstance(elem, Mcomponent) and elem.getisVariant()==True):
+            elemBehaviour = handleVariants(elem,allvariants,hooks,elemBehaviour)
+    # HANDLE COMPONENT VARIANT INSTANCES IN VIEW PAGES
+    if(isinstance(elem, Mcomponent) and elem.getisVariant()==True):
+        elemBehaviour = declareMountedVariables(elem,hooks,elemBehaviour)
     # HANDLE SCROLL BEHAVIOUR
     if(isinstance(elem,ContainerElement) and elem.style.getOverflowDirection()!=None):
         elemBehaviour = handleScrollBehaviour(elem,hooks,elemBehaviour)        
@@ -201,7 +208,6 @@ def showOverlayonHover(name,variable):
     return function
 
 def insertDropdownLogic(dropdownid,hooks,elemBehaviour):
-    elemBehaviour[0] = []
     
     hooks.setdefault("methods", []).append(('getDropdownOptions'+str(dropdownid),getpopulateDropdownFunction('getDropdownOptions'+str(dropdownid),'allOptionValues'+str(dropdownid),'allOptions'+str(dropdownid))))
     hooks.setdefault("mounted", []).append(('getDropdownOptions'+str(dropdownid),"        this."+'getDropdownOptions'+str(dropdownid)+"();"))
@@ -209,7 +215,6 @@ def insertDropdownLogic(dropdownid,hooks,elemBehaviour):
     return elemBehaviour
 
 def insertCheckboxLogic(checkboxid,hooks,elemBehaviour):
-    elemBehaviour[0] = []
     
     hooks.setdefault("methods", []).append(('getCheckboxOptions'+str(checkboxid),getpopulateCheckboxFunction('getCheckboxOptions'+str(checkboxid),'boxesValues'+str(checkboxid),'boxes'+str(checkboxid))))
     hooks.setdefault("mounted", []).append(('getCheckboxOptions'+str(checkboxid),"        this."+'getCheckboxOptions'+str(checkboxid)+"();"))
@@ -217,14 +222,12 @@ def insertCheckboxLogic(checkboxid,hooks,elemBehaviour):
     return elemBehaviour
 
 def insertScrollBehaviour(elem,action,hooks,elemBehaviour):
-    elemBehaviour[0] = []
     elemBehaviour[0].append('v-on:click="'+f"scrollTo{getElemId(elem.getIdElement())}"+'()"')
     hooks.setdefault("methods", []).append((f"scrollTo{getElemId(elem.getIdElement())}",getScrollBehaviourFunction(elem,action)))
     elemBehaviour[1] = hooks
     return elemBehaviour
 
 def insertMenuLogic(elem,allPagesInfo,hooks,elemBehaviour):
-    elemBehaviour[0] = []
     hooks.setdefault("methods", []).append((f"selectedItem{getElemId(elem.idComponent)}",getMenuFunction(elem,allPagesInfo,f"selectedItem{getElemId(elem.idComponent)}")))
     elemBehaviour[1] = hooks
     return elemBehaviour
@@ -233,7 +236,6 @@ def handleScrollBehaviour(elem,hooks,elemBehaviour):
     mountedFunction = f'        window.addEventListener("mouseup", this.onMouseUp{getElemId(elem.idElement)});'
     destroyedFunction = f'      window.removeEventListener("mouseup", this.onMouseUp{getElemId(elem.idElement)});'
 
-    elemBehaviour[0] = []
     hooks.setdefault("mounted", []).append((f"getMountedFunction{getElemId(elem.idElement)}",mountedFunction))
     hooks.setdefault("destroyed", []).append((f"getDestroyedFunction{getElemId(elem.idElement)}",destroyedFunction))
     
@@ -275,12 +277,51 @@ def getDatatableValuesFunction(tableid,values):
     return function
 
 def insertTableLogic(elem,allPagesInfo,hooks,elemBehaviour):
-    elemBehaviour[0] = []
-    
     hooks.setdefault("methods", []).append((f'getDatatableValues{getElemId(elem.idComponent)}',getDatatableValuesFunction(getElemId(elem.idComponent),elem.values)))
     hooks.setdefault("mounted", []).append((f'getDatatableValues{getElemId(elem.idComponent)}',f"        this.getDatatableValues{getElemId(elem.idComponent)}();"))
     elemBehaviour[1] = hooks
     return elemBehaviour
+
+def getVariantVariables(elem,id):
+    return f"""        this.selectedClass{id} = this.componentclass{id};
+        this.currentVariant{id} = '{getFormatedName(elem.getNameComponent()).lower()}';"""
+    
+def declareMountedVariables(elem,hooks,elemBehaviour):
+    hooks.setdefault("mounted", []).append((f'getVariantVariables{getElemId(elem.idComponent)}',getVariantVariables(elem,getElemId(elem.idComponent))))
+    elemBehaviour[1] = hooks
+    return elemBehaviour
+    
+def getComponentVariant(id,variants):
+    for v in variants:
+        for c in v.variantComponents:
+            if(id==c.idComponent):
+                return c
+    return None
+
+def changeToHoveredFunction(elem,destelem):
+    function = """\t\t""" + f"changeToHovered{getElemId(elem.idComponent)}()"+"{" + f"""
+            this.selectedClass{getElemId(elem.idComponent)}=this.componentclass{getElemId(destelem.idComponent)};
+            this.currentVariant{getElemId(elem.idComponent)}= '{getFormatedName(destelem.getNameComponent()).lower()}'
+    """+"}"
+    return function
+
+def changeToDefaultFunction(elem,destelem):
+    function = """\t\t""" + f"changeToDefault{getElemId(elem.idComponent)}()"+"{" + f"""
+            this.selectedClass{getElemId(elem.idComponent)}=this.componentclass{getElemId(elem.idComponent)};
+            this.currentVariant{getElemId(elem.idComponent)}= '{getFormatedName(elem.getNameComponent()).lower()}'
+    """+"}"
+    return function
+
+def handleVariants(elem,variants,hooks,elemBehaviour):
+    for i in elem.interactions:
+         for a in i.actions:
+            destelem = getComponentVariant(a.destinationID,variants)
+            if(isinstance(a,ChangeAction) and i.getInteractionType()==InteractionElement.Interaction.ONHOVER and len(destelem.interactions)==0):
+                elemBehaviour[0].extend([f'@mouseover="changeToHovered{getElemId(elem.idComponent)}"',f'@mouseleave="changeToDefault{getElemId(elem.idComponent)}"'])
+                hooks.setdefault("methods", []).append((f'changeToHovered{getElemId(elem.idComponent)}',changeToHoveredFunction(elem,destelem)))
+                hooks.setdefault("methods", []).append((f'changeToDefault{getElemId(elem.idComponent)}',changeToDefaultFunction(elem,destelem)))
+                elemBehaviour[1] = hooks
+    return elemBehaviour            
 
 def getElemId(id):
     elemid = id
@@ -295,6 +336,6 @@ def isfromInstance(id):
     return "I" in id
 
 def getFormatedName(name):
-    pattern = "[\s\.\-;#:]"
+    pattern = "[\s\.\-;#,=:]"
     name = re.sub(pattern,"",name)
     return name

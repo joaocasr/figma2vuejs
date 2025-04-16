@@ -23,9 +23,10 @@ allpagesInfo = {}
 componentAssets = dict()
 allrefs = {}
 nestedComponents = {}
+allvariants = []
 
-def buildcomponent(component,projectname,pagesInfo,refs):
-    global allhooks,allpagesInfo,allrefs,nestedComponents
+def buildcomponent(component,projectname,pagesInfo,refs,variants):
+    global allhooks,allpagesInfo,allrefs,nestedComponents,allvariants
     name = component.componentName
     allhooks[name] = {}
     componentAssets[name] = []
@@ -36,7 +37,14 @@ def buildcomponent(component,projectname,pagesInfo,refs):
     output = ""
     idcomponent = getElemId(component.idComponent)
 
-    
+
+    # the position of the variants will be the same as their default variant instance
+    for v in variants:
+        for c in v.variantComponents:
+            if(component.getNameComponent()==c.getNameComponent()):
+                updatePositions(component,v.variantComponents)
+
+    allvariants = variants
     if(anyShapes(component.children)==True): handleClipPathOverlaping(component.children)
 
     for element in component.children:
@@ -61,7 +69,7 @@ def processChildren(data,projectname,name,idcomponent):
         return output
 
 def applytransformation(elem,projectname,pagename,idcomponent):
-    global allhooks, allpagesInfo, allrefs, nestedComponents
+    global allhooks, allpagesInfo, allrefs, nestedComponents, allvariants
     cssclass = ""
     if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.idElement)
     else: cssclass = getElemId(elem.idComponent)
@@ -69,7 +77,7 @@ def applytransformation(elem,projectname,pagename,idcomponent):
     if(pagename in allrefs and cssclass in allrefs[pagename]):
         ref = f' ref="ref{cssclass}" '
 
-    directives, hooks = handleBehaviour(elem,allpagesInfo,pagename,False)
+    directives, hooks = handleBehaviour(elem,allpagesInfo,pagename,False,allvariants)
     if(hooks!=None): 
         for hook in hooks:
             allhooks[pagename].setdefault(hook, []).extend(hooks[hook])
@@ -254,6 +262,20 @@ def flatTree(elementos):
 def anyShapes(elementos):
     allShapes = list(filter(lambda x: (isinstance(x,ShapeElement)),list(flatTree(elementos))))
     return len(allShapes) > 0
+
+def updatePositions(component,variantComponents):
+    for v in variantComponents:
+        destIds = []
+        for i in component.interactions:
+            for a in i.actions:
+                destIds.append(a.destinationID)
+        if(component.style.gridcolumnStart==None and component.style.gridcolumnEnd==None and component.style.gridrowStart==None and component.style.gridrowEnd==None):
+            for comp in variantComponents:
+                if(comp.getNameComponent().split(",")[0] in component.getNameComponent() and comp.getNameComponent()!=component.getNameComponent()):
+                    component.style.setGridcolumnStart(comp.style.gridcolumnStart)
+                    component.style.setGridcolumnEnd(comp.style.gridcolumnEnd)
+                    component.style.setGridrowStart(comp.style.gridrowStart)
+                    component.style.setGridrowEnd(comp.style.gridrowEnd)
 
 def getValue(value):
     if(value==None): return 0

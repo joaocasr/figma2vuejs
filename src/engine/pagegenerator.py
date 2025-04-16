@@ -26,9 +26,10 @@ auxiliarImports = dict()
 componentAssets = dict()
 allPagesInfo = dict()
 allrefs = {}
+alvariants = []
 
-def buildpage(name,page,pagesInfo,refs):
-    global allhooks,imports,components,allPagesInfo,allrefs
+def buildpage(name,page,pagesInfo,refs,variants):
+    global allhooks,imports,components,allPagesInfo,allrefs,alvariants
     #setup a page
     allhooks[page.pagename] = {}
     imports[page.pagename] = []
@@ -38,7 +39,7 @@ def buildpage(name,page,pagesInfo,refs):
     allrefs = refs
     allPagesInfo = pagesInfo
     output = ""  
-
+    alvariants = variants
     if(anyShapes(page.elements)==True): handleClipPathOverlaping(page.elements)
     for element in page.elements:
         output += processChildren(element,name,page)
@@ -61,7 +62,7 @@ def processChildren(data,projectname,page):
 
 # Do a better handling of the tags
 def applytransformation(elem,projectname,page):
-    global allPagesInfo, allhooks, components, componentAssets, allrefs
+    global allPagesInfo, allhooks, components, componentAssets, allrefs, alvariants
     pagename = page.pagename
     cssclass = ""
     if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.idElement)
@@ -70,7 +71,7 @@ def applytransformation(elem,projectname,page):
     if(pagename in allrefs and cssclass in allrefs[pagename]):
         ref = f' ref="ref{cssclass}" '
     # insert directives and functions if there is some behaviour
-    directives, hooks = handleBehaviour(elem,allPagesInfo,pagename,True)
+    directives, hooks = handleBehaviour(elem,allPagesInfo,pagename,True,alvariants)
     if(hooks!=None): 
         for hook in hooks:
             allhooks[pagename].setdefault(hook, []).extend(hooks[hook])
@@ -163,7 +164,7 @@ def applytransformation(elem,projectname,page):
     if(isinstance(elem, Mcomponent) and elem.getisVariant()==True):
         component = getFormatedName("Variant"+elem.getVariantName().lower().capitalize())
         components.setdefault(pagename, {}).add(component)
-        compbegin = f"""<{component} """+' '.join(d for d in directives)+f''' :variant="currentVariant{cssclass}"'''+f''' :componentProps="'''+"{"+f" class: selectedClass{cssclass} "+ '}">'
+        compbegin = f"""<{component} """+' '.join(d for d in directives)+f''' :variant="currentVariant{cssclass}"'''+f''' :componentprops="'''+f"selectedClass{cssclass}"+ '">'
         compend = f"""</{component}>"""
         return (compbegin,compend)
     if(isinstance(elem, TextElement)):

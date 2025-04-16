@@ -3,14 +3,21 @@ from utils.processing import getFormatedName,getElemId,doesImageExist
 def writeVariantComponent(name,project_name,variants):
 
     template = """<template >
-    <component :is="selectedComponent" v-bind="componentProps" :key="variant"></component>
+    <component :is="selectedComponent" :class="componentprops" :key="variant"></component>
 </template>
   
 <script>
 """
     for comp in variants:
-        template += "import "+getFormatedName(str(comp.getNameComponent()).capitalize())+" from '@/components/"+getFormatedName(str(comp.getNameComponent()).capitalize())+".vue';\n" 
-    template += """  export default {
+      template += "import "+getFormatedName(str(comp.getNameComponent()).capitalize())+" from '@/components/"+getFormatedName(str(comp.getNameComponent()).capitalize())+".vue';\n" 
+    template+="""
+const componentsMap = {
+"""
+    for comp in variants:
+      template+=getFormatedName(str(comp.getNameComponent())).lower()+":"+getFormatedName(str(comp.getNameComponent())).capitalize()+",\n"
+
+    template = template[:-2] + "};\n"
+    template += """export default {
     props: {
       variant: {
         type: String,
@@ -22,23 +29,18 @@ def writeVariantComponent(name,project_name,variants):
         
     template=template[:-2]+"""].includes(value),
       },
-      componentProps: {
-        type: Object,
-        default: () => ({}),
+      componentprops: {
+        type: String,
+        required: true,
+        default: '',
       },
     },
     computed: {
-      selectedComponent() {
-          
-""" 
-    for comp in variants:
-        template+="""        if(this.variant ==='"""+getFormatedName(str(comp.getNameComponent())).lower()+"""'){
-          this.variant = """+getFormatedName(str(comp.getNameComponent())).capitalize()+""";
-        }
-"""
+      selectedComponent() {""" 
+
     
     template+="""
-        return this.variant;
+        return componentsMap[this.variant];
       },
     }
   };

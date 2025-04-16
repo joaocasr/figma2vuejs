@@ -118,7 +118,7 @@ def parsePageEntities(data):
     return allpages
 
 def iterate_nestedElements(data):    
-    global allpages, pageWidth, primeVueComponents, notPageElems
+    global allpages, pageWidth, primeVueComponents, notPageElems, variants
     
     # iterate the frames and groups on first level of the whiteboard which are NOT PAGES
     for page in data["document"]["children"][0]["children"]:
@@ -128,7 +128,7 @@ def iterate_nestedElements(data):
     #iterate first for all the components nodes (except primevue components)
     for melement in data["document"]["children"][0]["children"]:
         elements = []
-        if((melement["type"]=="COMPONENT" or isComponentVariant(melement)==True) and "children" in melement and melement["name"] not in assetComponents):
+        if((melement["type"]=="COMPONENT" or isComponentVariant(melement,variants)==True) and "children" in melement and melement["name"] not in assetComponents):
             pageWidth = melement["absoluteRenderBounds"]["width"]*1.2
             for element in melement["children"]:
                 component_width = melement["absoluteRenderBounds"]["width"]
@@ -142,9 +142,9 @@ def iterate_nestedElements(data):
                 #    raise Exception("Error while converting "+element["name"]+". Correct your prototype!")
 
             tag = getElementTag(melement)
-            if(isComponentVariant(melement)!=True):
+            if(isComponentVariant(melement,variants)!=True):
                 allcomponents[melement["id"]] = Mcomponent(melement["id"],melement["name"],tag,"",elements)
-            if(isComponentVariant(melement)==True):
+            if(isComponentVariant(melement,variants)==True):
                 v = VariantComponent(melement["id"],tag,melement["name"],"",elements)
                 setVariantProperties(v,melement["componentPropertyDefinitions"])
                 variants.append(v)
@@ -502,7 +502,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         componentStyle.setGridrowEnd(nr_rowend)
         componentStyle.setPosition(scrollBehaviour)
         componentStyle.setinstanceFromComponentId(data["componentId"])
-        if(isComponentVariant(data)):
+        if(isComponentVariant(data,variants)):
             componentelement.setisVariant(True)
             componentelement.setVariantName(getFormatedName(data["name"]))
         resolveNameConflit(componentelement,componentStyle,pagename)
@@ -677,7 +677,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
 
         if(melement!=None): melement.setChildren(children)
     
-    if(data["type"]=="INSTANCE" and isComponentVariant(data)):
+    if(data["type"]=="INSTANCE" and isComponentVariant(data,variants)):
         #update the default variant instances
         updateDefaultVariants(melement,data["componentId"],variants)
         if(pagename in allpages):
@@ -685,6 +685,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                 for (index,c) in enumerate(v.variantComponents):
                     allpages[pagename].addVariable({f"componentclass{getElemId(c.getIdComponent())}":f'"grid-item-{getElemId(c.getIdComponent())} component{getElemId(c.getIdComponent())}"'})
             allpages[pagename].addVariable({f"selectedClass{getElemId(melement.getIdComponent())}":"''"})
+            allpages[pagename].addVariable({f"currentVariant{getElemId(melement.getIdComponent())}":"''"})
     return melement
 
 # auxiliar function to calculate element positioning
@@ -971,7 +972,6 @@ def resolveNameConflit(componentelement,style,pagename):
             if(c.getNameComponent()==componentelement.getNameComponent() and 
                 c.style.getinstanceFromComponentId()!=style.getinstanceFromComponentId()):
                 componentelement.setNameComponent(componentelement.getNameComponent()+getElemId(componentelement.getIdComponent()))
-                print(componentelement.getNameComponent())
     return componentelement
 
 def setHoverProperties(overlayElem,melement,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend):
@@ -1016,11 +1016,14 @@ def getVariantElement(id,data):
             elem = getVariantElement(id, c)
             if(elem): return elem
 
-def isComponentVariant(c):
+def isComponentVariant(elem,variants):
     r = False
-    if((c["type"]=="COMPONENT_SET" or c["type"]=="COMPONENT" or c["type"]=="INSTANCE") and 
-       ("componentPropertyDefinitions" in c or "componentProperties" in c)):
+    if((elem["type"]=="COMPONENT_SET" or elem["type"]=="COMPONENT" or elem["type"]=="INSTANCE") and 
+       ("componentPropertyDefinitions" in elem or "componentProperties" in elem)):
         r = True
+    if(elem["type"]=="INSTANCE" and r==True and len(variants)>0):
+        if(not any(elem["componentId"]==c.getIdComponent() for v in variants for c in v.variantComponents)):
+            r = False
     return r
 
 def isAllImages(elem):
