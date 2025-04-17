@@ -65,7 +65,7 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants):
                     elemBehaviour[1] = hooks
         # HANDLE EVENTS ON VARIANT COMPONENTS
         if(isinstance(elem, Mcomponent) and elem.getisVariant()==True):
-            elemBehaviour = handleVariants(elem,allvariants,hooks,elemBehaviour)
+            elemBehaviour = handleVariants(elem,allvariants,hooks,elemBehaviour,allPagesInfo)
     # HANDLE COMPONENT VARIANT INSTANCES IN VIEW PAGES
     if(isinstance(elem, Mcomponent) and elem.getisVariant()==True):
         elemBehaviour = declareMountedVariables(elem,hooks,elemBehaviour)
@@ -312,14 +312,53 @@ def changeToDefaultFunction(elem,destelem):
     """+"}"
     return function
 
-def handleVariants(elem,variants,hooks,elemBehaviour):
+def changeVariantFunction(elem,destinations):
+    elsecond = False
+    elsecondst = "if"
+    function = """\t\t""" + f"changeVariant{getElemId(elem.idComponent)}()"+"{" 
+    for variant in destinations: 
+        if(elsecond==True): elsecondst = "else if"      
+        function+=f"""
+        {elsecondst}(this.selectedClass{getElemId(elem.idComponent)}==this.componentclass{getElemId(variant[0].idComponent)})"""+"{"+f"""
+                this.selectedClass{getElemId(elem.idComponent)}=this.componentclass{getElemId(variant[1].idComponent)};
+                this.currentVariant{getElemId(elem.idComponent)}= '{getFormatedName(variant[1].getNameComponent()).lower()}'
+        """+"""}"""
+        elsecond = True
+    function+="}"
+    return function
+
+def getDestinations(beginid,elem,variants,destinations):
+    if(len(elem.interactions)==0): return destinations
+    for i in elem.interactions:
+         for a in i.actions:
+            if(isinstance(a,ChangeAction) and i.getInteractionType()==InteractionElement.Interaction.ONCLICK):
+                destelem = getComponentVariant(a.destinationID,variants)
+                if(destelem!=None): 
+                    destinations.append((elem,destelem))
+                    if(destelem.idComponent==beginid): return destinations
+                    return getDestinations(beginid,destelem,variants,destinations)
+                
+def handleVariants(elem,variants,hooks,elemBehaviour,allPagesInfo):
     for i in elem.interactions:
          for a in i.actions:
             destelem = getComponentVariant(a.destinationID,variants)
-            if(isinstance(a,ChangeAction) and i.getInteractionType()==InteractionElement.Interaction.ONHOVER and len(destelem.interactions)==0):
+            if(isinstance(a,ChangeAction) and i.getInteractionType()==InteractionElement.Interaction.ONHOVER):
                 elemBehaviour[0].extend([f'@mouseover="changeToHovered{getElemId(elem.idComponent)}"',f'@mouseleave="changeToDefault{getElemId(elem.idComponent)}"'])
                 hooks.setdefault("methods", []).append((f'changeToHovered{getElemId(elem.idComponent)}',changeToHoveredFunction(elem,destelem)))
                 hooks.setdefault("methods", []).append((f'changeToDefault{getElemId(elem.idComponent)}',changeToDefaultFunction(elem,destelem)))
+                if(len(destelem.interactions)>0):
+                    handleVariants(destelem,variants,hooks,elemBehaviour,allPagesInfo)
+                elemBehaviour[1] = hooks
+            if(isinstance(a,ChangeAction) and i.getInteractionType()==InteractionElement.Interaction.ONCLICK and len(destelem.interactions)>=0):
+                destinations = getDestinations(elem.idComponent,elem,variants,[])
+                elemBehaviour[0].append(f'@click="changeVariant{getElemId(elem.idComponent)}"')
+                hooks.setdefault("methods", []).append((f'changeVariant{getElemId(elem.idComponent)}',changeVariantFunction(elem,destinations)))
+                elemBehaviour[1] = hooks
+            if(isinstance(a,NavigationAction) and i.getInteractionType()==InteractionElement.Interaction.ONCLICK):
+                destination = getPageById(a.getDestinationID(),allPagesInfo) 
+                methodName = "goto"+destination
+                insertFunction("methods",hooks,methodName,getNavigationFunction(methodName,destination))#inserir no metodo uma verificacao do variante atual
+                elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                 elemBehaviour[1] = hooks
     return elemBehaviour            
 

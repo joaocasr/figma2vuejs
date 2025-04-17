@@ -271,6 +271,12 @@ def updatePositions(component,variantComponents):
                 destIds.append(a.destinationID)
         if(component.style.gridcolumnStart==None and component.style.gridcolumnEnd==None and component.style.gridrowStart==None and component.style.gridrowEnd==None):
             for comp in variantComponents:
+                if(comp.getNameComponent().count('=')==1 and comp.getNameComponent().split("=")[0]==component.getNameComponent().split("=")[0] and
+                   comp.style.gridcolumnStart!=None and comp.style.gridcolumnEnd!=None and comp.style.gridrowStart!=None and comp.style.gridrowEnd!=None):
+                    component.style.setGridcolumnStart(comp.style.gridcolumnStart)
+                    component.style.setGridcolumnEnd(comp.style.gridcolumnEnd)
+                    component.style.setGridrowStart(comp.style.gridrowStart)
+                    component.style.setGridrowEnd(comp.style.gridrowEnd)                    
                 if(comp.getNameComponent().split(",")[0] in component.getNameComponent() and comp.getNameComponent()!=component.getNameComponent()):
                     component.style.setGridcolumnStart(comp.style.gridcolumnStart)
                     component.style.setGridcolumnEnd(comp.style.gridcolumnEnd)
