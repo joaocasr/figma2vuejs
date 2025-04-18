@@ -83,7 +83,8 @@ class Mcomponent(object):
 		self.data = data
 
 	def addVariable(self,var):
-		return self.data.append(var)
+		if(var not in self.data):
+			self.data.append(var)
 
 	def getHasCloseAction(self):
 		return self.hasCloseAction

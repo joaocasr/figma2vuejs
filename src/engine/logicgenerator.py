@@ -123,7 +123,7 @@ def getPageById(id,allPages):
     return ""
 
 def getNavigationFunction(name,destination):
-    function = """\t\t""" + name + "(){" + """
+    function = """\t""" + name + "(){" + """
             this.$router.push({path:"/""" + destination.lower() + """"});
         }""" 
     return function
@@ -283,8 +283,8 @@ def insertTableLogic(elem,allPagesInfo,hooks,elemBehaviour):
     return elemBehaviour
 
 def getVariantVariables(elem,id):
-    return f"""        this.selectedClass{id} = this.componentclass{id};
-        this.currentVariant{id} = '{getFormatedName(elem.getNameComponent()).lower()}';"""
+    return f"""            this.selectedClass{id} = this.componentclass{id};
+            this.currentVariant{id} = '{getFormatedName(elem.getNameComponent()).lower()}';"""
     
 def declareMountedVariables(elem,hooks,elemBehaviour):
     hooks.setdefault("mounted", []).append((f'getVariantVariables{getElemId(elem.idComponent)}',getVariantVariables(elem,getElemId(elem.idComponent))))
@@ -299,30 +299,30 @@ def getComponentVariant(id,variants):
     return None
 
 def changeToHoveredFunction(elem,destelem):
-    function = """\t\t""" + f"changeToHovered{getElemId(elem.idComponent)}()"+"{" + f"""
+    function = """\t""" + f"changeToHovered{getElemId(elem.idComponent)}()"+"{" + f"""
             this.selectedClass{getElemId(elem.idComponent)}=this.componentclass{getElemId(destelem.idComponent)};
             this.currentVariant{getElemId(elem.idComponent)}= '{getFormatedName(destelem.getNameComponent()).lower()}'
-    """+"}"
+"""+"\t}"
     return function
 
 def changeToDefaultFunction(elem,destelem):
-    function = """\t\t""" + f"changeToDefault{getElemId(elem.idComponent)}()"+"{" + f"""
+    function = """\t""" + f"changeToDefault{getElemId(elem.idComponent)}()"+"{" + f"""
             this.selectedClass{getElemId(elem.idComponent)}=this.componentclass{getElemId(elem.idComponent)};
             this.currentVariant{getElemId(elem.idComponent)}= '{getFormatedName(elem.getNameComponent()).lower()}'
-    """+"}"
+"""+"\t}"
     return function
 
 def changeVariantFunction(elem,destinations):
     elsecond = False
     elsecondst = "if"
-    function = """\t\t""" + f"changeVariant{getElemId(elem.idComponent)}()"+"{" 
+    function = """\t""" + f"changeVariant{getElemId(elem.idComponent)}()"+"{" 
     for variant in destinations: 
         if(elsecond==True): elsecondst = "else if"      
         function+=f"""
         {elsecondst}(this.selectedClass{getElemId(elem.idComponent)}==this.componentclass{getElemId(variant[0].idComponent)})"""+"{"+f"""
                 this.selectedClass{getElemId(elem.idComponent)}=this.componentclass{getElemId(variant[1].idComponent)};
                 this.currentVariant{getElemId(elem.idComponent)}= '{getFormatedName(variant[1].getNameComponent()).lower()}'
-        """+"""}"""
+"""+"""\t}"""
         elsecond = True
     function+="}"
     return function
@@ -338,7 +338,16 @@ def getDestinations(beginid,elem,variants,destinations):
                     if(destelem.idComponent==beginid): return destinations
                     return getDestinations(beginid,destelem,variants,destinations)
                 
-def handleVariants(elem,variants,hooks,elemBehaviour,allPagesInfo):
+def getVariantNavigationFunction(methodName,beginElem,currentElem,destination):
+    if(beginElem==None and currentElem!=None): beginElem = currentElem  
+    function = """\t""" + methodName + "(){" + f"""
+            if(this.selectedClass{getElemId(beginElem.idComponent)}==this.componentclass{getElemId(currentElem.idComponent)})"""+"{"+"""
+                this.$router.push({path:"/""" + destination.lower() + """"});
+            }
+    \t}""" 
+    return function
+
+def handleVariants(elem,variants,hooks,elemBehaviour,allPagesInfo,beginElem=None):
     for i in elem.interactions:
          for a in i.actions:
             destelem = getComponentVariant(a.destinationID,variants)
@@ -347,7 +356,7 @@ def handleVariants(elem,variants,hooks,elemBehaviour,allPagesInfo):
                 hooks.setdefault("methods", []).append((f'changeToHovered{getElemId(elem.idComponent)}',changeToHoveredFunction(elem,destelem)))
                 hooks.setdefault("methods", []).append((f'changeToDefault{getElemId(elem.idComponent)}',changeToDefaultFunction(elem,destelem)))
                 if(len(destelem.interactions)>0):
-                    handleVariants(destelem,variants,hooks,elemBehaviour,allPagesInfo)
+                    handleVariants(destelem,variants,hooks,elemBehaviour,allPagesInfo,elem)
                 elemBehaviour[1] = hooks
             if(isinstance(a,ChangeAction) and i.getInteractionType()==InteractionElement.Interaction.ONCLICK and len(destelem.interactions)>=0):
                 destinations = getDestinations(elem.idComponent,elem,variants,[])
@@ -357,7 +366,7 @@ def handleVariants(elem,variants,hooks,elemBehaviour,allPagesInfo):
             if(isinstance(a,NavigationAction) and i.getInteractionType()==InteractionElement.Interaction.ONCLICK):
                 destination = getPageById(a.getDestinationID(),allPagesInfo) 
                 methodName = "goto"+destination
-                insertFunction("methods",hooks,methodName,getNavigationFunction(methodName,destination))#inserir no metodo uma verificacao do variante atual
+                insertFunction("methods",hooks,methodName,getVariantNavigationFunction(methodName,beginElem,elem,destination))
                 elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                 elemBehaviour[1] = hooks
     return elemBehaviour            

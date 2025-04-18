@@ -46,7 +46,8 @@ class Mpage(object):
 		self.elements.append(element)
 
 	def addVariable(self,var):
-		return self.data.append(var)
+		if(var not in self.data):
+			self.data.append(var)
 
 	def getData(self):
 		return self.data
