@@ -282,6 +282,29 @@ def insertTableLogic(elem,allPagesInfo,hooks,elemBehaviour):
     elemBehaviour[1] = hooks
     return elemBehaviour
 
+def addPropsFunction(allhooks,pagename):
+    function = "\tgetProps(l){" + """
+        let f = {}
+        l.forEach((item) => {
+        for (const [key, value] of Object.entries(item)) {
+            let mvalue = value;
+            if(key==='atributes'){
+                for (const [key, value] of Object.entries(mvalue)) {
+                    f[key]=value;
+                }
+            }
+        }
+        });
+        return f;
+    }
+    """ 
+    lhooks = {}
+    lhooks.setdefault("methods", []).append(("getProps",function))
+    if("methods" not in allhooks[pagename]): allhooks[pagename]["methods"] = []
+    if(("getProps",function) not in allhooks[pagename]["methods"]):
+        allhooks[pagename].setdefault("methods", []).extend(lhooks["methods"])
+    return function
+
 def getVariantVariables(elem,id):
     return f"""            this.selectedClass{id} = this.componentclass{id};
             this.currentVariant{id} = '{getFormatedName(elem.getNameComponent()).lower()}';"""

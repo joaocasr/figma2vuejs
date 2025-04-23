@@ -10,6 +10,7 @@ class Mcomponent(object):
 		self.style = None
 		self.interactions = []
 		self.data = []
+		self.props = {}
 		self.hasCloseAction = False
 		self.upperIdComponent = None
 		self.zindex = 0
@@ -81,6 +82,15 @@ class Mcomponent(object):
 
 	def setData(self, data):
 		self.data = data
+
+	def getProps(self):
+		"""@ReturnType object"""
+		return self.props
+
+	def setProps(self, props):
+		"""@ParamType props
+		@ReturnType void"""
+		self.props = props
 
 	def addVariable(self,var):
 		if(var not in self.data):

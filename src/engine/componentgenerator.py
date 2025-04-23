@@ -24,19 +24,20 @@ componentAssets = dict()
 allrefs = {}
 nestedComponents = {}
 allvariants = []
+allProps = {}
 
 def buildcomponent(component,projectname,pagesInfo,refs,variants):
-    global allhooks,allpagesInfo,allrefs,nestedComponents,allvariants
+    global allhooks,allpagesInfo,allrefs,nestedComponents,allvariants,allProps
     name = component.componentName
     allhooks[name] = {}
     componentAssets[name] = []
     nestedComponents[name] = set()
     allrefs = refs
+    allProps = component.getProps()
     # build elements from the component  
     allpagesInfo = pagesInfo
     output = ""
     idcomponent = getElemId(component.idComponent)
-
 
     # the position of the variants will be the same as their default variant instance
     for v in variants:
@@ -46,7 +47,7 @@ def buildcomponent(component,projectname,pagesInfo,refs,variants):
 
     allvariants = variants
     if(anyShapes(component.children)==True): handleClipPathOverlaping(component.children)
-
+    if(len(component.interactions)>0): component.children[0].interactions.extend(component.interactions)
     for element in component.children:
         output += processChildren(element,projectname,name,idcomponent)
 
@@ -69,7 +70,7 @@ def processChildren(data,projectname,name,idcomponent):
         return output
 
 def applytransformation(elem,projectname,pagename,idcomponent):
-    global allhooks, allpagesInfo, allrefs, nestedComponents, allvariants
+    global allhooks, allpagesInfo, allrefs, nestedComponents, allvariants, allProps
     cssclass = ""
     if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.idElement)
     else: cssclass = getElemId(elem.idComponent)
@@ -86,7 +87,10 @@ def applytransformation(elem,projectname,pagename,idcomponent):
         generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
         if(elem.tag==""):
             elem.tag = "p"
-        return ("<"+elem.tag+f" {ref}class="+'"grid-item-'+ idcomponent +' text'+ cssclass +'" '+' '.join(d for d in directives)+'>'+elem.text, "</"+elem.tag+">")
+        txtContent = elem.text
+        if("atr"+cssclass in allProps.keys()):
+            txtContent = "{{"+ f"atributes.atr{cssclass}" +"}}"
+        return ("<"+elem.tag+f" {ref}class="+'"grid-item-'+ idcomponent +' text'+ cssclass +'" '+' '.join(d for d in directives)+'>'+txtContent, "</"+elem.tag+">")
     if(isinstance(elem, ContainerElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         if(elem.tag==""):
@@ -143,7 +147,7 @@ def applytransformation(elem,projectname,pagename,idcomponent):
 
     if(isinstance(elem, Mcomponent)):
         componentName = getFormatedName(elem.componentName.capitalize())
-        classname = ' class="'+"grid-item-"+getElemId(elem.idComponent)+' component'+ getElemId(elem.idComponent)     
+        classname = ' class="'+"grid-item-"+getElemId(elem.idComponent)+' component'+ getElemId(elem.idComponent)    
         if(elem.style.getPosition()!=None):
             classname += " pos"+componentName.lower()
             setComponentPositionCSS(projectname,pagename,"pos"+componentName.lower(),elem)
@@ -171,10 +175,15 @@ def writeVueComponent(name,project_name,content,component,pagesInfo):
         pagehooks +="\n\t}"
     if(len(pagehooks)>0): pagehooks = ",\n    "+pagehooks
     template = '<div>' + content + '</div>' #'<div class="grid-item-'+idcomponent+' component'+ idcomponent +'"'+ ">"+ content + '</div>'
+    props =""
+    if(component.getProps()!={}):
+        props = """\n    props:{
+        atributes: Object
+    },"""
     componentpage = """<template>\n""" + processTemplate(template,name) + """
 </template>
-
-<script>"""+ componentsimports +"""export default {"""+ pagecomponents +"""
+    
+<script>"""+ componentsimports +"""export default {"""+ pagecomponents +f"""{props}"""+"""
     data(){
         return {
         """ + ',\n            '.join(str(key)+":"+str(value) for variables in component.getData() for key, value in variables.items()) + """   

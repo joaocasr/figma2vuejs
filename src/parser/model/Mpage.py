@@ -10,6 +10,8 @@ class Mpage(object):
 		self.elements = []
 		self.components = []
 		self.data = []
+		self.objectDL = {}
+		self.props = []
 		self.style = style
 
 	def getPagename(self):
@@ -39,6 +41,15 @@ class Mpage(object):
 		@ReturnType void"""
 		self.idpage = idpage
 
+	def getobjectDL(self):
+		"""@ReturnType object"""
+		return self.objectDL
+
+	def setobjectDL(self, objectDL):
+		"""@ParamType objectDL
+		@ReturnType void"""
+		self.objectDL = objectDL
+  
 	def assignPageStyle(self, style):
 		self.style = style
 

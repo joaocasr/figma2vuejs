@@ -1,6 +1,6 @@
 from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties, generatePaginatorCssProperties, generateFormCssProperties, generateCheckboxCssProperties, generateVideoCssProperties, generateMenuCssProperties, generateScrollCSS, generateTableCssProperties
 from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin, useRatingVuetifyPlugin, usePaginatorVuetifyPlugin, useFormPrimeVuePlugin, useCheckboxPrimeVuePlugin, useMenuVuetifyPlugin, useDataTablePrimevuePlugin
-from engine.logicgenerator import handleBehaviour
+from engine.logicgenerator import handleBehaviour, addPropsFunction
 from engine.assetshelper import getPrimeVueForm, getPrimeVueCheckbox, getVuetifyMenu, getPrimeVueDataTable
 from parser.model.Mcomponent import Mcomponent
 from parser.model.Melement import Melement
@@ -27,6 +27,7 @@ componentAssets = dict()
 allPagesInfo = dict()
 allrefs = {}
 alvariants = []
+dataEntities = []
 
 def buildpage(name,page,pagesInfo,refs,variants):
     global allhooks,imports,components,allPagesInfo,allrefs,alvariants
@@ -62,7 +63,7 @@ def processChildren(data,projectname,page):
 
 # Do a better handling of the tags
 def applytransformation(elem,projectname,page):
-    global allPagesInfo, allhooks, components, componentAssets, allrefs, alvariants
+    global allPagesInfo, allhooks, components, componentAssets, allrefs, alvariants, dataEntities
     pagename = page.pagename
     cssclass = ""
     if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.idElement)
@@ -76,8 +77,18 @@ def applytransformation(elem,projectname,page):
         for hook in hooks:
             allhooks[pagename].setdefault(hook, []).extend(hooks[hook])
     id = ""
+    begintag = ""
+    endtag = ""
     if(elem.style.getgridArea()!=None):
         id = ' id="'+elem.style.getgridArea()+'"'
+    if(isObjectDataList(cssclass,page)==True):
+        for e in elem.children:
+            if(isinstance(e,Melement) and belongstoDataList(getElemId(e.idElement),page)==True): dataEntities.append((Melement,getFormatedName(e.name.lower())))
+            if(isinstance(e,Mcomponent) and belongstoDataList(getElemId(e.idComponent),page)==True): dataEntities.append((Mcomponent,getFormatedName(e.componentName.lower())))
+        if(isAllMcomponent()==True):
+            addPropsFunction(allhooks,pagename)
+            begintag = f'''<Component v-for="item in list{cssclass}" :atributes="getProps(list{cssclass})" :is="'''+"item.name"+'''" :class="`grid-item-${item.id} component${item.id}`">'''
+            endtag = '''</Component>'''
     if(isinstance(elem,Mcomponent)):
         if(elem.getNameComponent()=="Dropdown" and elem.getTypeComponent()=="COMPONENT_ASSET"):
             useSelectVuetifyPlugin(projectname)
@@ -187,6 +198,10 @@ def applytransformation(elem,projectname,page):
             }"'''
             bgtag = f''' <div @mousedown="onMouseDown{cssclass}" @mouseup="onMouseUp{cssclass}" {style} ref="ref{cssclass}" class="scroll-wrapper{cssclass}">'''+bgtag
             edtag += "</div>"
+        if(isObjectDataList(cssclass,page)==True):
+            return (bgtag+begintag,endtag+edtag)
+        bgtag+=begintag
+        edtag+=endtag        
         return (bgtag,edtag)
     if(isinstance(elem, ImageElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
@@ -242,10 +257,10 @@ def writeVue(name,page,content):
     allcomponents = list(allcomponents)
     if(len(allcomponents)>0): pagecomponents="""\n    components:{\n        """+ ',\n        '.join(allcomponents) +"""\n    },"""
     for hook in allhooks[page.getPagename()]:
-        if("methods" in hook): pagehooks += hook + ":{\n"
+        if("methods" in hook or "computed" in hook): pagehooks += hook + ":{\n"
         if("mounted" in hook or "destroyed" in hook or "setup" in hook): pagehooks += hook + "(){\n"
         for content in allhooks[page.getPagename()][hook]:
-            if("methods" in hook): 
+            if("methods" in hook or "computed" in hook): 
                 pagehooks += content[1] + ",\n"
             if("mounted" in hook or "setup" in hook or "destroyed" in hook): 
                 pagehooks += content[1] + "\n\n"
@@ -257,14 +272,19 @@ def writeVue(name,page,content):
             pagehooks += "}\n\n"
         pagehooks=pagehooks[:-2]+"\n\t},"
     pagehooks = pagehooks[:-1]
-    if(len(pagehooks)>0): pagehooks= ",\n    "+pagehooks
+    if(len(pagehooks)>0): pagehooks= ",\n            "+pagehooks
+    variables = ",\n            ".join(str(key)+":"+str(value) for variables in page.getData() for key, value in variables.items())
+    dataObjects = ',\n            '.join(str(key)+":"+str(value) for key, value in page.getobjectDL().items())
+    if(variables!="" and dataObjects!=""):
+        variables+=",            "
     vuepage = """<template>\n""" + processTemplate(template,page.getPagename()) + """
 </template>
 
 <script>"""+ componentsimports +"""export default {"""+ pagecomponents +"""
     data(){
         return {
-            """ + ',\n            '.join(str(key)+":"+str(value) for variables in page.getData() for key, value in variables.items()) + """    
+            """ + variables + """    
+            """ + dataObjects + """    
         }
     }""" + pagehooks + """
 }
@@ -278,13 +298,16 @@ def writeVue(name,page,content):
 
 
 def processTemplate(html_string,page):
-    global components
+    global components,dataEntities
 
     soup = BeautifulSoup(html_string, "html.parser")
     finalHtml = soup.prettify()
     for c in components[page]:
         pattern = "<"+c.lower()+r" ([\s]*.*?)"+">"+r"((\n|.)*?)"+r"<\/"+c.lower()+">"
-        processedTemplate = re.sub(pattern,"<"+c.capitalize()+ r' \1' +">"+"</"+c.capitalize()+">",finalHtml)
+        if((Mcomponent,getFormatedName(c.lower())) not in dataEntities):
+            processedTemplate = re.sub(pattern,"<"+c.capitalize()+ r' \1' +">"+"</"+c.capitalize()+">",finalHtml)
+        else:
+            processedTemplate = re.sub(pattern,"",finalHtml)            
         finalHtml = processedTemplate
     for c in componentAssets[page]:
         tag = c.split(" ")[1]
@@ -343,3 +366,30 @@ def flatTree(elementos):
 def anyShapes(elementos):
     allShapes = list(filter(lambda x: (isinstance(x,ShapeElement)),list(flatTree(elementos))))
     return len(allShapes) > 0
+
+def isObjectDataList(id,page):
+    r = False
+    if("list"+getElemId(id) in page.getobjectDL()):
+        r = True
+    return r
+
+def belongstoDataList(elemid,page):
+    r = False
+    for id in page.getobjectDL():
+        for e in page.getobjectDL()[id]:
+            if(e['id']==elemid): r=True
+    return r
+
+def isAllMelement():
+    global dataEntities
+    r = True
+    for e in dataEntities:
+        if(e[0]!=Melement): r = False
+    return r
+
+def isAllMcomponent():
+    global dataEntities
+    r = True
+    for e in dataEntities:
+        if(e[0]!=Mcomponent): r = False
+    return r

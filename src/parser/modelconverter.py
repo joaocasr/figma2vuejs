@@ -28,6 +28,7 @@ from parser.model.OverlayAction import OverlayAction
 from parser.model.ScrollAction import ScrollAction
 from parser.model.ChangeAction import ChangeAction
 from engine.stylegenerator import calculate_gradientDegree
+from engine.datagenerator import buildPageEntities,parseEntity,getObjectsDL
 from parser.assetsconverter import convertToDropdown, convertToSearchInput, convertToDatePicker, convertToSlider, convertToRating, convertToPaginator, convertToForm, convertToCheckbox, convertToMenu, convertToTable
 from utils.processing import getFormatedName,getElemId
 
@@ -36,6 +37,7 @@ allimages = []
 allsvgs = []
 refs = {}
 componentVariables = {}
+componentProps = {}
 variants = []
 scrollElements = {}
 # key: component_id ; value: MComponent
@@ -213,8 +215,20 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
 
     tag = getElementTag(data)
     scrollBehaviour = None
-
+    isComponentInstance = False
     melement = None
+    if(data["name"].lower().endswith("#data") and parent_data!=None):
+        buildPageEntities(getElemId(parent_data["id"]),getFormatedName(pagename))
+        parseEntity(data,getFormatedName(data["name"].lower()),getElemId(data["id"]),getFormatedName(pagename),getElemId(parent_data["id"]))
+        objList=getObjectsDL(getFormatedName(pagename))
+        if(pagename in allpages):
+            allpages[pagename].setobjectDL(objList)
+        for l in objList:
+            for i in objList[l]:
+                if(i["name"]==getFormatedName(data["name"].lower())):
+                    addComponentProps(data["name"],i["atributes"])
+        #adicionar atributos props ao componente
+        print(objList)
     if(data["type"]=="COMPONENT"):
         elements = []
         for element in data["children"]:
@@ -492,6 +506,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         melement = mtextelement
     
     elif(data["type"]=="INSTANCE"):
+        isComponentInstance = True
         scrollBehaviour = None
         if(data["scrollBehavior"]=="FIXED"): scrollBehaviour = "sticky"
         componentelement = Mcomponent(data["id"],data["name"],tag,"")
@@ -507,8 +522,8 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             componentelement.setVariantName(getFormatedName(data["name"]))
         resolveNameConflit(componentelement,componentStyle,pagename)
         assignComponentData(componentelement)
+        assignComponentProps(componentelement)
         componentelement.setComponentStyle(componentStyle)            
-        pageComponents.setdefault(pagename, []).append(componentelement)
         melement = componentelement
 
     # handles ContainerElement
@@ -676,7 +691,8 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             children.append(nestedelem)
 
         if(melement!=None): melement.setChildren(children)
-    
+
+    if(data["type"]=="INSTANCE" and isComponentInstance==True): pageComponents.setdefault(pagename, []).append(melement)
     if(data["type"]=="INSTANCE" and isComponentVariant(data,variants)):
         #update the default variant instances
         updateDefaultVariants(melement,data["componentId"],variants)
@@ -934,7 +950,15 @@ def extractSVGs(projectname):
                 batchf+=50
     batchi=0
     batchf=50
-                
+
+def addComponentProps(componentName,props):
+    global pageComponents, componentProps
+    for idp in pageComponents:
+        for compp in pageComponents[idp]:
+            if(compp.getNameComponent()==componentName):
+                compp.setProps(props)
+    componentProps[componentName] = props
+   
 def addComponentVariable(componentName,var):
     global pageComponents, componentVariables
     for idp in pageComponents:
@@ -946,6 +970,10 @@ def addComponentVariable(componentName,var):
         componentVariables[componentName].append(var)
     elif(componentName not in componentVariables):
         componentVariables[componentName]=[var]
+
+def assignComponentProps(component):
+    if(component.getNameComponent() in componentProps):
+        component.setProps(componentProps[component.getNameComponent()])
 
 def assignComponentData(component):
     if(component.getNameComponent() in componentVariables):
