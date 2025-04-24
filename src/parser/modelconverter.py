@@ -217,18 +217,20 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
     scrollBehaviour = None
     isComponentInstance = False
     melement = None
-    if(data["name"].lower().endswith("#data") and parent_data!=None):
-        buildPageEntities(getElemId(parent_data["id"]),getFormatedName(pagename))
-        parseEntity(data,getFormatedName(data["name"].lower()),getElemId(data["id"]),getFormatedName(pagename),getElemId(parent_data["id"]))
+    if(data["name"].lower().endswith("#data")):
+        if(parent_data!=None):
+            parentId = parent_data["id"]
+        else: parentId = ""
+        buildPageEntities(getElemId(parentId),getFormatedName(pagename))
+        parseEntity(data,getFormatedName(data["name"].lower()),getElemId(data["id"]),getFormatedName(pagename),getElemId(parentId),True)
         objList=getObjectsDL(getFormatedName(pagename))
         if(pagename in allpages):
             allpages[pagename].setobjectDL(objList)
-        for l in objList:
-            for i in objList[l]:
-                if(i["name"]==getFormatedName(data["name"].lower())):
-                    addComponentProps(data["name"],i["atributes"])
-        #adicionar atributos props ao componente
-        print(objList)
+        if(data["type"]=="INSTANCE" or data["type"]=="COMPONENT"):
+            for l in objList:
+                for i in objList[l]:
+                    if("name" in i and i["name"]==getFormatedName(data["name"].lower())):
+                        addComponentProps(data["name"],i["atributes"])
     if(data["type"]=="COMPONENT"):
         elements = []
         for element in data["children"]:

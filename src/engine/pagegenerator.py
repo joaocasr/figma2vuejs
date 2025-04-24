@@ -27,16 +27,17 @@ componentAssets = dict()
 allPagesInfo = dict()
 allrefs = {}
 alvariants = []
-dataEntities = []
+dataEntities = {}
 
 def buildpage(name,page,pagesInfo,refs,variants):
-    global allhooks,imports,components,allPagesInfo,allrefs,alvariants
+    global allhooks,imports,components,allPagesInfo,allrefs,alvariants,dataEntities
     #setup a page
     allhooks[page.pagename] = {}
     imports[page.pagename] = []
     components[page.pagename] = set()
     auxiliarImports[page.pagename] = set()
     componentAssets[page.pagename] = []
+    dataEntities[page.pagename] = []
     allrefs = refs
     allPagesInfo = pagesInfo
     output = ""  
@@ -81,14 +82,18 @@ def applytransformation(elem,projectname,page):
     endtag = ""
     if(elem.style.getgridArea()!=None):
         id = ' id="'+elem.style.getgridArea()+'"'
+    atributeProps = ""
+    if(belongstodataObjectsList(cssclass,page)==True):
+        atributeProps = ' :atributes="getProps(dataObjects)"'
+        addPropsFunction(allhooks,pagename)
     if(isObjectDataList(cssclass,page)==True):
         for e in elem.children:
-            if(isinstance(e,Melement) and belongstoDataList(getElemId(e.idElement),page)==True): dataEntities.append((Melement,getFormatedName(e.name.lower())))
-            if(isinstance(e,Mcomponent) and belongstoDataList(getElemId(e.idComponent),page)==True): dataEntities.append((Mcomponent,getFormatedName(e.componentName.lower())))
-        if(isAllMcomponent()==True):
-            addPropsFunction(allhooks,pagename)
-            begintag = f'''<Component v-for="item in list{cssclass}" :atributes="getProps(list{cssclass})" :is="'''+"item.name"+'''" :class="`grid-item-${item.id} component${item.id}`">'''
-            endtag = '''</Component>'''
+            if(isinstance(e,Melement) and belongstoDataList(getElemId(e.idElement),page)==True): dataEntities[pagename].append((Melement,getFormatedName(e.name.lower())))
+            if(isinstance(e,Mcomponent) and belongstoDataList(getElemId(e.idComponent),page)==True): dataEntities[pagename].append((Mcomponent,getFormatedName(e.componentName.lower())))
+        
+        addPropsFunction(allhooks,pagename)
+        if(len(page.getobjectDL()[f'list{cssclass}'])>0):
+            begintag = f'''<Component v-for="item in list{cssclass}" :atributes="getProps(list{cssclass})" :is="'''+"item.name"+'''" :class="`grid-item-${item.id} component${item.id}`"/>'''
     if(isinstance(elem,Mcomponent)):
         if(elem.getNameComponent()=="Dropdown" and elem.getTypeComponent()=="COMPONENT_ASSET"):
             useSelectVuetifyPlugin(projectname)
@@ -175,7 +180,7 @@ def applytransformation(elem,projectname,page):
     if(isinstance(elem, Mcomponent) and elem.getisVariant()==True):
         component = getFormatedName("Variant"+elem.getVariantName().lower().capitalize())
         components.setdefault(pagename, {}).add(component)
-        compbegin = f"""<{component} """+' '.join(d for d in directives)+f''' :variant="currentVariant{cssclass}"'''+f''' :componentprops="'''+f"selectedClass{cssclass}"+ '">'
+        compbegin = f"""<{component} """+' '.join(d for d in directives) + f"{atributeProps}" + f''' :variant="currentVariant{cssclass}"'''+f''' :componentprops="'''+f"selectedClass{cssclass}"+ '">'
         compend = f"""</{component}>"""
         return (compbegin,compend)
     if(isinstance(elem, TextElement)):
@@ -183,12 +188,14 @@ def applytransformation(elem,projectname,page):
         if(elem.tag==""):
             elem.tag = "p"
         txt = re.sub(r"\n", "<br/>",elem.text)
-        return ("<"+ elem.tag + id + ref +" class="+'"grid-item text'+ cssclass  + '" '+ ' '.join(d for d in directives) +">"+txt, "</"+elem.tag+">")
+        if(belongstoDataObject(cssclass,page)[1]==True):
+            txt = "{{"+f'{belongstoDataObject(cssclass,page)[0]}.atr{cssclass}'+"}}"   
+        return ("<"+ elem.tag + id + ref +" class="+'"grid-item text'+ cssclass  + '" '+ ' '.join(d for d in directives)+ f"{atributeProps}"+">"+txt, "</"+elem.tag+">")
     if(isinstance(elem, ContainerElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         if(elem.tag==""):
             elem.tag = "div"
-        bgtag = "<"+elem.tag + id + ref +" class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) +">"
+        bgtag = "<"+elem.tag + id + ref +" class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) + f"{atributeProps}"+">"
         edtag = "</"+elem.tag+">"
         if(elem.style.getOverflowDirection()!=None):
             generateScrollCSS(projectname,pagename, cssclass,elem)
@@ -208,11 +215,14 @@ def applytransformation(elem,projectname,page):
         if(elem.tag==""):
             elem.tag = "img"
         doesImageExist(elem.getimgpath(),elem,projectname)
-        return ("<"+elem.tag+ id + ref +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getimgpath() + '"' + ' '.join(d for d in directives) , "/>")
+        imagepath = 'src="' + elem.getimgpath()  + '"'
+        if(belongstoDataObject(cssclass,page)[1]==True):
+            imagepath =  ':src="' + f'{belongstoDataObject(cssclass,page)[0]}.atr{cssclass}'+'"'
+        return ("<"+elem.tag+ id + ref +" class="+'"grid-item container'+ cssclass + '" '+ imagepath + ' '.join(d for d in directives) + f"{atributeProps}", "/>")
     if(isinstance(elem, VectorElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         doesImageExist(elem.getsvgpath(),elem,projectname)
-        return ("<"+elem.tag+ id + ref +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getsvgpath() + '"' + ' '.join(d for d in directives) , "/>")
+        return ("<"+elem.tag+ id + ref +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getsvgpath() + '"' + ' '.join(d for d in directives) + f"{atributeProps}", "/>")
     if(isinstance(elem, VideoElement)):
         cssclass= "svideo" + cssclass
         generateVideoCssProperties(projectname,pagename,cssclass,elem)
@@ -223,7 +233,7 @@ def applytransformation(elem,projectname,page):
 
         generateShapeCSS(projectname,pagename,cssclassifier,elem.getType(),elem)
 
-        begintag = "<div"+ id + ref +" class="+'"grid-item '+ cssclassifier + '" '+ ' '.join(d for d in directives) +">"
+        begintag = "<div"+ id + ref +" class="+'"grid-item '+ cssclassifier + '" '+ ' '.join(d for d in directives) + f"{atributeProps}"+">"
         endtag = "</div>"
         if(elem.style.boxShadow!=None): 
             wrapperclass = "wrapper" + cssclassifier
@@ -239,7 +249,7 @@ def applytransformation(elem,projectname,page):
             classname += " pos"+componentName.lower()
             setComponentPositionCSS(projectname,pagename,"pos"+componentName.lower(),elem)
         components.setdefault(pagename, {}).add(getFormatedName(elem.componentName.lower()))
-        return ("<"+componentName+f"{id}{ref}{classname}"+'" '+ ' '.join(d for d in directives) + ">","</"+componentName+">")
+        return ("<"+componentName+f"{id}{ref}{classname}"+'" '+ ' '.join(d for d in directives) + f"{atributeProps}"+">","</"+componentName+">")
     return ("","")
 
 def writeVue(name,page,content):
@@ -304,7 +314,7 @@ def processTemplate(html_string,page):
     finalHtml = soup.prettify()
     for c in components[page]:
         pattern = "<"+c.lower()+r" ([\s]*.*?)"+">"+r"((\n|.)*?)"+r"<\/"+c.lower()+">"
-        if((Mcomponent,getFormatedName(c.lower())) not in dataEntities):
+        if((Mcomponent,getFormatedName(c.lower())) not in dataEntities[page]):
             processedTemplate = re.sub(pattern,"<"+c.capitalize()+ r' \1' +">"+"</"+c.capitalize()+">",finalHtml)
         else:
             processedTemplate = re.sub(pattern,"",finalHtml)            
@@ -377,19 +387,34 @@ def belongstoDataList(elemid,page):
     r = False
     for id in page.getobjectDL():
         for e in page.getobjectDL()[id]:
-            if(e['id']==elemid): r=True
+            if('id' in e and e['id']==elemid and id!="dataObjects"): r=True
     return r
 
-def isAllMelement():
+def belongstoDataObject(elemid,page):
+    r = (None,False)
+    for id in page.getobjectDL():
+        if("object" in id):
+            for (k,v) in page.getobjectDL()[id].items():
+                if("atr"+elemid == k): r = (id,True)
+    return r
+               
+def belongstodataObjectsList(elemid,page):
+    r = False
+    if('dataObjects' in page.getobjectDL()):
+        for e in page.getobjectDL()['dataObjects']:
+            if('id' in e and e['id']==elemid): r=True
+    return r
+
+def isAllMelement(pagename):
     global dataEntities
     r = True
-    for e in dataEntities:
+    for e in dataEntities[pagename]:
         if(e[0]!=Melement): r = False
     return r
 
-def isAllMcomponent():
+def isAllMcomponent(pagename):
     global dataEntities
     r = True
-    for e in dataEntities:
+    for e in dataEntities[pagename]:
         if(e[0]!=Mcomponent): r = False
     return r

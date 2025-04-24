@@ -108,8 +108,11 @@ def applytransformation(elem,projectname,pagename,idcomponent):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         if(elem.tag==""):
             elem.tag = "img"
+        imgPath = 'src="'+elem.getimgpath()+'"'
+        if("atr"+cssclass in allProps.keys()):
+            imgPath = ':src="'+ f"atributes.atr{cssclass}" +'"'
         doesImageExist(elem.getimgpath(),elem,projectname)
-        return ("<"+elem.tag +f" {ref}class="+'"grid-item-'+ idcomponent + ' container'+ cssclass + '" '+ 'src="' + elem.getimgpath() + '"' + ' '.join(d for d in directives) , "/>")
+        return ("<"+elem.tag +f" {ref}class="+'"grid-item-'+ idcomponent + ' container'+ cssclass + '" ' + imgPath + ' '.join(d for d in directives) , "/>")
     
     if(isinstance(elem, VectorElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
