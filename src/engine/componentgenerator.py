@@ -1,21 +1,17 @@
-from engine.stylegenerator import generatePageStyle, generateComponentStyle, generateElemCssProperties, generateShapeCSS, generateRatingCssProperties, generateMenuCssProperties, setComponentPositionCSS, generateInputSearchFilterCssProperties
-from setup.vueprojectsetup import useRatingVuetifyPlugin,useMenuVuetifyPlugin, useIconFieldPrimevuePlugin
+from engine.stylegenerator import generateComponentStyle, generateElemCssProperties, generateShapeCSS, generateRatingCssProperties, generateMenuCssProperties, setComponentPositionCSS, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateFormCssProperties, generateTableCssProperties, generateSliderCssProperties, generatePaginatorCssProperties, generateVueSelectCssProperties, generateCheckboxCssProperties
+from setup.vueprojectsetup import useRatingVuetifyPlugin,useMenuVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useFormPrimeVuePlugin, useDataTablePrimevuePlugin, useSliderPrimevuePlugin, usePaginatorVuetifyPlugin, useSelectVuetifyPlugin, useCheckboxPrimeVuePlugin
 from engine.logicgenerator import handleBehaviour
 from parser.model.Mcomponent import Mcomponent
-from parser.model.VariantComponent import VariantComponent
-from parser.model.Melement import Melement
+from engine.assetshelper import getPrimeVueForm, getPrimeVueCheckbox, getVuetifyMenu, getPrimeVueDataTable
 from parser.model.TextElement import TextElement
 from parser.model.VectorElement import VectorElement
 from parser.model.ContainerElement import ContainerElement
 from parser.model.ImageElement import ImageElement
 from parser.model.ShapeElement import ShapeElement
-from parser.model.Rating import Rating
-from parser.model.RatingStyle import RatingStyle
 from engine.assetshelper import getVuetifyMenu
 from utils.processing import getFormatedName,getElemId,doesImageExist
 
 from bs4 import BeautifulSoup
-import itertools
 import re
 
 allhooks = dict()
@@ -25,11 +21,13 @@ allrefs = {}
 nestedComponents = {}
 allvariants = []
 allProps = {}
+auxiliarImports = dict()
 
 def buildcomponent(component,projectname,pagesInfo,refs,variants):
     global allhooks,allpagesInfo,allrefs,nestedComponents,allvariants,allProps
     name = component.componentName
     allhooks[name] = {}
+    auxiliarImports[name] = set()
     componentAssets[name] = []
     nestedComponents[name] = set()
     allrefs = refs
@@ -47,7 +45,7 @@ def buildcomponent(component,projectname,pagesInfo,refs,variants):
 
     allvariants = variants
     if(anyShapes(component.children)==True): handleClipPathOverlaping(component.children)
-    if(len(component.interactions)>0): component.children[0].interactions.extend(component.interactions)
+    if(len(component.interactions)>0 and len(component.children)>0): component.children[0].interactions.extend(component.interactions)
     for element in component.children:
         output += processChildren(element,projectname,name,idcomponent)
 
@@ -75,9 +73,11 @@ def applytransformation(elem,projectname,pagename,idcomponent):
     if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.idElement)
     else: cssclass = getElemId(elem.idComponent)
     ref=""
+    id=""
     if(pagename in allrefs and cssclass in allrefs[pagename]):
         ref = f' ref="ref{cssclass}" '
-
+    if(elem.style.getgridArea()!=None):
+        id = ' id="'+elem.style.getgridArea()+'"'
     directives, hooks = handleBehaviour(elem,allpagesInfo,pagename,False,allvariants)
     if(hooks!=None): 
         for hook in hooks:
@@ -148,6 +148,58 @@ def applytransformation(elem,projectname,pagename,idcomponent):
         componentAssets[pagename].extend([" IconField"," InputIcon"," InputText"])
         return (f'<IconField class="{cssclass}"><InputIcon class="pi pi-search"/><InputText {vmodel} {placeholder} />','</IconField>')
 
+    if(isinstance(elem, Mcomponent) and elem.getNameComponent()=="DatePicker"):
+        useDatePickerPrimevuePlugin(projectname)
+        cssclass= "sdatepicker" + cssclass
+        vmodel = 'v-model="'+str(elem.vmodel)+'"'
+        generateDatePickerCssProperties(projectname,pagename,cssclass,elem)
+        componentAssets[pagename].extend([" DatePicker"])
+        showicon = ""
+        if(elem.style.getdropdownbackgroundcolor()!=None):
+            showicon = ":showOnFocus='false' showIcon='' fluid=''"
+        return (f'<DatePicker {id}{ref}{vmodel} class="{cssclass}" {showicon} >','</DatePicker>')
+    if(isinstance(elem, Mcomponent) and elem.getNameComponent()=="Dropdown"):
+        useSelectVuetifyPlugin(projectname)
+        options = ':items="allOptionValues'+str(cssclass)+'"'
+        cssclass= "svueselect" + cssclass
+        vmodel = 'v-model="'+str(elem.vmodel)+'"'
+        placeholder = 'label="'+str(elem.placeholder)+'"'
+        generateVueSelectCssProperties(projectname,pagename,cssclass,elem)
+        return (f"<v-select {id}{ref}class="+'"grid-item '+ cssclass  + '" '+vmodel+' '+options+' '+placeholder, "/>")
+    if(isinstance(elem, Mcomponent) and elem.getNameComponent()=="Form"):
+        useFormPrimeVuePlugin(projectname)
+        form = getPrimeVueForm(elem,cssclass,elem.inputs,elem.buttontxt)
+        generateFormCssProperties(projectname,pagename,cssclass,elem,f"form{cssclass}",f"inputform{cssclass}",f"submitbtnform{cssclass}")
+        auxiliarImports[pagename].add("import { ref } from 'vue'")
+        componentAssets[pagename].extend([" Form"," InputText"," Message"])
+        return form
+    if(isinstance(elem, Mcomponent) and elem.getNameComponent()=="Table"):
+        useDataTablePrimevuePlugin(projectname)
+        table = getPrimeVueDataTable(elem,cssclass)
+        generateTableCssProperties(projectname,pagename,"stable"+cssclass,elem)
+        componentAssets[pagename].extend([" DataTable"," Column"])
+        return table
+    if(isinstance(elem, Mcomponent) and elem.getNameComponent()=="Slider"):
+        useSliderPrimevuePlugin(projectname)
+        cssclass= "sslider" + cssclass
+        vmodel = 'v-model="'+str(elem.vmodel)+'"'
+        generateSliderCssProperties(projectname,pagename,cssclass,elem)
+        componentAssets[pagename].extend([" Slider"])
+        return (f'<Slider {id}{ref}{vmodel} class="{cssclass}" >','</Slider>')
+    if(isinstance(elem, Mcomponent) and elem.getNameComponent()=="Paginator"):
+        usePaginatorVuetifyPlugin(projectname)
+        cssclass= "spaginator" + cssclass
+        vmodel = 'v-model="'+str(elem.vmodel)+'"'
+        generatePaginatorCssProperties(projectname,pagename,cssclass,elem)
+        componentAssets[pagename].extend([" v-pagination"])
+        return (f'<v-pagination {id}{ref}{vmodel} :total-visible="{elem.totalvisible}" :length="{elem.length}" class="{cssclass}" >','</v-pagination>')
+    if(elem.getNameComponent()=="Checkbox" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+        useCheckboxPrimeVuePlugin(projectname)
+        checkbox = getPrimeVueCheckbox(elem,cssclass)
+        cssclass= "scheckbox" + cssclass
+        generateCheckboxCssProperties(projectname,pagename,cssclass,f"label{cssclass}",elem)
+        componentAssets[pagename].extend([" Checkbox"])
+        return checkbox
     if(isinstance(elem, Mcomponent)):
         componentName = getFormatedName(elem.componentName.capitalize())
         classname = ' class="'+"grid-item-"+getElemId(elem.idComponent)+' component'+ getElemId(elem.idComponent)    
@@ -164,18 +216,31 @@ def writeVueComponent(name,project_name,content,component,pagesInfo):
     componentsimports="\n"
     for comp in nestedComponents[name]:
         componentsimports += "import "+getFormatedName(str(comp).capitalize())+" from '@/components/"+getFormatedName(str(comp).capitalize())+".vue';\n" 
+    for auximports in auxiliarImports[name]:
+        componentsimports += auximports+";\n"
     cssimport = "@import '../assets/"+getFormatedName(name.lower())+".css';"
     pagehooks=""
-    pagecomponents = ""
+    pagecomponents = "\n"
     allcomponents = (x.capitalize() for x in nestedComponents[name])
     allcomponents = list(allcomponents)
     if(len(allcomponents)>0): pagecomponents="""\n    components:{\n        """+ ',\n        '.join(allcomponents) +"""\n    },"""
     for hook in allhooks[name]:
-        pagehooks = hook + ":{\n"
+        if("methods" in hook or "computed" in hook): pagehooks += hook + ":{\n"
+        if("mounted" in hook or "destroyed" in hook or "setup" in hook):
+            pagehooks += hook + "(){\n"
         for chook in allhooks[name][hook]:
-            pagehooks += chook[1] + ",\n"
-        pagehooks = pagehooks[:-2]
-        pagehooks +="\n\t}"
+            if("methods" in hook or "computed" in hook): 
+                pagehooks += chook[1] + ",\n"
+            if("mounted" in hook or "setup" in hook or "destroyed" in hook): 
+                pagehooks += chook[1] + "\n\n"
+        if(hook=="setup"):
+            pagehooks+="        return {\n          """
+            for c in allhooks[name][hook]:
+                for retstatement in c[0]:
+                    pagehooks += "  "+retstatement + ",\n          "
+            pagehooks += "}\n\n"
+        pagehooks=pagehooks[:-2]+"\n\t},"
+    pagehooks = pagehooks[:-1]
     if(len(pagehooks)>0): pagehooks = ",\n    "+pagehooks
     template = '<div>' + content + '</div>' #'<div class="grid-item-'+idcomponent+' component'+ idcomponent +'"'+ ">"+ content + '</div>'
     props =""
@@ -218,6 +283,10 @@ def processTemplate(html_string,name):
         if(tag=="v-rating"):
             if(c.split(" ")[2]=="readonly"):
                 processedTemplate = re.sub('<v-rating'+r" ([\s]*.*?)"+'half-increments="" hover="" readonly=""'+r'([\s]*.*?)'+'>',"<v-rating"+r" \1 half-increments hover readonly \2>",processedTemplate)
+        if(tag=="InputText"):
+            processedTemplate = re.sub('<InputText'+r" ([\s]*.*?)"+'fluid=""'+r'([\s]*.*?)'+'>',"<InputText"+r" \1 fluid \2>",processedTemplate)
+        if(tag=="Form"):
+            processedTemplate = re.sub('<Form'+r" ([\s]*.*?)"+':initialvalues'+r'([\s]*.*?)'+':validateonblur'+r'([\s]*.*?)'+'>',"<Form"+r" \1 :initialValues\2 :validateOnBlur\3>",processedTemplate)
         finalHtml = processedTemplate
     return finalHtml
 

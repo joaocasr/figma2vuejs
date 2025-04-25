@@ -308,5 +308,5 @@ def convertToTable(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,nam
     color = data["background"][0]["color"]
     bodyColor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
     style = TableStyle(headerColor,bodyColor,textColor,headertextColor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
-    table = Table(id,"",name,"COMPONENT_ASSET",values,header,nrrows,style)
+    table = Table(id,"",name,"COMPONENT_ASSET",values,header,nrrows,images,style)
     return table

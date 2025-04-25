@@ -64,7 +64,6 @@ def getFigmaData(prototype):
     project_name = figmadata["name"]
     parsePageEntities(figmadata)
 
-    #"""
     #update overlay components coordinates
     for p in pageComponents:
         for c in pageComponents[p]:
@@ -76,10 +75,6 @@ def getFigmaData(prototype):
                     if(i[0]==c.getIdComponent()):
                         c.addChildren(i[1])
                     manipulateComponentDom(c.children,i)
-    # insert variants
-    #for page in variants:
-    #    if(page in variants and len(variants)>0):
-    #        insertVariantComponents(allpages[page].elements,variants[page])
     # insert overlay frame elements on page
     for p in pageOverlays:
         for el in pageOverlays[p]:
@@ -300,7 +295,10 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                 componentset = c
                 break
         melement = convertToDatePicker(componentset,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
-        allpages[pagename].addVariable({melement.vmodel:'""'})
+        if(not pagename in allpages):
+            addComponentVariable(pagename,{melement.vmodel:'""'})
+        else:
+            allpages[pagename].addVariable({melement.vmodel:'""'})
         return melement
     elif((data["name"]=="Slider" or data["name"]=="DualSlider") and data["type"]=="INSTANCE"):
         componentsetId = figmadata["components"][data["componentId"]]["componentSetId"]
@@ -314,11 +312,17 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                 componentset = c
                 break
         melement = convertToSlider(componentset,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
-        allpages[pagename].addVariable({melement.vmodel:'""'})
+        if(not pagename in allpages):
+            addComponentVariable(pagename,{melement.vmodel:'""'})
+        else:
+            allpages[pagename].addVariable({melement.vmodel:'""'})
         return melement        
     elif(data["name"]=="Paginator" and data["type"]=="INSTANCE"):
         melement = convertToPaginator(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
-        allpages[pagename].addVariable({melement.vmodel:1})
+        if(not pagename in allpages):
+            addComponentVariable(pagename,{melement.vmodel:1})
+        else:
+            allpages[pagename].addVariable({melement.vmodel:1})
         return melement
     elif(data["name"]=="Form" and data["type"]=="INSTANCE"):
         melement = convertToForm(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
@@ -526,6 +530,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         assignComponentData(componentelement)
         assignComponentProps(componentelement)
         componentelement.setComponentStyle(componentStyle)            
+        pageComponents.setdefault(pagename, []).append(componentelement)
         melement = componentelement
 
     # handles ContainerElement
@@ -622,11 +627,17 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                     # construir o elemento overlay tendo em conta que o elemento atual será o seu parent
                     if(parent_data!=None):
                         overlayElem = processElement(parent_data["name"],notPageElems[action["destinationId"]]["name"],notPageElems[action["destinationId"]],parent_data["absoluteRenderBounds"]["width"],parent_data["absoluteRenderBounds"]["height"],parent_data["absoluteRenderBounds"]["x"],parent_data["absoluteRenderBounds"]["y"],firstlevelelem,parent_data)
-                        addComponentVariable(firstlevelelem["name"],{"show"+getElemId(overlayElem.getIdElement()):"false"})
+                        if(not firstlevelelem["name"] in allpages):
+                            addComponentVariable(firstlevelelem["name"],{"show"+getElemId(overlayElem.getIdElement()):"false"})
+                        else:
+                            allpages[firstlevelelem["name"]].addVariable({"show"+getElemId(overlayElem.getIdElement()):"false"})   
                     else:
                         overlayElem = processElement(pagename,notPageElems[action["destinationId"]]["name"],notPageElems[action["destinationId"]],page_width,page_height,pageX,pageY,firstlevelelem,parent_data)                        
                         isonPageLevel = True
-                        allpages[pagename].addVariable({"show"+getElemId(overlayElem.getIdElement()):"false"})   
+                        if(not pagename in allpages):
+                            addComponentVariable(pagename,{"show"+getElemId(overlayElem.getIdElement()):"false"})
+                        else:
+                            allpages[pagename].addVariable({"show"+getElemId(overlayElem.getIdElement()):"false"})   
                     if(type=="ON_HOVER" or type=="ON_CLICK"): 
                         # caso exista overlaping sao adicionadas as propriedades de hovering
                         overlaps = setHoverProperties(overlayElem,melement,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
@@ -660,7 +671,10 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
 
                     #adicionar variavel na pagina visto que o componente não estará visivel no imediato
                     idcomponent = getElemId(action["destinationId"])
-                    allpages[pagename].addVariable({"show"+idcomponent:"false"})
+                    if(not pagename in allpages):
+                        addComponentVariable(pagename,{"show"+idcomponent:"false"})
+                    else:
+                        allpages[pagename].addVariable({"show"+idcomponent:"false"})
 
                     overlayAction = OverlayAction(action["destinationId"])
                     interactionelement.addAction(overlayAction)
@@ -694,7 +708,9 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
 
         if(melement!=None): melement.setChildren(children)
 
-    if(data["type"]=="INSTANCE" and isComponentInstance==True): pageComponents.setdefault(pagename, []).append(melement)
+    if(data["type"]=="INSTANCE" and isComponentInstance==True): 
+        for index,c in enumerate(pageComponents[pagename]):
+            if(c.getIdComponent()==melement.getIdComponent()): pageComponents[pagename][index]=melement 
     if(data["type"]=="INSTANCE" and isComponentVariant(data,variants)):
         #update the default variant instances
         updateDefaultVariants(melement,data["componentId"],variants)

@@ -7,17 +7,13 @@ from parser.model.Melement import Melement
 from parser.model.TextElement import TextElement
 from parser.model.VideoElement import VideoElement
 from parser.model.VectorElement import VectorElement
-from parser.model.Dropdown import Dropdown
 from parser.model.ShapeElement import ShapeElement
 from parser.model.ContainerElement import ContainerElement
 from parser.model.ImageElement import ImageElement
-from parser.model.VariantComponent import VariantComponent
 from utils.processing import getFormatedName,getElemId,doesImageExist
 
-import os
 from bs4 import BeautifulSoup
 import re
-import itertools
 
 allhooks = dict()
 imports = dict()
@@ -95,7 +91,7 @@ def applytransformation(elem,projectname,page):
         if(len(page.getobjectDL()[f'list{cssclass}'])>0):
             begintag = f'''<Component v-for="item in list{cssclass}" :atributes="getProps(list{cssclass})" :is="'''+"item.name"+'''" :class="`grid-item-${item.id} component${item.id}`"/>'''
     if(isinstance(elem,Mcomponent)):
-        if(elem.getNameComponent()=="Dropdown" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+        if(elem.getNameComponent()=="Dropdown" and elem.getTypeComponent()=="COMPONENT_ASSET" and isComponentInstance(elem.getIdComponent())==False):
             useSelectVuetifyPlugin(projectname)
             options = ':items="allOptionValues'+str(cssclass)+'"'
 
@@ -105,7 +101,7 @@ def applytransformation(elem,projectname,page):
 
             generateVueSelectCssProperties(projectname,pagename,cssclass,elem)
             return (f"<v-select {id}{ref}class="+'"grid-item '+ cssclass  + '" '+vmodel+' '+options+' '+placeholder, "/>")
-        if(elem.getNameComponent()=="InputSearch" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+        if(elem.getNameComponent()=="InputSearch" and elem.getTypeComponent()=="COMPONENT_ASSET" and isComponentInstance(elem.getIdComponent())==False):
             useIconFieldPrimevuePlugin(projectname)
             cssclass= "ssearchinputfilter" + cssclass
             vmodel = 'v-model="'+str(elem.vmodel)+'"'
@@ -113,7 +109,7 @@ def applytransformation(elem,projectname,page):
             generateInputSearchFilterCssProperties(projectname,pagename,cssclass,elem)
             componentAssets[pagename].extend([" IconField"," InputIcon"," InputText"])
             return (f'<IconField {id}{ref}class="{cssclass}"><InputIcon class="pi pi-search"/><InputText {vmodel} {placeholder} />','</IconField>')
-        if(elem.getNameComponent()=="DatePicker" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+        if(elem.getNameComponent()=="DatePicker" and elem.getTypeComponent()=="COMPONENT_ASSET" and isComponentInstance(elem.getIdComponent())==False):
             useDatePickerPrimevuePlugin(projectname)
             cssclass= "sdatepicker" + cssclass
             vmodel = 'v-model="'+str(elem.vmodel)+'"'
@@ -123,7 +119,7 @@ def applytransformation(elem,projectname,page):
             if(elem.style.getdropdownbackgroundcolor()!=None):
                 showicon = ":showOnFocus='false' showIcon='' fluid=''"
             return (f'<DatePicker {id}{ref}{vmodel} class="{cssclass}" {showicon} >','</DatePicker>')
-        if((elem.getNameComponent()=="ReadOnlyRating" or elem.getNameComponent()=="InteractiveRating") and elem.getTypeComponent()=="COMPONENT_ASSET"):
+        if((elem.getNameComponent()=="ReadOnlyRating" or elem.getNameComponent()=="InteractiveRating") and elem.getTypeComponent()=="COMPONENT_ASSET" and isComponentInstance(elem.getIdComponent())==False):
             useRatingVuetifyPlugin(projectname)
             cssclass= "srating" + cssclass
             vmodel = str(elem.vmodel)
@@ -136,41 +132,41 @@ def applytransformation(elem,projectname,page):
                 componentAssets[pagename].extend([" v-rating readonly"])
             return (f'<v-rating {id}{ref}class="{cssclass}" '+ f':length="{size}" :size="25" :model-value="{vmodel}" '+f" half-increments='' hover='' {readonlyconf} >",'</v-rating>')
 
-        if(elem.getNameComponent()=="Slider" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+        if(elem.getNameComponent()=="Slider" and elem.getTypeComponent()=="COMPONENT_ASSET" and isComponentInstance(elem.getIdComponent())==False):
             useSliderPrimevuePlugin(projectname)
             cssclass= "sslider" + cssclass
             vmodel = 'v-model="'+str(elem.vmodel)+'"'
             generateSliderCssProperties(projectname,pagename,cssclass,elem)
             componentAssets[pagename].extend([" Slider"])
             return (f'<Slider {id}{ref}{vmodel} class="{cssclass}" >','</Slider>')
-        if(elem.getNameComponent()=="Paginator" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+        if(elem.getNameComponent()=="Paginator" and elem.getTypeComponent()=="COMPONENT_ASSET" and isComponentInstance(elem.getIdComponent())==False):
             usePaginatorVuetifyPlugin(projectname)
             cssclass= "spaginator" + cssclass
             vmodel = 'v-model="'+str(elem.vmodel)+'"'
             generatePaginatorCssProperties(projectname,pagename,cssclass,elem)
             componentAssets[pagename].extend([" v-pagination"])
             return (f'<v-pagination {id}{ref}{vmodel} :total-visible="{elem.totalvisible}" :length="{elem.length}" class="{cssclass}" >','</v-pagination>')
-        if(elem.getNameComponent()=="Form" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+        if(elem.getNameComponent()=="Form" and elem.getTypeComponent()=="COMPONENT_ASSET" and isComponentInstance(elem.getIdComponent())==False):
             useFormPrimeVuePlugin(projectname)
             form = getPrimeVueForm(elem,cssclass,elem.inputs,elem.buttontxt)
             generateFormCssProperties(projectname,pagename,cssclass,elem,f"form{cssclass}",f"inputform{cssclass}",f"submitbtnform{cssclass}")
             auxiliarImports[pagename].add("import { ref } from 'vue'")
             componentAssets[pagename].extend([" Form"," InputText"," Message"])
             return form
-        if(elem.getNameComponent()=="Checkbox" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+        if(elem.getNameComponent()=="Checkbox" and elem.getTypeComponent()=="COMPONENT_ASSET" and isComponentInstance(elem.getIdComponent())==False):
             useCheckboxPrimeVuePlugin(projectname)
             checkbox = getPrimeVueCheckbox(elem,cssclass)
             cssclass= "scheckbox" + cssclass
             generateCheckboxCssProperties(projectname,pagename,cssclass,f"label{cssclass}",elem)
             componentAssets[pagename].extend([" Checkbox"])
             return checkbox
-        if(elem.getNameComponent()=="Menu" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+        if(elem.getNameComponent()=="Menu" and elem.getTypeComponent()=="COMPONENT_ASSET" and isComponentInstance(elem.getIdComponent())==False):
             useMenuVuetifyPlugin(projectname)
             menu = getVuetifyMenu(elem,cssclass)
             generateMenuCssProperties(projectname,pagename,"smenu"+cssclass,elem)
             componentAssets[pagename].extend([" v-menu"," v-list"])
             return menu
-        if(elem.getNameComponent()=="Table" and elem.getTypeComponent()=="COMPONENT_ASSET"):
+        if(elem.getNameComponent()=="Table" and elem.getTypeComponent()=="COMPONENT_ASSET" and isComponentInstance(elem.getIdComponent())==False):
             useDataTablePrimevuePlugin(projectname)
             table = getPrimeVueDataTable(elem,cssclass)
             generateTableCssProperties(projectname,pagename,"stable"+cssclass,elem)
@@ -248,7 +244,9 @@ def applytransformation(elem,projectname,page):
         if(elem.style.getPosition()!=None):
             classname += " pos"+componentName.lower()
             setComponentPositionCSS(projectname,pagename,"pos"+componentName.lower(),elem)
-        components.setdefault(pagename, {}).add(getFormatedName(elem.componentName.lower()))
+        if(isComponentInstance(elem.getIdComponent())!=True):
+            components.setdefault(pagename, {}).add(getFormatedName(elem.componentName.lower()))
+        if(componentName=="Form"):  auxiliarImports[pagename].add("import { ref } from 'vue'")
         return ("<"+componentName+f"{id}{ref}{classname}"+'" '+ ' '.join(d for d in directives) + f"{atributeProps}"+">","</"+componentName+">")
     return ("","")
 
@@ -274,7 +272,7 @@ def writeVue(name,page,content):
                 pagehooks += content[1] + ",\n"
             if("mounted" in hook or "setup" in hook or "destroyed" in hook): 
                 pagehooks += content[1] + "\n\n"
-        if(hook=="setup"): #writing the return statements from setup content
+        if(hook=="setup"):
             pagehooks+="        return {\n          """
             for content in allhooks[page.getPagename()][hook]:
                 for retstatement in content[0]:
@@ -405,16 +403,5 @@ def belongstodataObjectsList(elemid,page):
             if('id' in e and e['id']==elemid): r=True
     return r
 
-def isAllMelement(pagename):
-    global dataEntities
-    r = True
-    for e in dataEntities[pagename]:
-        if(e[0]!=Melement): r = False
-    return r
-
-def isAllMcomponent(pagename):
-    global dataEntities
-    r = True
-    for e in dataEntities[pagename]:
-        if(e[0]!=Mcomponent): r = False
-    return r
+def isComponentInstance(id):
+    return "I" in id
