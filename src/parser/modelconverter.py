@@ -78,7 +78,11 @@ def getFigmaData(prototype):
     # insert overlay frame elements on page
     for p in pageOverlays:
         for el in pageOverlays[p]:
-            allpages[p].addElement(el)
+            if p in allpages:
+                if(el[0]==None): allpages[p].addElement(el[1])
+                else:
+                    manipulateComponentDom(allpages[p].elements,el)
+                
 
     # assign the components for each page
     for p in pageComponents:
@@ -96,7 +100,7 @@ def getFigmaData(prototype):
         for p in pageComponents:
             filtered = list(map(lambda x : x.getNameComponent(),pageComponents[p]))
             l.extend(filtered)
-        if(allcomponents[id].getNameComponent() not in l and c not in orphanComponents):
+        if(allcomponents[id].getNameComponent() not in l and allcomponents[id] not in orphanComponents):
             orphanComponents.append(allcomponents[id])
             
     extractImages(project_name)
@@ -646,7 +650,8 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                             overlayAction = OverlayAction(action["destinationId"])
                             interactionelement.addAction(overlayAction)
                             resetHoverProperties(melement,overlayElem)
-                    if(isonPageLevel==True): pageOverlays.setdefault(pagename, []).append(overlayElem)
+                    if(isonPageLevel==True): pageOverlays.setdefault(pagename, []).append((None,overlayElem))
+                    else: pageOverlays.setdefault(pagename, []).append((parent_data["id"],overlayElem))
                     if(firstlevelelem["type"]=="INSTANCE"):
                         overlayInsideInstances.setdefault(firstlevelelem["id"], []).append((parent_data["id"],overlayElem)) # só fazer isto se a posicao do overlay estiver contida numa instance/component
                 #verificar se o elemento overlay é uma instancia(componente)
