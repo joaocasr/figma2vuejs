@@ -481,6 +481,11 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         if(data["type"]=="RECTANGLE" and "rectangleCornerRadii" in data): setCornerRadius(shapestyle,data["rectangleCornerRadii"])
         if("visible" in data and data["visible"]==False): shapestyle.setDisplay("none")
         if("opacity" in data): shapestyle.setOpacity(str(data["opacity"]*100)+"%")
+        if(shapestyle.getDisplay()==None and elementheight>100 and elementwidth>100):
+            shapestyle.setDisplay("grid")
+            shapestyle.setGridTemplateColumns("repeat(64,1fr)")
+            shapestyle.setGridTemplateRows("repeat(64,1fr)")
+
         mshapeelement = ShapeElement(data["id"],tag,data["name"],data["type"],shapestyle)
         melement = mshapeelement
                   

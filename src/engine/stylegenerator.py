@@ -559,14 +559,13 @@ def generateShapeCSS(projectname,pagename,cssclass,type,elem):
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
     grid-row-start: """+  str(elem.style.gridrowStart)+""";
     grid-row-end: """+  str(elem.style.gridrowEnd)+""";
+    grid-template-columns:"""+ str(elem.style.gridtemplatecolumns)+""";
+    grid-template-rows:"""+ str(elem.style.gridtemplaterows)+""";
     aspect-ratio: 1;
     clip-path: """+  str(clippath)+ """;
     """
   css+="""height: """+  str(elem.style.height) + """px;
     width: """+  str(elem.style.width) + """px;"""
-
-  #height: """+  str(elem.style.height) + """px;
-  #width:  """+  str(elem.style.width) + """px;
 
   if(type=="LINE"):
     css ="""\n."""+ str(cssclass) + """ {

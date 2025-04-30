@@ -17,6 +17,8 @@ class ShapeStyle(object):
 		self.gridArea = None
 		self.boxShadow = None
 		self.display = None
+		self.gridtemplatecolumns = None
+		self.gridtemplaterows = None
 		self.hashover = False
 		self.opacity = None
 		self.borderTopLeftRadius = None
@@ -204,6 +206,18 @@ class ShapeStyle(object):
 
 	def setgridArea(self, gridarea):
 		self.gridArea = gridarea
+
+	def getGridTemplateColumns(self):
+		return self.gridtemplatecolumns
+
+	def setGridTemplateColumns(self, gridtemplatecolumns):
+		self.gridtemplatecolumns = gridtemplatecolumns
+
+	def getGridTemplateRows(self):
+		return self.gridtemplaterows
+
+	def setGridTemplateRows(self, gridtemplaterows):
+		self.gridtemplaterows = gridtemplaterows
 
 	def getTransform(self):
 		"""@ReturnType String"""

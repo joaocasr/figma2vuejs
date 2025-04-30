@@ -317,12 +317,12 @@ def handleClipPathOverlaping(elementos):
     repeatedElements = []
     for i, elem2 in enumerate(elementos):
         for j, elem1 in enumerate(elementos):
-            if i != j:
+            if j>i:
                 if (getValue(elem1.style.gridcolumnStart) >= getValue(elem2.style.gridcolumnStart) and
                     getValue(elem1.style.gridcolumnEnd) <= getValue(elem2.style.gridcolumnEnd) and
                     getValue(elem1.style.gridrowStart) >= getValue(elem2.style.gridrowStart) and
                     getValue(elem1.style.gridrowEnd) <= getValue(elem2.style.gridrowEnd) and
-                    isinstance(elem2, ShapeElement)):
+                    isinstance(elem2, ShapeElement) and j not in repeatedElements):
                     elem2.children.append(elem1)
                     elem2.style.setDisplay("grid")
                     repeatedElements.append(j)
