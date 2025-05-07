@@ -252,7 +252,11 @@ def handleScrollBehaviour(elem,hooks,elemBehaviour):
             this.isDragging = false;'''+'''
         }'''
     hooks.setdefault("methods", []).append((f"onMouseUp{getElemId(elem.idElement)}",mouseupFunction))
-
+    transition = ""
+    if(elem.style.getOverflowDirection()=="HORIZONTAL"):
+        transition = "left: -delta[0]"
+    else:
+        transition = "top: -delta[1]"        
     mouseholdFunction = f'''        onMouseHold{getElemId(elem.idElement)}(ev)'''+'''{
             ev.preventDefault();
 
@@ -263,7 +267,7 @@ def handleScrollBehaviour(elem,hooks,elemBehaviour):
 
                     '''+f'''if (!this.$refs.ref{getElemId(elem.idElement)}) return;
                     this.$refs.ref{getElemId(elem.idElement)}.scrollBy('''+'''{
-                    left: -delta[0]});
+                    '''+transition+'''});
             });
         }'''
     hooks.setdefault("methods", []).append((f"onMouseHold{getElemId(elem.idElement)}",mouseholdFunction))

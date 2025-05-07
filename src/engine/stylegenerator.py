@@ -732,20 +732,62 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     f.write(css)
 
 
-def calculate_gradientDegree(startPoint,endPoint,color1,color2):
-    a = (0,0.5)
-    b = (endPoint["x"]-startPoint["x"], endPoint["y"]-startPoint["y"])
+def calculate_lineargradientDegree(points,colors):
+  a = (0,0.5)
+  startPoint = points[1]
+  endPoint = points[0]
+  b = (endPoint["x"]-startPoint["x"], endPoint["y"]-startPoint["y"])
+  lineargradient = "linear-gradient("
+  scolors = ""
+  norm_a = math.sqrt(a[0]**2 + a[1]**2) 
+  norm_b = math.sqrt(b[0]**2 + b[1]**2) 
 
-    norm_a = math.sqrt(a[0]**2 + a[1]**2) 
-    norm_b = math.sqrt(b[0]**2 + b[1]**2) 
+  cosalpha = (a[0]*b[0] + a[1]*b[1]) / (norm_a * norm_b)
 
-    cosalpha = (a[0]*b[0] + a[1]*b[1]) / (norm_a * norm_b)
+  x = math.acos(cosalpha)
+  degree = math.degrees(x)
+  if(degree<0): degree+=360
+  
+  for c in colors:
+    rgba = (c["color"]["r"]*255, c["color"]["g"]*255, c["color"]["b"]*255, c["color"]["a"]*255)
+    scolors+="rgba("+','.join(str(val) for val in rgba)+"), "
+  lineargradient += str(degree)+"deg, " + scolors[:-2] + ")"
+  return lineargradient
 
-    x = math.acos(cosalpha)
-    degree = (x  * (180.0 / math.pi)) - 180
+def calculate_radialgradientDegree(points,colors):
+  center = (points[0]["x"],points[0]["y"])
+  angle = f"50% 50% at {center[0]*100}% {center[1]*100}%, "
+  radialgradient = "radial-gradient("+angle
+  for c in colors:
+    rgba = (c["color"]["r"]*255, c["color"]["g"]*255, c["color"]["b"]*255, c["color"]["a"]*255)
+    radialgradient += "rgba("+','.join(str(val) for val in rgba)+")"+ " "+ str(c["position"]*100)+"%, "
     
-    rgba1 = (color1["color"]["r"]*255, color1["color"]["g"]*255, color1["color"]["b"]*255, color1["color"]["a"]*255)
-    rgba2 = (color2["color"]["r"]*255, color2["color"]["g"]*255, color2["color"]["b"]*255, color2["color"]["a"]*255)
+  radialgradient=radialgradient[:-2]
+  radialgradient+=");"
+  return radialgradient
 
-    lineargradient = "linear-gradient("+str(degree)+"deg, " + "rgba("+','.join(str(val) for val in rgba1)+"), " + "rgba("+','.join(str(val) for val in rgba2)+"))" 
-    return lineargradient
+def calculate_angulargradientDegree(points,colors):
+  a = (0,0.5)
+  startPoint = points[1]
+  endPoint = points[0]
+  b = (endPoint["x"]-startPoint["x"], endPoint["y"]-startPoint["y"])
+  norm_a = math.sqrt(a[0]**2 + a[1]**2) 
+  norm_b = math.sqrt(b[0]**2 + b[1]**2) 
+
+  cosalpha = (a[0]*b[0] + a[1]*b[1]) / (norm_a * norm_b)
+
+  x = math.acos(cosalpha)
+  degree = math.degrees(x)
+  if(degree<0): degree+=360
+  center = (points[0]["x"]*100,points[0]["y"]*100)
+  angle = "from "+str(degree)+f"deg at {center[0]}% {center[1]}%, "
+  ipoint = 0
+  angulargradient = "conic-gradient("+angle
+  for c in colors:
+    rgba = (c["color"]["r"]*255, c["color"]["g"]*255, c["color"]["b"]*255, c["color"]["a"]*255)
+
+    angulargradient += "rgba("+','.join(str(val) for val in rgba)+"), "
+    ipoint+=1
+  angulargradient=angulargradient[:-2]
+  angulargradient+=");"
+  return angulargradient

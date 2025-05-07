@@ -1,7 +1,3 @@
-"""
-os ficheiros na pasta teste irão simular por enquanto os dados obtidos da api
-para nesta fase de development e debug nao atingir o limite da chamadas com o token obtido do figma
-"""
 import json,re,os,requests,wget
 from dotenv import load_dotenv, find_dotenv
 from parser.model.Mpage import Mpage
@@ -27,7 +23,7 @@ from parser.model.CloseAction import CloseAction
 from parser.model.OverlayAction import OverlayAction
 from parser.model.ScrollAction import ScrollAction
 from parser.model.ChangeAction import ChangeAction
-from engine.stylegenerator import calculate_gradientDegree
+from engine.stylegenerator import calculate_lineargradientDegree, calculate_radialgradientDegree,calculate_angulargradientDegree
 from engine.datagenerator import buildPageEntities,parseEntity,getObjectsDL
 from parser.assetsconverter import convertToDropdown, convertToSearchInput, convertToDatePicker, convertToSlider, convertToRating, convertToPaginator, convertToForm, convertToCheckbox, convertToMenu, convertToTable
 from utils.processing import getFormatedName,getElemId
@@ -430,7 +426,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             colorData= "strokes"
         else:
             colorData= "fills"
-        lineargradient=None    
+        gradient=None    
         for fill in data[colorData]:
             if(fill["type"]=="SOLID"):
                 if("color" in fill):
@@ -439,11 +435,11 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                     if("opacity" in fill): a = fill["opacity"]
                     rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , a)
             if(fill["type"]=="GRADIENT_LINEAR"):
-                lineargradient = calculate_gradientDegree(fill["gradientHandlePositions"][1],
-                                                fill["gradientHandlePositions"][0],
-                                                fill["gradientStops"][1],
-                                                fill["gradientStops"][0])
-
+                gradient = calculate_lineargradientDegree(fill["gradientHandlePositions"],fill["gradientStops"])
+            if(fill["type"]=="GRADIENT_RADIAL"):
+                gradient = calculate_radialgradientDegree(fill["gradientHandlePositions"],fill["gradientStops"])
+            if(fill["type"]=="GRADIENT_ANGULAR"):
+                gradient = calculate_angulargradientDegree(fill["gradientHandlePositions"],fill["gradientStops"])
         shapestyle = ShapeStyle(xielem,
                         yielem,
                         elementwidth,
@@ -453,7 +449,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                         nr_rowstart,
                         nr_rowend)
         if(rgba!=None): shapestyle.setBackgroundColor("rgba("+','.join(str(val) for val in rgba)+")")
-        if(lineargradient!=None): shapestyle.setBackground(lineargradient)
+        if(gradient!=None): shapestyle.setBackground(gradient)
         if(rotation!=None): shapestyle.setTransform(rotation)
 
         for effect in data["effects"]:
@@ -545,7 +541,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
     # handles ContainerElement
     elif(data["type"]=="FRAME" or data["type"]=="GROUP"):
 
-        lineargradient = None
+        gradient = None
         rgba = None
         for background in data["background"]:
 
@@ -553,16 +549,18 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                 color = data["background"][0]["color"]
                 rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"])
             elif(background["type"] == "GRADIENT_LINEAR"):
-                lineargradient = calculate_gradientDegree(background["gradientHandlePositions"][1],
-                                                background["gradientHandlePositions"][0],
-                                                background["gradientStops"][1],
-                                                background["gradientStops"][0])
+                gradient = calculate_lineargradientDegree(background["gradientHandlePositions"],background["gradientStops"])
+            elif(background["type"] == "GRADIENT_RADIAL"):
+                gradient = calculate_radialgradientDegree(background["gradientHandlePositions"],background["gradientStops"])
+            elif(background["type"]=="GRADIENT_ANGULAR"):
+                gradient = calculate_angulargradientDegree(background["gradientHandlePositions"],background["gradientStops"])
+
             if("color" in background and "visible" in data["background"][0] and data["background"][0]["visible"]==False): rgba=None
-            if(background["type"] == "GRADIENT_LINEAR" and "visible" in background and background["visible"]==False): lineargradient=None
+            if((background["type"] == "GRADIENT_LINEAR" or background["type"] == "GRADIENT_RADIAL" or background["type"] == "GRADIENT_ANGULAR") and "visible" in background and background["visible"]==False): gradient=None
         style = ContainerStyle()
         
         if(rgba!=None): style.setBackgroundColor("rgba("+','.join(str(val) for val in rgba)+")")
-        if(lineargradient!=None): style.setBackground(lineargradient)
+        if(gradient!=None): style.setBackground(gradient)
         if("overflowDirection" in data and data["overflowDirection"]=="HORIZONTAL_SCROLLING"): style.setOverflowDirection("HORIZONTAL")
         if("overflowDirection" in data and data["overflowDirection"]=="VERTICAL_SCROLLING"): style.setOverflowDirection("VERTICAL")
 
@@ -753,7 +751,7 @@ def getPosition(xielem,yielem,elementwidth,elementheight,page_width,page_height,
 def setPageStyle(pagename,pagedata):
     global allpages
 
-    lineargradient = None
+    gradient = None
     rgba = None
     for background in pagedata["background"]:
 
@@ -761,16 +759,17 @@ def setPageStyle(pagename,pagedata):
             color = pagedata["background"][0]["color"]
             rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"])
         elif(background["type"] == "GRADIENT_LINEAR"):
-            lineargradient = calculate_gradientDegree(background["gradientHandlePositions"][0],
-                                            background["gradientHandlePositions"][1],
-                                            background["gradientStops"][0],
-                                            background["gradientStops"][1])
+            gradient = calculate_lineargradientDegree(background["gradientHandlePositions"],background["gradientStops"])
+        elif(background["type"] == "GRADIENT_RADIAL"):
+            gradient = calculate_radialgradientDegree(background["gradientHandlePositions"],background["gradientStops"])
+        elif(background["type"]=="GRADIENT_ANGULAR"):
+            gradient = calculate_angulargradientDegree(background["gradientHandlePositions"],background["gradientStops"])
 
     style = ContainerStyle()
     style.setWidth(pagedata["absoluteRenderBounds"]["width"])
     style.setHeight(pagedata["absoluteRenderBounds"]["height"])
     if(rgba!=None): style.setBackgroundColor("rgba("+','.join(str(val) for val in rgba)+")")
-    if(lineargradient!=None): style.setBackground(lineargradient)
+    if(gradient!=None): style.setBackground(gradient)
     style.setDisplay("grid")
     style.setMargin("0")
     style.setPadding("0")
@@ -780,7 +779,7 @@ def setPageStyle(pagename,pagedata):
 
 def setComponentStyle(component):
     global allcomponents
-    lineargradient = None
+    gradient = None
     rgba = None
     if(len(component["background"])>0):
         for background in component["background"]:
@@ -790,10 +789,11 @@ def setComponentStyle(component):
                 if("visible" in background and background["visible"]==False): color["a"] = 0
                 rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"])
             elif(background["type"] == "GRADIENT_LINEAR"):
-                lineargradient = calculate_gradientDegree(background["gradientHandlePositions"][0],
-                                                background["gradientHandlePositions"][1],
-                                                background["gradientStops"][0],
-                                                background["gradientStops"][1])
+                gradient = calculate_lineargradientDegree(background["gradientHandlePositions"],background["gradientStops"])
+            elif(background["type"] == "GRADIENT_RADIAL"):
+                gradient = calculate_radialgradientDegree(background["gradientHandlePositions"],background["gradientStops"])
+            elif(background["type"]=="GRADIENT_ANGULAR"):
+                gradient = calculate_angulargradientDegree(background["gradientHandlePositions"],background["gradientStops"])
     else:
         rgba = (component["backgroundColor"]["r"] * 255 , component["backgroundColor"]["g"] * 255 , component["backgroundColor"]["b"] * 255 , component["backgroundColor"]["a"])
     id = component["id"]
@@ -815,7 +815,7 @@ def setComponentStyle(component):
     componentStyle.setWidth(elementwidth)
     componentStyle.setHeight(elementheight)
     if(rgba!=None): componentStyle.setBackgroundColor("rgba("+','.join(str(val) for val in rgba)+")")
-    if(lineargradient!=None): componentStyle.setBackground(lineargradient)
+    if(gradient!=None): componentStyle.setBackground(gradient)
     componentStyle.setDisplay("grid")
     componentStyle.setMargin("0")
     componentStyle.setPadding("0")
