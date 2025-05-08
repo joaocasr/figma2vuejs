@@ -50,13 +50,16 @@ figmadata = {}
 batchi=0
 batchf=50
 
-def getFigmaData(prototype):
+def getFigmaData(prototype,data):
     global allpages, allcomponents,pageComponents, figmadata, refs, overlayInsideInstances, pageOverlays, variants, scrollElements
-    prototype1 = "../tests/prototype"+str(prototype)+".json"
-
-    with open(prototype1,"r") as file:
-        data = json.load(file)
-        figmadata = data
+    if(data!=None):
+        figmadata=data
+    if(prototype!=None):
+        f = "../tests/prototype"+str(prototype)+".json"
+        with open(f,"r") as file:
+            data = json.load(file)
+            figmadata = data
+    figmadata["name"] = getFormatedName(figmadata["name"])
     project_name = figmadata["name"]
     parsePageEntities(figmadata)
 
@@ -99,8 +102,6 @@ def getFigmaData(prototype):
         if(allcomponents[id].getNameComponent() not in l and allcomponents[id] not in orphanComponents):
             orphanComponents.append(allcomponents[id])
             
-    extractImages(project_name)
-    extractSVGs(project_name)
     return (project_name, allpages, orphanComponents, refs, variants)
 
 def parsePageEntities(data):

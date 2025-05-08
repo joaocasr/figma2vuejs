@@ -5,19 +5,36 @@ from engine.variantgenerator import writeVariantComponent
 from engine.gridgenerator import generateGridTemplate
 from engine.pagegenerator import buildpage
 from engine.componentgenerator import buildcomponent
-from parser.modelconverter import getFigmaData
-from parser.model.Melement import Melement
+from parser.modelconverter import getFigmaData,extractImages,extractSVGs
 from parser.model.VariantComponent import VariantComponent
 
-import sys
+import sys,os,requests
+from dotenv import load_dotenv, find_dotenv
 
-if(len(sys.argv)!=2 and len(sys.argv)!=3):
-  print("MANUAL:\n python3 figma2vuejs.py <nrº of prototype>\n python3 figma2vuejs.py <nrº of prototype> <template-file>")
+load_dotenv(find_dotenv())
+FIGMA_API_KEY = os.environ.get("FIGMA_API_KEY")
+FILE_KEY = os.environ.get("FILE_KEY")
+
+headers = {"content-type": "application/json", "Accept-Charset": "UTF-8", 'X-FIGMA-TOKEN': FIGMA_API_KEY}
+
+if(len(sys.argv)>3 or len(sys.argv)<1):
+  print("""****MANUAL****
+for conversion using figma api endpoint /files/{id} and prototoype url:
+   >  python3 figma2vuejs.py
+for conversion using prototoype files:
+   >  python3 figma2vuejs.py <nrº of prototype>
+for conversion using prototoype files with grid-template:
+   >  python3 figma2vuejs.py <nrº of prototype> <template-file>""")
 else:
-  prototype = sys.argv[1]
+  prototype = None
+  data = None
+  if(len(sys.argv)>=2): prototype = sys.argv[1]
+  else:
+    response = requests.get("https://api.figma.com/v1/files/"+FILE_KEY, headers=headers)
+    data = response.json()
   # extract figma data and build intern model
   #try:
-  project_name, allpages, orphanComponents, refs, variants = getFigmaData(prototype)
+  project_name, allpages, orphanComponents, refs, variants = getFigmaData(prototype,data)
   #except Exception as e:
   #  print(e)
   #  sys.exit()
@@ -26,6 +43,8 @@ else:
   try:
     setup_project(project_name)
     overwrite_styling(project_name)
+    extractImages(project_name)
+    extractSVGs(project_name)
   except Exception as e:
     pass
 

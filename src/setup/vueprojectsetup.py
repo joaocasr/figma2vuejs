@@ -13,7 +13,6 @@ def setup_project(name):
     updateMainJSfile(name)
     createPluginFiles(name)
 
-
 def create_project(name):
     destination = '../output/'+name
     if os.path.isdir(destination):
@@ -34,15 +33,17 @@ def create_project(name):
         raise Exception("The Vue Project "+name+" already exists.")
     else:
         print("Creating Vue project named: "+name+" ...")
-        subprocess.run(['npm',
+        out = subprocess.run(['npm',
                         'create',
                         'vue@latest',
                         name,
                         '--',
                         '--router',
                         '--pinia',
-                        '--name',
-                        name],cwd='../output/',capture_output=True, text=True)
+                        ],cwd='../output/',capture_output=True,text=True)
+        print(out)
+        if out.returncode != 0:
+          raise Exception("Error creating Vue project "+name)
 
 def remove_boilerview(name):
     directory = '../output/'+name+'/src/views/*'
