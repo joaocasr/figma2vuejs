@@ -304,19 +304,18 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
     elif((data["name"]=="Slider" or data["name"]=="DualSlider") and data["type"]=="INSTANCE"):
         componentsetId = figmadata["components"][data["componentId"]]["componentSetId"]
         componentset = None
+        percent = 0
+        if("componentProperties" in data and "Percent" in data["componentProperties"]):
+            percent = int(data["componentProperties"]["Percent"]["value"])
         for c in figmadata["document"]["children"][0]["children"]:
             if(c["id"]==componentsetId):
                 componentset = c
                 break
-        for c in figmadata["document"]["children"][0]["children"]:
-            if(c["id"]==componentsetId):
-                componentset = c
-                break
-        melement = convertToSlider(componentset,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
+        melement = convertToSlider(componentset,percent,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
         if(not pagename in allpages):
-            addComponentVariable(pagename,{melement.vmodel:'""'})
+            addComponentVariable(pagename,{melement.vmodel:melement.percentage})
         else:
-            allpages[pagename].addVariable({melement.vmodel:'""'})
+            allpages[pagename].addVariable({melement.vmodel:melement.percentage})
         return melement        
     elif(data["name"]=="Paginator" and data["type"]=="INSTANCE"):
         melement = convertToPaginator(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])

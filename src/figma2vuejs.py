@@ -43,10 +43,11 @@ else:
   try:
     setup_project(project_name)
     overwrite_styling(project_name)
-    extractImages(project_name)
-    extractSVGs(project_name)
   except Exception as e:
     pass
+
+  extractImages(project_name)
+  extractSVGs(project_name)
 
   # generate routes to the vue pages
   generate_routes(project_name,allpages)

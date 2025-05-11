@@ -12,7 +12,7 @@ def getElemId(id):
 
 def getFormatedName(name):
     name = re.sub('([0-9]*)(.*)',r'\2',name)
-    pattern = "[\s\.\-\/\\;#=,_:]"
+    pattern = "[\s\.\-\/\\;#=,:]"
     name = re.sub(pattern,"",name)
     return name
 

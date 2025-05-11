@@ -2,9 +2,10 @@
 # -*- coding: UTF-8 -*-
 class DatePickerStyle(object):
 
-	def __init__(self,backgroundcolor,dropdownbackgroundcolor,gridcolumnStart,gridcolumnEnd,gridrowStart,gridrowEnd):
+	def __init__(self,backgroundcolor,dropdownbackgroundcolor,iconrgbacolor,gridcolumnStart,gridcolumnEnd,gridrowStart,gridrowEnd):
 		self.backgroundcolor = backgroundcolor
 		self.dropdownbackgroundcolor = dropdownbackgroundcolor
+		self.iconrgbacolor = iconrgbacolor
 		self.gridcolumnStart = gridcolumnStart
 		self.gridcolumnEnd = gridcolumnEnd
 		self.gridrowStart = gridrowStart
@@ -23,6 +24,12 @@ class DatePickerStyle(object):
 
 	def setdropdownbackgroundcolor(self, dropdownbackgroundcolor):
 		self.dropdownbackgroundcolor = dropdownbackgroundcolor
+
+	def geticonrgbacolor(self):
+		return self.iconrgbacolor
+
+	def seticonrgbacolor(self, iconrgbacolor):
+		self.iconrgbacolor = iconrgbacolor
 
 	def getborderradius(self):
 		return self.borderradius

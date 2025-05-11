@@ -254,21 +254,20 @@ def generateFormCssProperties(projectname,pagename,cssclass,elem,formclass,input
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
     grid-row-start: """+  str(elem.style.gridrowStart)+""";
     grid-row-end: """+  str(elem.style.gridrowEnd)+""";
-    margin:10px;
   }
  
   ."""+ str(btnclass) + """ {
     background-color: """+  str(elem.style.getbackgroundcolorbtn())+""";
     border-radius: 8px;
-    margin:10px;
     width:200px;
     height:50px;
+    margin-top: 10px;
+    position: relative;
+    left:  """+  str(elem.style.getwidthinput()/4)+"""px;
   }
 ."""+ str(inputclass) + """ .p-inputtext{ 
   --p-inputtext-background:"""+  str(elem.style.getbackgroundcolor())+""";
-  margin:10px;
   width: """+  str(elem.style.getwidthinput())+"""px;
-
 }
   """
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
@@ -285,11 +284,14 @@ def generateCheckboxCssProperties(projectname,pagename,cssclass,labelclass,elem)
     grid-row-start: """+  str(elem.style.gridrowStart)+""";
     grid-row-end: """+  str(elem.style.gridrowEnd)+""";
     margin:5px;
+    --p-checkbox-background:  """+  str(elem.style.getColorBackground())+""";
   }
 
   ."""+ str(labelclass) + """ {
     color: """+  str(elem.style.getColortxt())+""";
     margin-left: 5px;
+    position: relative;
+    top:3px;
   }
   """
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
@@ -375,6 +377,8 @@ div:deep(."""+ str(cssclass) + """ .v-input__control) {
 
 def generateInputSearchFilterCssProperties(projectname,pagename,cssclass,elem):
   css ="""\n."""+ str(cssclass) + """ {
+    position: relative;  
+    display: flex;       
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
     grid-row-start: """+  str(elem.style.gridrowStart)+""";
@@ -384,14 +388,14 @@ def generateInputSearchFilterCssProperties(projectname,pagename,cssclass,elem):
    --p-inputtext-background: rgba("""+  str(elem.style.getbackgroundcolor())+""");
    --p-inputtext-color: rgba("""+  str(elem.style.getcolor())+""");
    --p-inputtext-border-radius:"""+  str(elem.style.getborderradius())+"""px;
+    padding-left: 35px; 
 }
 
-."""+ str(cssclass) + """ .p-inputicon{
-   margin-top:calc(-0.6 * (var(--p-icon-size)));
-}
-
-.p-iconfield .p-inputicon:first-child {
-  inset-inline-start: 4em;
+\n."""+ str(cssclass) + """ .pi {
+  position: absolute;
+  left: 10px;
+  transform: translateY(10%);
+  pointer-events: none;
 }
   """
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
@@ -411,7 +415,7 @@ def generateSliderCssProperties(projectname,pagename,cssclass,elem):
 }
 
 div:deep(."""+str(cssclass)+""" .p-slider-range){
-    --p-slider-range-background:  """+  str(elem.style.getbackgroundrange()) +""";
+    --p-slider-range-background:  """+ str(elem.style.getbackgroundcontent()) +""";
 }
  
 div:deep(."""+str(cssclass)+""" .p-slider-handle){
@@ -480,6 +484,10 @@ def generateDatePickerCssProperties(projectname,pagename,cssclass,elem):
 	background-color: """+  str(elem.style.getbackgroundcolor())+""";
 }
  
+ :deep(."""+str(cssclass)+""" .p-datepicker-dropdown .p-icon){
+	color: """+  str(elem.style.geticonrgbacolor())+""";
+}
+
 :deep(."""+str(cssclass)+""" .p-datepicker-dropdown){
 	background-color:"""+  str(elem.style.getdropdownbackgroundcolor())+""";
 }
@@ -733,24 +741,24 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
 
 
 def calculate_lineargradientDegree(points,colors):
-  a = (0,0.5)
   startPoint = points[1]
   endPoint = points[0]
-  b = (endPoint["x"]-startPoint["x"], endPoint["y"]-startPoint["y"])
+  a = (endPoint["x"]-startPoint["x"],0)
+  b = (endPoint["x"]-startPoint["x"],endPoint["y"]-startPoint["y"])
   lineargradient = "linear-gradient("
   scolors = ""
   norm_a = math.sqrt(a[0]**2 + a[1]**2) 
   norm_b = math.sqrt(b[0]**2 + b[1]**2) 
-
+  print(a)
+  print(b)
   cosalpha = (a[0]*b[0] + a[1]*b[1]) / (norm_a * norm_b)
-
   x = math.acos(cosalpha)
-  degree = math.degrees(x)
-  if(degree<0): degree+=360
-  
+  degree = ((x * 180)/math.pi)  + 90
+  print(degree)
+  if(b[1]>a[1]): degree-=180
   for c in colors:
     rgba = (c["color"]["r"]*255, c["color"]["g"]*255, c["color"]["b"]*255, c["color"]["a"]*255)
-    scolors+="rgba("+','.join(str(val) for val in rgba)+"), "
+    scolors+="rgba("+','.join(str(val) for val in rgba)+") "+ str(round(c["position"]*100))+"%, "
   lineargradient += str(degree)+"deg, " + scolors[:-2] + ")"
   return lineargradient
 

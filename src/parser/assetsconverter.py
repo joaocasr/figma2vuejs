@@ -83,7 +83,7 @@ def convertToSearchInput(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,
         if(e["type"]=="TEXT"):
             placeholder = e["characters"]
             color = e["fills"][0]["color"]
-            txtcolor = str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])
+            txtcolor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
     style = InputSearchStyle(backgroundcolor,color,radius,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
 
     inputsearchfilter =  InputSearch(id,"",name,"COMPONENT_ASSET",vmodel,placeholder,style)
@@ -102,15 +102,18 @@ def convertToDatePicker(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,i
             if(len(dateinput["children"])>0):
                 dropdowninput = dateinput["children"][0]
                 dropdownbackgroundcolor = "rgba("+str(dropdowninput["backgroundColor"]["r"] * 255)+","+str(dropdowninput["backgroundColor"]["g"] * 255)+","+str(dropdowninput["backgroundColor"]["b"] * 255)+","+str(dropdowninput["backgroundColor"]["a"])+")"
+                icon = dropdowninput["children"][0]["children"][0]
+                iconcolor = icon["fills"][0]["color"]
+                iconrgbacolor =  "rgba("+str(iconcolor["r"] * 255)+","+str(iconcolor["g"] * 255)+","+str(iconcolor["b"] * 255)+","+str(iconcolor["a"])+")"
     backgroundcolor = "rgba("+str(dateinput["backgroundColor"]["r"] * 255)+","+str(dateinput["backgroundColor"]["g"] * 255)+","+str(dateinput["backgroundColor"]["b"] * 255)+","+str(dateinput["backgroundColor"]["a"])+")"
     
-    style = DatePickerStyle(backgroundcolor,dropdownbackgroundcolor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
+    style = DatePickerStyle(backgroundcolor,dropdownbackgroundcolor,iconrgbacolor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
 
     datepicker =  DatePicker(id,"",name,"COMPONENT_ASSET",vmodel,style)
 
     return datepicker
 
-def convertToSlider(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name):
+def convertToSlider(data,percentage,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name):
     elemid = getElemId(id)
     vmodel = "slider"+str(elemid)
     backgroundtrack =""
@@ -128,11 +131,11 @@ def convertToSlider(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,na
                     backgroundrange = "rgba("+str(ns["backgroundColor"]["r"] * 255)+","+str(ns["backgroundColor"]["g"] * 255)+","+str(ns["backgroundColor"]["b"] * 255)+","+str(ns["backgroundColor"]["a"])+")"
                     backgroundcontentcolor = ns["children"][0]["children"][0]["children"][0]["fills"][0]["color"]
                     backgroundcontent = "rgba("+str(backgroundcontentcolor["r"] * 255)+","+str(backgroundcontentcolor["g"] * 255)+","+str(backgroundcontentcolor["b"] * 255)+","+str(backgroundcontentcolor["a"])+")"
-                    backgroundhover = backgroundcontent                
+                    backgroundhover = backgroundcontent  
 
     style = SliderStyle(backgroundtrack,backgroundcontent,backgroundrange,backgroundhover,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
 
-    slider =  Slider(id,"",name,"COMPONENT_ASSET",vmodel,style)
+    slider =  Slider(id,"",name,"COMPONENT_ASSET",vmodel,percentage,style)
     return slider
 
 def convertToRating(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name,readOnly):
@@ -156,18 +159,21 @@ def convertToRating(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,na
                     unselectedStarColor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
                     if(colorStar!=unselectedStarColor): break
     else:
+        selected = 0
+        if("componentProperties" in data and "Rating" in data["componentProperties"]):
+            selected = int(data["componentProperties"]["Rating"]["value"])
         for i in range(0,len(data["children"])):        
-            star = data["children"][i]["children"][0]["children"][0]["children"][0]
-            if(len(star["fills"])>0):
+            star = data["children"][i]["children"][0]["children"][0]
+            if(selected>0 and len(star["fills"])>0):
                 color = star["fills"][0]["color"]
                 colorStar = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
-                selected = i + 1
-            if(i<len(data["children"])-2):
-                star = data["children"][i+1]["children"][0]["children"][0]["children"][0]
-                if(len(star["fills"])>0): 
-                    color = star["fills"][0]["color"]
-                    unselectedStarColor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
-                    if(colorStar!=unselectedStarColor): break
+                break
+        for i in range(0,len(data["children"])):        
+            star = data["children"][selected]["children"][0]["children"][0]
+            if(len(star["fills"])>0): 
+                unselectedcolor = star["fills"][0]["color"]
+                unselectedStarColor = "rgba("+str(unselectedcolor["r"] * 255)+","+str(unselectedcolor["g"] * 255)+","+str(unselectedcolor["b"] * 255)+","+str(unselectedcolor["a"])+")"
+                if(colorStar!=unselectedStarColor): break
     style = RatingStyle(colorStar,unselectedStarColor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
 
     rating =  Rating(id,"",name,"COMPONENT_ASSET",nrstars,readOnly,vmodel,selected,style)
@@ -221,7 +227,7 @@ def convertToForm(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name
                     placeholder = j["children"][0]["characters"]
                     color = j["background"][0]["color"]
                     inputbackgroundcolor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
-                    widthInput = j["absoluteBoundingBox"]["width"]
+                    widthInput = j["absoluteBoundingBox"]["width"] / 1.3
                 else:
                     name = j["name"]
                     text = j["characters"]
@@ -247,8 +253,11 @@ def convertToCheckbox(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,
                 boxes.append({"name":b["characters"],"key":getFormatedName(data["name"])})
                 colortxt = b["fills"][0]["color"]
                 textColor = "rgba("+str(colortxt["r"] * 255)+","+str(colortxt["g"] * 255)+","+str(colortxt["b"] * 255)+","+str(colortxt["a"])+")"
+            elif(b["type"]=="FRAME"):
+                color = b["fills"][0]["color"]
+                boxBackground = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
 
-    style = CheckboxStyle(textColor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
+    style = CheckboxStyle(textColor,boxBackground,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
     checkbox =  Checkbox(id,"",name,"COMPONENT_ASSET",boxes,style)
     return checkbox
 

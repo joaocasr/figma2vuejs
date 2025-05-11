@@ -2,8 +2,9 @@
 # -*- coding: UTF-8 -*-
 class CheckboxStyle(object):
 
-	def __init__(self,colortxt,gridcolumnStart,gridcolumnEnd,gridrowStart,gridrowEnd):
+	def __init__(self,colortxt,colorbackground,gridcolumnStart,gridcolumnEnd,gridrowStart,gridrowEnd):
 		self.colortxt = colortxt
+		self.colorbackground = colorbackground
 		self.gridcolumnStart = gridcolumnStart
 		self.gridcolumnEnd = gridcolumnEnd
 		self.gridrowStart = gridrowStart
@@ -19,6 +20,15 @@ class CheckboxStyle(object):
 		"""@ParamType colortxt String
 		@ReturnType void"""
 		self.colortxt = colortxt
+
+	def getColorBackground(self):
+		"""@ReturnType String"""
+		return self.colorbackground
+
+	def setColorBackground(self, color):
+		"""@ParamType colorbackground String
+		@ReturnType void"""
+		self.colorbackground = color
 
 	def getGridcolumnStart(self):
 		"""@ReturnType String"""

@@ -62,6 +62,4 @@ def getPrimeVueDataTable(elem,tableid):
             <img :src="`{elem.header[c]["name"]}.png`" style="width: 25%"/>
         </template>
     </Column>'''
-  template+='''</DataTable>
-    '''
-  return (template,"</div>")
+  return (template,"</DataTable>")
