@@ -164,8 +164,10 @@ def insertFormLogic(idform,inputs,hooks,elemBehaviour):
     elemBehaviour[0] = []
     function = f"""
         const initialValues{idform} = ref("""+'{\n'
+    nr_input = 0
     for i in inputs:
-        function += "           "+i["name"]+": '',\n"
+        nr_input+=1
+        function += "           "+f"input{nr_input}{idform}"+": '',\n"
     function=function[:-1]+"""
         });
     """
@@ -173,9 +175,11 @@ def insertFormLogic(idform,inputs,hooks,elemBehaviour):
         const resolver{idform} = ("""+"{ values }) => {"+"""
             const errors = {};
         """
+    nr_input = 0
     for i in inputs:
-        function += f"""    if (!values.{i["name"]})"""+ "{"+f"""
-                errors.{i["name"]} = ["""+"{ message: "+f"""'{i["placeholder"]} is required.'"""+ "}];"+"""
+        nr_input+=1
+        function += f"""    if (!values.input{nr_input}{idform})"""+ "{"+f"""
+                errors.input{nr_input}{idform} = ["""+"{ message: "+f"""'{i["placeholder"]} is required.'"""+ "}];"+"""
             }
         
         """
@@ -185,7 +189,21 @@ def insertFormLogic(idform,inputs,hooks,elemBehaviour):
             };
         };
     """
+    toastFunction =f"""onFormSubmit{idform}(data)"""+""" {
+        const toastStore = useToastStore();
+        let message = ""
+        if(data.valid==true){
+            message = "The form was successfully submited!"            
+            toastStore.showSuccess(message);
+        }
+        if(data.valid==false){
+            message = "Error in form submission!"            
+            toastStore.showError(message);
+        }
+    }
+    """
     hooks.setdefault("setup", []).append(([f"initialValues{idform}",f"resolver{idform}"],function))
+    hooks.setdefault("methods", []).append((f"onFormSubmit{idform}",toastFunction))
     elemBehaviour[1] = hooks
     return elemBehaviour
 

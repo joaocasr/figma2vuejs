@@ -27,6 +27,8 @@ def create_project(name):
         remove_boilercomponents(name,1)
         print("Updating main.js file...")
         updateMainJSfile(name)
+        print("Create toast store...")
+        createToastStorefile(name)
         print("Injecting plugin files...")
         createPluginFiles(name)
 
@@ -74,6 +76,7 @@ import { RouterLink, RouterView } from 'vue-router'
 
 <template>
   <RouterView></RouterView>
+  <Toast></Toast>
 </template>
 
 <script>
@@ -135,6 +138,7 @@ def updateMainJSfile(name):
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import ToastService from 'primevue/toastservice';
 
 import App from './App.vue'
 import router from './router'
@@ -145,6 +149,7 @@ const app = createApp(App)
 
 app.use(createPinia())
 app.use(vuetify)
+app.use(ToastService)
 app.use(router)
 
 usePrimeVue(app)
@@ -156,6 +161,36 @@ app.mount('#app')
   f= open(filemain,"w")
   f.write(content)
   f.close()
+
+def createToastStorefile(name):
+  toaststorecontent="""import { defineStore } from 'pinia'
+import { useToast } from "primevue/usetoast";
+
+export const useToastStore = defineStore('toast', () => {
+  const toast = useToast();
+
+
+  function showSuccess (message)  {
+    toast.add({ severity: 'success', summary: "Success", detail: message, life: 3000 });
+  }
+
+  function showInfo (message)  {
+    toast.add({ severity: 'info', summary: "Info", detail: message, life: 3000 });
+  }
+
+  function showError (message)  {
+    toast.add({ severity: 'error', summary: "Error", detail: message, life: 3000 });
+  }
+
+  return { showSuccess , showInfo, showError }
+})
+"""
+  stores = "../output/"+name+"/src/stores/"
+  toaststore = "../output/"+name+"/src/stores/toast.js"
+  if not os.path.exists(stores):
+    os.makedirs(stores)
+  with open(toaststore,"w") as f:
+    f.write(toaststorecontent)
 
 def createPluginFiles(name):
   print("creating plugin files...")
@@ -487,3 +522,24 @@ def useDataTablePrimevuePlugin(name):
     f.close()
     allDependencies["datatable"]=True
     allDependencies["column"]=True
+
+def useToastPrimeVuePlugin(name):
+  global allDependencies
+  content =""
+  if("toast" not in allDependencies):
+    filemain = "../output/"+name+"/src/plugins/primevue.js"
+    primeimport="""import Toast from 'primevue/toast';\n"""
+    primecomponent="""app.component('Toast',Toast);\n"""
+    f = open(filemain, "r")
+    for l in f.readlines():
+      l = l.strip()
+      content+=l+"\n"
+      if(l=="import 'primeicons/primeicons.css';"):
+        content+=primeimport
+      if(l=="});"):
+        content+=primecomponent
+    f.close()
+    f= open(filemain,"w")
+    f.write(content)
+    f.close()
+    allDependencies["toast"]=True

@@ -24,11 +24,13 @@ def convertToDropdown(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,
     placeholder = ""
     selectedcolor = ""
     nonselectedcolor = ""
+    borderRadius = 0
     txtcolor = ""
     for c in data["children"]:
         if(c["name"]=="State=Closed"):
             for h in c["children"]:
                 if(h["name"]=="Header"):
+                    borderRadius = h["cornerRadius"]
                     for m in h["children"]:
                         if(m["name"]=="Menu Label"):
                             placeholder = m["children"][0]["characters"]
@@ -63,6 +65,7 @@ def convertToDropdown(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,
         "rgba("+nonselectedcolor[0]+","+nonselectedcolor[1]+","+nonselectedcolor[2]+","+nonselectedcolor[3]+")",
         "rgba("+selectedcolor[0]+","+selectedcolor[1]+","+selectedcolor[2]+","+selectedcolor[3]+")",
         "rgba("+txtcolor[0]+","+txtcolor[1]+","+txtcolor[2]+","+txtcolor[3]+")",
+        borderRadius,
         nr_columnstart,
         nr_columnend,
         nr_rowstart,
@@ -168,12 +171,13 @@ def convertToRating(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,na
                 color = star["fills"][0]["color"]
                 colorStar = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
                 break
-        for i in range(0,len(data["children"])):        
-            star = data["children"][selected]["children"][0]["children"][0]
-            if(len(star["fills"])>0): 
-                unselectedcolor = star["fills"][0]["color"]
-                unselectedStarColor = "rgba("+str(unselectedcolor["r"] * 255)+","+str(unselectedcolor["g"] * 255)+","+str(unselectedcolor["b"] * 255)+","+str(unselectedcolor["a"])+")"
-                if(colorStar!=unselectedStarColor): break
+        for i in range(0,len(data["children"])): 
+            if(len(data["children"])>selected):       
+                star = data["children"][selected]["children"][0]["children"][0]
+                if(len(star["fills"])>0): 
+                    unselectedcolor = star["fills"][0]["color"]
+                    unselectedStarColor = "rgba("+str(unselectedcolor["r"] * 255)+","+str(unselectedcolor["g"] * 255)+","+str(unselectedcolor["b"] * 255)+","+str(unselectedcolor["a"])+")"
+                    if(colorStar!=unselectedStarColor): break
     style = RatingStyle(colorStar,unselectedStarColor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
 
     rating =  Rating(id,"",name,"COMPONENT_ASSET",nrstars,readOnly,vmodel,selected,style)
@@ -214,6 +218,8 @@ def convertToForm(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name
     inputbackgroundcolor=""
     btnbackgroundcolor=""
     widthInput = ""
+    labelColorText = None
+    labelSizeText = None
     formname=data["name"]
     placeholder = ""
     label={"for":"","text":""}
@@ -225,12 +231,17 @@ def convertToForm(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name
                 if("label" not in j["name"]):
                     name = j["name"]
                     placeholder = j["children"][0]["characters"]
+                    placeholderColor = j["children"][0]["fills"][0]["color"]
+                    placeholderTextColor = "rgba("+str(placeholderColor["r"] * 255)+","+str(placeholderColor["g"] * 255)+","+str(placeholderColor["b"] * 255)+","+str(placeholderColor["a"])+")"
                     color = j["background"][0]["color"]
                     inputbackgroundcolor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
                     widthInput = j["absoluteBoundingBox"]["width"] / 1.3
                 else:
                     name = j["name"]
                     text = j["characters"]
+                    labelColor = j["fills"][0]["color"]
+                    labelColorText = "rgba("+str(labelColor["r"] * 255)+","+str(labelColor["g"] * 255)+","+str(labelColor["b"] * 255)+","+str(labelColor["a"])+")"
+                    labelSizeText = j["style"]["fontSize"]
                     label = {"for":name,"text":text}      
                     
             inputs.append({"name":getFormatedName(name),"placeholder":placeholder,"label":label})
@@ -239,7 +250,7 @@ def convertToForm(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name
             color = i["background"][0]["color"]
             btnbackgroundcolor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
 
-    style = FormStyle(inputbackgroundcolor,btnbackgroundcolor,widthInput,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
+    style = FormStyle(inputbackgroundcolor,btnbackgroundcolor,widthInput,labelSizeText,labelColorText,placeholderTextColor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
     form =  Form(id,"",formname,"COMPONENT_ASSET",inputs,buttontxt,style)
     return form
 
@@ -247,6 +258,7 @@ def convertToCheckbox(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,
     data["children"].reverse()
     boxes = []
     textColor = ""
+    boxRadius = "0"
     for option in data["children"]:
         for b in option["children"]:
             if(b["type"]=="TEXT"):
@@ -255,9 +267,10 @@ def convertToCheckbox(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,
                 textColor = "rgba("+str(colortxt["r"] * 255)+","+str(colortxt["g"] * 255)+","+str(colortxt["b"] * 255)+","+str(colortxt["a"])+")"
             elif(b["type"]=="FRAME"):
                 color = b["fills"][0]["color"]
+                boxRadius = b["cornerRadius"]
                 boxBackground = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
 
-    style = CheckboxStyle(textColor,boxBackground,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
+    style = CheckboxStyle(textColor,boxBackground,boxRadius, nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
     checkbox =  Checkbox(id,"",name,"COMPONENT_ASSET",boxes,style)
     return checkbox
 

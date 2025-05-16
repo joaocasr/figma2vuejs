@@ -2,10 +2,13 @@
 # -*- coding: UTF-8 -*-
 class FormStyle(object):
 
-	def __init__(self,backgroundcolor,backgroundcolorbtn,widthinput,gridcolumnStart,gridcolumnEnd,gridrowStart,gridrowEnd):
+	def __init__(self,backgroundcolor,backgroundcolorbtn,widthinput, labeltextSize, labeltextColor, inputColor, gridcolumnStart,gridcolumnEnd,gridrowStart,gridrowEnd):
 		self.backgroundcolor = backgroundcolor
 		self.widthinput = widthinput
+		self.labeltextSize = labeltextSize
+		self.labeltextColor = labeltextColor
 		self.backgroundcolorbtn = backgroundcolorbtn
+		self.inputColor = inputColor
 		self.gridcolumnStart = gridcolumnStart
 		self.gridcolumnEnd = gridcolumnEnd
 		self.gridrowStart = gridrowStart
@@ -18,6 +21,24 @@ class FormStyle(object):
 
 	def setbackgroundcolor(self, backgroundcolor):
 		self.backgroundcolor = backgroundcolor
+
+	def getlabeltextSize(self):
+		return self.labeltextSize
+
+	def setlabeltextSize(self, labeltextSize):
+		self.labeltextSize = labeltextSize
+
+	def getlabeltextColor(self):
+		return self.labeltextColor
+
+	def setlabeltextColor(self, labeltextColor):
+		self.labeltextColor = labeltextColor
+
+	def getinputColor(self):
+		return self.inputColor
+
+	def setinputColor(self, inputColor):
+		self.inputColor = inputColor
 
 	def getwidthinput(self):
 		return self.widthinput

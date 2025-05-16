@@ -1,5 +1,5 @@
 from engine.stylegenerator import generateComponentStyle, generateElemCssProperties, generateShapeCSS, generateRatingCssProperties, generateMenuCssProperties, setComponentPositionCSS, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateFormCssProperties, generateTableCssProperties, generateSliderCssProperties, generatePaginatorCssProperties, generateVueSelectCssProperties, generateCheckboxCssProperties
-from setup.vueprojectsetup import useRatingVuetifyPlugin,useMenuVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useFormPrimeVuePlugin, useDataTablePrimevuePlugin, useSliderPrimevuePlugin, usePaginatorVuetifyPlugin, useSelectVuetifyPlugin, useCheckboxPrimeVuePlugin
+from setup.vueprojectsetup import useRatingVuetifyPlugin,useMenuVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useFormPrimeVuePlugin, useDataTablePrimevuePlugin, useSliderPrimevuePlugin, usePaginatorVuetifyPlugin, useSelectVuetifyPlugin, useCheckboxPrimeVuePlugin, useToastPrimeVuePlugin
 from engine.logicgenerator import handleBehaviour
 from parser.model.Mcomponent import Mcomponent
 from engine.assetshelper import getPrimeVueForm, getPrimeVueCheckbox, getVuetifyMenu, getPrimeVueDataTable
@@ -165,12 +165,14 @@ def applytransformation(elem,projectname,pagename,idcomponent):
         vmodel = 'v-model="'+str(elem.vmodel)+'"'
         placeholder = 'label="'+str(elem.placeholder)+'"'
         generateVueSelectCssProperties(projectname,pagename,cssclass,elem)
-        return (f"<v-select {id}{ref}class="+'"grid-item '+ cssclass  + '" '+vmodel+' '+options+' '+placeholder, "/>")
+        return (f"<v-select {id}{ref}class="+'"grid-item '+ cssclass  + '" :single-line="true" '+vmodel+' '+options+' '+placeholder, "/>")
     if(isinstance(elem, Mcomponent) and elem.getNameComponent()=="Form"):
         useFormPrimeVuePlugin(projectname)
+        useToastPrimeVuePlugin(projectname)
         form = getPrimeVueForm(elem,cssclass,elem.inputs,elem.buttontxt)
         generateFormCssProperties(projectname,pagename,cssclass,elem,f"form{cssclass}",f"inputform{cssclass}",f"submitbtnform{cssclass}")
         auxiliarImports[pagename].add("import { ref } from 'vue'")
+        auxiliarImports[pagename].add('import { useToastStore } from "@/stores/toast";')
         componentAssets[pagename].extend([" Form"," InputText"," Message"])
         return form
     if(isinstance(elem, Mcomponent) and elem.getNameComponent()=="Table"):

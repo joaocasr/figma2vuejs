@@ -5,12 +5,14 @@ def getPrimeVueForm(elem,formid,inputsinfo,buttontext):
     <div class="form{formid}">
     <Form v-slot="$form{formid}" :initialValues="initialValues{formid}" :resolver="resolver{formid}" :validateOnBlur="true" @submit="onFormSubmit{formid}">
     '''
+    nr_input = 0
     for minput in inputsinfo:
+      nr_input+=1
       if("label" in minput):
-        template+=f'<label for="{minput["label"]["for"]}">{minput["label"]["text"]}</label><br>'
+        template+=f'<label class="label{formid}" for="input{nr_input}{formid}">{minput["label"]["text"]}</label><br>'
       template+=f'''<div class="inputform{formid}">
-                <InputText name="{minput["name"]}" type="text" placeholder="{minput["placeholder"]}" fluid />
-                '''+f'''<Message v-if="'''+f'$form{formid}.{minput["name"]}?.invalid" severity="error" size="small" variant="simple">'+'{{'+f'$form{formid}.{minput["name"]}?.error.message'+'}}'+"""</Message> 
+                <InputText name="input{nr_input}{formid}" type="text" placeholder="{minput["placeholder"]}" fluid />
+                '''+f'''<Message v-if="'''+f'$form{formid}.input{nr_input}{formid}?.invalid" severity="error" size="small" variant="simple">'+'{{'+f'$form{formid}.input{nr_input}{formid}?.error.message'+'}}'+"""</Message> 
             </div>
             """
     template+=f'''<Button class="submitbtnform{formid}" type="submit" label="Submit">{buttontext}</Button>

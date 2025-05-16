@@ -1,5 +1,5 @@
 from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties, generatePaginatorCssProperties, generateFormCssProperties, generateCheckboxCssProperties, generateVideoCssProperties, generateMenuCssProperties, generateScrollCSS, generateTableCssProperties
-from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin, useRatingVuetifyPlugin, usePaginatorVuetifyPlugin, useFormPrimeVuePlugin, useCheckboxPrimeVuePlugin, useMenuVuetifyPlugin, useDataTablePrimevuePlugin
+from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin, useRatingVuetifyPlugin, usePaginatorVuetifyPlugin, useFormPrimeVuePlugin, useCheckboxPrimeVuePlugin, useMenuVuetifyPlugin, useDataTablePrimevuePlugin, useToastPrimeVuePlugin
 from engine.logicgenerator import handleBehaviour, addPropsFunction
 from engine.assetshelper import getPrimeVueForm, getPrimeVueCheckbox, getVuetifyMenu, getPrimeVueDataTable
 from parser.model.Mcomponent import Mcomponent
@@ -100,7 +100,7 @@ def applytransformation(elem,projectname,page):
             placeholder = 'label="'+str(elem.placeholder)+'"'
 
             generateVueSelectCssProperties(projectname,pagename,cssclass,elem)
-            return (f"<v-select {id}{ref}class="+'"grid-item '+ cssclass  + '" '+vmodel+' '+options+' '+placeholder, "/>")
+            return (f"<v-select {id}{ref}class="+'"grid-item '+ cssclass + '" :single-line="true" '+vmodel+' '+options+' '+placeholder, "/>")
         if(elem.getNameComponent()=="InputSearch" and elem.getTypeComponent()=="COMPONENT_ASSET" and isComponentInstance(elem.getIdComponent())==False):
             useIconFieldPrimevuePlugin(projectname)
             cssclass= "ssearchinputfilter" + cssclass
@@ -148,9 +148,11 @@ def applytransformation(elem,projectname,page):
             return (f'<v-pagination {id}{ref}{vmodel} :total-visible="{elem.totalvisible}" :length="{elem.length}" class="{cssclass}" >','</v-pagination>')
         if(elem.getNameComponent()=="Form" and elem.getTypeComponent()=="COMPONENT_ASSET" and isComponentInstance(elem.getIdComponent())==False):
             useFormPrimeVuePlugin(projectname)
+            useToastPrimeVuePlugin(projectname)
             form = getPrimeVueForm(elem,cssclass,elem.inputs,elem.buttontxt)
             generateFormCssProperties(projectname,pagename,cssclass,elem,f"form{cssclass}",f"inputform{cssclass}",f"submitbtnform{cssclass}")
             auxiliarImports[pagename].add("import { ref } from 'vue'")
+            auxiliarImports[pagename].add('import { useToastStore } from "@/stores/toast";')
             componentAssets[pagename].extend([" Form"," InputText"," Message"])
             return form
         if(elem.getNameComponent()=="Checkbox" and elem.getTypeComponent()=="COMPONENT_ASSET" and isComponentInstance(elem.getIdComponent())==False):
@@ -246,7 +248,9 @@ def applytransformation(elem,projectname,page):
             setComponentPositionCSS(projectname,pagename,"pos"+componentName.lower(),elem)
         if(isComponentInstance(elem.getIdComponent())!=True):
             components.setdefault(pagename, {}).add(getFormatedName(elem.componentName.lower()))
-        if(componentName=="Form"):  auxiliarImports[pagename].add("import { ref } from 'vue'")
+        if(componentName=="Form"):
+            auxiliarImports[pagename].add("import { ref } from 'vue'")
+            auxiliarImports[pagename].add('import { useToastStore } from "@/stores/toast";')
         return ("<"+componentName+f"{id}{ref}{classname}"+'" '+ ' '.join(d for d in directives) + f"{atributeProps}"+">","</"+componentName+">")
     return ("","")
 

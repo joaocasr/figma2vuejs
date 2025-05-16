@@ -268,8 +268,15 @@ def generateFormCssProperties(projectname,pagename,cssclass,elem,formclass,input
 ."""+ str(inputclass) + """ .p-inputtext{ 
   --p-inputtext-background:"""+  str(elem.style.getbackgroundcolor())+""";
   width: """+  str(elem.style.getwidthinput())+"""px;
+  color: """+  str(elem.style.getinputColor())+""";
 }
-  """
+"""
+  if(elem.style.getlabeltextSize()!=None and elem.style.getlabeltextColor()!=None):
+    css+=""".label"""+ str(cssclass) + """{
+  font-size: """+  str(elem.style.getlabeltextSize())+"""px;
+  color: """+  str(elem.style.getlabeltextColor())+""";
+}
+    """
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
@@ -285,6 +292,7 @@ def generateCheckboxCssProperties(projectname,pagename,cssclass,labelclass,elem)
     grid-row-end: """+  str(elem.style.gridrowEnd)+""";
     margin:5px;
     --p-checkbox-background:  """+  str(elem.style.getColorBackground())+""";
+    --p-checkbox-border-radius:"""+ str(elem.style.getboxRadius()/2)+"""px;
   }
 
   ."""+ str(labelclass) + """ {
@@ -365,8 +373,15 @@ div:deep(."""+ str(cssclass) + """ .v-input__control) {
   grid-area: control;
   min-width: 300px;
   background-color:"""+  str(elem.style.background_color)+""";
-  color: """+ str(elem.style.placeholder_color) +"""
+  color: """+ str(elem.style.placeholder_color) +""";
+  border-radius: """+ str(elem.style.getborderRadius()) +"""px;
 }
+
+div:deep(."""+ str(cssclass) + """ .v-field__outline) {
+  --v-field-border-width:0px;
+  --v-field-border-opacity:0;
+}
+
   """
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
@@ -459,10 +474,7 @@ def generateRatingCssProperties(projectname,pagename,cssclass,elem):
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
     grid-row-start: """+  str(elem.style.gridrowStart)+""";
     grid-row-end: """+  str(elem.style.gridrowEnd)+""";
-}
-
-."""+str(cssclass)+"""{
-	color: """+  str(elem.style.getstarColor())+""";
+	  color: """+  str(elem.style.getstarColor())+""";
 }
   """
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
