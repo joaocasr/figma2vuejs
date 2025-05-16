@@ -227,11 +227,11 @@ def writeVueComponent(name,project_name,content,component,pagesInfo):
     allcomponents = list(allcomponents)
     if(len(allcomponents)>0): pagecomponents="""\n    components:{\n        """+ ',\n        '.join(allcomponents) +"""\n    },"""
     for hook in allhooks[name]:
-        if("methods" in hook or "computed" in hook): pagehooks += hook + ":{\n"
+        if("methods" in hook or "computed" in hook or "watch" in hook): pagehooks += hook + ":{\n"
         if("mounted" in hook or "destroyed" in hook or "setup" in hook):
             pagehooks += hook + "(){\n"
         for chook in allhooks[name][hook]:
-            if("methods" in hook or "computed" in hook): 
+            if("methods" in hook or "computed" in hook or "watch" in hook): 
                 pagehooks += chook[1] + ",\n"
             if("mounted" in hook or "setup" in hook or "destroyed" in hook): 
                 pagehooks += chook[1] + "\n\n"

@@ -87,6 +87,9 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants):
     # HANDLE FORM LOGIC
     if(isinstance(elem,Mcomponent) and elem.getNameComponent()=="Form"):
         elemBehaviour = insertFormLogic(getElemId(elem.idComponent),elem.inputs,hooks,elemBehaviour)
+    # HANDLE SLIDER LOGIC
+    if(isinstance(elem,Mcomponent) and elem.getNameComponent()=="Slider"):
+        elemBehaviour = insertSliderLogic(getElemId(elem.idComponent),hooks,elemBehaviour)
     # HANDLE CONDITIONAL VISIBLE ELEMENTS
     if(elem.gethascondvisib()==True):
         elemBehaviour[0].append('v-show="show'+getElemId(elem.getIdElement())+'==true"')
@@ -159,6 +162,17 @@ def getScrollBehaviourFunction(elem,action):
             this.$refs.ref{getElemId(action.getDestinationID())}?.scrollIntoView("""+"{ behavior: 'smooth' });"+"""
         }""" 
     return function
+
+def insertSliderLogic(idSlider,hooks,elemBehaviour):
+    sliderFunction = f"""slider{idSlider}"""+"""(newvalue,oldvalue){
+            const toastStore = useToastStore();
+            let message = "Slider value: "+newvalue            
+            toastStore.showInfo(message);   
+        }
+"""
+    hooks.setdefault("watch", []).append((f"slider{idSlider}",sliderFunction))
+    elemBehaviour[1] = hooks
+    return elemBehaviour
 
 def insertFormLogic(idform,inputs,hooks,elemBehaviour):
     elemBehaviour[0] = []

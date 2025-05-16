@@ -21,10 +21,12 @@ def create_project(name):
         print("The Vue Project "+name+" already exists.")
         print("Removing the css files from previous generation...")
         subprocess.run(["find "+ cssdirectory +" -type f -not \( -name 'main.css' -or -name 'base.css' -or -name 'logo.svg' \) -delete"],shell=True)
-        print("Removing the view files from previous generation...")
+        print("Removing view files from previous generation...")
         remove_boilerview(name)
-        print("Removing the component files from previous generation...")
+        print("Removing component files from previous generation...")
         remove_boilercomponents(name,1)
+        print("Removing store files from previous generation...")
+        remove_boilerstore(name,1)
         print("Updating main.js file...")
         updateMainJSfile(name)
         print("Create toast store...")
@@ -67,6 +69,15 @@ def remove_boilercomponents(name,n):
     if rm.returncode != 0:
       raise Exception("Error while cleaning boilerplate code from the components folder!")    
 
+def remove_boilerstore(name,n):
+    if(n==0): print("Removing boilerplate code from stores folder...")
+    directory = '../output/'+name+'/src/stores/*'
+    rm = subprocess.run(['sh',
+                            '-c',
+                            'rm -rf '+ directory],
+                            capture_output=True, text=True)
+    if rm.returncode != 0:
+      raise Exception("Error while cleaning boilerplate code from the stores folder!")    
 
 def updateAppVue(name):
     print("Removing boilerplate code from App.vue...")
