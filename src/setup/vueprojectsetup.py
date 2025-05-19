@@ -177,23 +177,28 @@ def createToastStorefile(name):
   toaststorecontent="""import { defineStore } from 'pinia'
 import { useToast } from "primevue/usetoast";
 
-export const useToastStore = defineStore('toast', () => {
-  const toast = useToast();
-
-
-  function showSuccess (message)  {
-    toast.add({ severity: 'success', summary: "Success", detail: message, life: 3000 });
+export const useToastStore = defineStore('toast', {
+  state: () => ({
+    toast: useToast(),
+    allToasts : []
+  }),
+  getters: {
+    getToasts(state) { return state.allToasts}
+  },
+  actions: {
+    showSuccess(message) {
+       this.toast.add({ severity: 'success', summary: "Success", detail: message, life: 3000 })
+       this.allToasts.push({ severity: 'success', summary: "Success", detail: message, timestamp: Date() })
+      },
+    showInfo(message) {
+       this.toast.add({ severity: 'info', summary: "Info", detail: message, life: 3000 })
+       this.allToasts.push({ severity: 'info', summary: "Info", detail: message, timestamp: Date() })
+      },
+    showError(message){
+      this.toast.add({ severity: 'error', summary: "Error", detail: message, life: 3000 })
+      this.allToasts.push({ severity: 'error', summary: "Error", detail: message, timestamp: Date() })
+    }
   }
-
-  function showInfo (message)  {
-    toast.add({ severity: 'info', summary: "Info", detail: message, life: 3000 });
-  }
-
-  function showError (message)  {
-    toast.add({ severity: 'error', summary: "Error", detail: message, life: 3000 });
-  }
-
-  return { showSuccess , showInfo, showError }
 })
 """
   stores = "../output/"+name+"/src/stores/"

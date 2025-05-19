@@ -11,6 +11,10 @@ class PaginatorStyle(object):
 		self.gridcolumnEnd = gridcolumnEnd
 		self.gridrowStart = gridrowStart
 		self.gridrowEnd = gridrowEnd
+		self.width = None
+		self.height = None
+		self.x = None
+		self.y = None
 		self.position = None
 		self.gridArea = None
 
@@ -79,6 +83,42 @@ class PaginatorStyle(object):
 		@ReturnType void"""
 		self.position = position
 
+	def getWidth(self):
+		"""@ReturnType int"""
+		return self.width
+
+	def setWidth(self, width):
+		"""@ParamType width int
+		@ReturnType void"""
+		self.width = width
+
+	def getHeight(self):
+		"""@ReturnType int"""
+		return self.height
+
+	def setHeight(self, height):
+		"""@ParamType height int
+		@ReturnType void"""
+		self.height = height
+
+	def getX(self):
+		"""@ReturnType int"""
+		return self.x
+
+	def setX(self, x):
+		"""@ParamType width int
+		@ReturnType void"""
+		self.x = x
+
+	def getY(self):
+		"""@ReturnType int"""
+		return self.y
+
+	def setY(self, y):
+		"""@ParamType width int
+		@ReturnType void"""
+		self.y = y
+  
 	def getPosition(self):
 		"""@ReturnType String"""
 		return self.position

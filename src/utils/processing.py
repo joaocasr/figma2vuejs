@@ -1,3 +1,5 @@
+from parser.model.Mcomponent import Mcomponent
+from parser.model.Melement import Melement
 import re 
 import os
 
@@ -21,4 +23,11 @@ def doesImageExist(pathname,elem,projectname):
     if not os.path.exists(destination) and ".png" in destination:
         elem.setimgpath("https://demofree.sirv.com/nope-not-here.jpg")
     if not os.path.exists(destination) and ".svg" in destination:
-        elem.setsvgpath("https://placehold.co/50x50.svg?text=PLACEHOLDER")
+        elem.setsvgpath("https://placehold.co/50x50.svg?text=PLACEHOLDER")        
+        
+def getName(e):
+    if isinstance(e,Melement):
+        name = getFormatedName(e.getName()) + getElemId(e.idElement)
+    elif(isinstance(e,Mcomponent)):
+        name = getFormatedName(e.getNameComponent()) + getElemId(e.idComponent)
+    return name

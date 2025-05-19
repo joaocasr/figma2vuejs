@@ -71,6 +71,11 @@ def convertToDropdown(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,
         nr_rowstart,
         nr_rowend
     )
+    (elementwidth,elementheight,xielem,yielem) = getDimensions(data)
+    style.setHeight(elementheight)
+    style.setWidth(elementwidth)
+    style.setX(xielem)
+    style.setY(yielem)
     elemid = getElemId(id)
     melement = Dropdown(id,"",name,"COMPONENT_ASSET","selectedOption"+elemid,alloptions,placeholder,False,style)
 
@@ -88,7 +93,11 @@ def convertToSearchInput(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,
             color = e["fills"][0]["color"]
             txtcolor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
     style = InputSearchStyle(backgroundcolor,color,radius,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
-
+    (elementwidth,elementheight,xielem,yielem) = getDimensions(data)
+    style.setHeight(elementheight)
+    style.setWidth(elementwidth)
+    style.setX(xielem)
+    style.setY(yielem)
     inputsearchfilter =  InputSearch(id,"",name,"COMPONENT_ASSET",vmodel,placeholder,style)
 
     return inputsearchfilter
@@ -111,7 +120,11 @@ def convertToDatePicker(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,i
     backgroundcolor = "rgba("+str(dateinput["backgroundColor"]["r"] * 255)+","+str(dateinput["backgroundColor"]["g"] * 255)+","+str(dateinput["backgroundColor"]["b"] * 255)+","+str(dateinput["backgroundColor"]["a"])+")"
     
     style = DatePickerStyle(backgroundcolor,dropdownbackgroundcolor,iconrgbacolor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
-
+    (elementwidth,elementheight,xielem,yielem) = getDimensions(data)
+    style.setHeight(elementheight)
+    style.setWidth(elementwidth)
+    style.setX(xielem)
+    style.setY(yielem)
     datepicker =  DatePicker(id,"",name,"COMPONENT_ASSET",vmodel,style)
 
     return datepicker
@@ -137,7 +150,11 @@ def convertToSlider(data,percentage,nr_columnstart,nr_columnend,nr_rowstart,nr_r
                     backgroundhover = backgroundcontent  
 
     style = SliderStyle(backgroundtrack,backgroundcontent,backgroundrange,backgroundhover,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
-
+    (elementwidth,elementheight,xielem,yielem) = getDimensions(data)
+    style.setHeight(elementheight)
+    style.setWidth(elementwidth)
+    style.setX(xielem)
+    style.setY(yielem)
     slider =  Slider(id,"",name,"COMPONENT_ASSET",vmodel,percentage,style)
     return slider
 
@@ -179,7 +196,11 @@ def convertToRating(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,na
                     unselectedStarColor = "rgba("+str(unselectedcolor["r"] * 255)+","+str(unselectedcolor["g"] * 255)+","+str(unselectedcolor["b"] * 255)+","+str(unselectedcolor["a"])+")"
                     if(colorStar!=unselectedStarColor): break
     style = RatingStyle(colorStar,unselectedStarColor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
-
+    (elementwidth,elementheight,xielem,yielem) = getDimensions(data)
+    style.setHeight(elementheight)
+    style.setWidth(elementwidth)
+    style.setX(xielem)
+    style.setY(yielem)
     rating =  Rating(id,"",name,"COMPONENT_ASSET",nrstars,readOnly,vmodel,selected,style)
     return rating
 
@@ -208,7 +229,11 @@ def convertToPaginator(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id
             length = l["children"][0]["children"][0]['characters']
 
     style = PaginatorStyle(cornerRadius,txtselectedColor,txtselectedColor,backgroundcolor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
-
+    (elementwidth,elementheight,xielem,yielem) = getDimensions(data)
+    style.setHeight(elementheight)
+    style.setWidth(elementwidth)
+    style.setX(xielem)
+    style.setY(yielem)
     rating =  Paginator(id,"",name,"COMPONENT_ASSET",vmodel,visible,length,style)
     return rating
     
@@ -251,6 +276,11 @@ def convertToForm(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name
             btnbackgroundcolor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
 
     style = FormStyle(inputbackgroundcolor,btnbackgroundcolor,widthInput,labelSizeText,labelColorText,placeholderTextColor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
+    (elementwidth,elementheight,xielem,yielem) = getDimensions(data)
+    style.setHeight(elementheight)
+    style.setWidth(elementwidth)
+    style.setX(xielem)
+    style.setY(yielem)
     form =  Form(id,"",formname,"COMPONENT_ASSET",inputs,buttontxt,style)
     return form
 
@@ -271,6 +301,11 @@ def convertToCheckbox(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,
                 boxBackground = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
 
     style = CheckboxStyle(textColor,boxBackground,boxRadius, nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
+    (elementwidth,elementheight,xielem,yielem) = getDimensions(data)
+    style.setHeight(elementheight)
+    style.setWidth(elementwidth)
+    style.setX(xielem)
+    style.setY(yielem)
     checkbox =  Checkbox(id,"",name,"COMPONENT_ASSET",boxes,style)
     return checkbox
 
@@ -291,6 +326,11 @@ def convertToMenu(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name
                         option["destination"]=i["actions"][0]["destinationId"]
                 options.append(option)
     style = MenuStyle(nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
+    (elementwidth,elementheight,xielem,yielem) = getDimensions(data)
+    style.setHeight(elementheight)
+    style.setWidth(elementwidth)
+    style.setX(xielem)
+    style.setY(yielem)
     menu = Menu(id,"",menuName,"COMPONENT_ASSET",options,iconImage,style)
     return menu
 
@@ -330,5 +370,23 @@ def convertToTable(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,nam
     color = data["background"][0]["color"]
     bodyColor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
     style = TableStyle(headerColor,bodyColor,textColor,headertextColor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
+    (elementwidth,elementheight,xielem,yielem) = getDimensions(data)
+    style.setHeight(elementheight)
+    style.setWidth(elementwidth)
+    style.setX(xielem)
+    style.setY(yielem)
     table = Table(id,"",name,"COMPONENT_ASSET",values,header,nrrows,images,style)
     return table
+
+def getDimensions(data):
+    if(data["absoluteRenderBounds"]!=None):
+        elementwidth = data["absoluteRenderBounds"]["width"]
+        elementheight = data["absoluteRenderBounds"]["height"]
+        xielem = data["absoluteRenderBounds"]["x"]
+        yielem = data["absoluteRenderBounds"]["y"]
+    elif(data["absoluteBoundingBox"]!=None):
+        elementwidth = data["absoluteBoundingBox"]["width"]
+        elementheight = data["absoluteBoundingBox"]["height"]
+        xielem = data["absoluteBoundingBox"]["x"]
+        yielem = data["absoluteBoundingBox"]["y"]
+    return (elementwidth,elementheight,xielem,yielem)

@@ -17,14 +17,14 @@ FILE_KEY = os.environ.get("FILE_KEY")
 
 headers = {"content-type": "application/json", "Accept-Charset": "UTF-8", 'X-FIGMA-TOKEN': FIGMA_API_KEY}
 
-if(len(sys.argv)>3 or len(sys.argv)<1):
+if(len(sys.argv)>4 or len(sys.argv)<1):
   print("""****MANUAL****
 for conversion using figma api endpoint /files/{id} and prototoype url:
    >  python3 figma2vuejs.py
 for conversion using prototoype files:
    >  python3 figma2vuejs.py <nrº of prototype>
 for conversion using prototoype files with grid-template:
-   >  python3 figma2vuejs.py <nrº of prototype> <template-file>""")
+   >  python3 figma2vuejs.py <nrº of prototype> <nr_row> <nr_column>""")
 else:
   prototype = None
   data = None
@@ -61,7 +61,7 @@ else:
                        "pageElements":allpages[page].elements}
 
   mypages = allpages
-  if(len(sys.argv)==3): mypages = generateGridTemplate(sys.argv[2],allpages)
+  if(len(sys.argv)==4): mypages = generateGridTemplate(allpages,sys.argv[2],sys.argv[3])
   if(mypages!=None):
     allcomponents=[]
     allvariants=[]

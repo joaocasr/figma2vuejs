@@ -4,10 +4,10 @@ from parser.model.VectorElement import VectorElement
 from parser.model.TextElement import TextElement
 from parser.model.Mpage import Mpage
 from parser.model.Mcomponent import Mcomponent
-from utils.processing import getFormatedName,getElemId
+from utils.processing import getFormatedName,getElemId,getName
+
 
 import os
-import re
 import math
 
 # key: page_name; value: list_of_font_imports -> list(string)
@@ -207,6 +207,10 @@ def generateComponentStyle(name,component):
   height: 100%;
 }
   """
+
+  if(component.style.getgridArea()!=None):
+    css += "#component"+ idcomponent+" {\n\t"+ "grid-area:"+getName(component)+";\n}\n\n"
+
   newcsscontent=""
   if component.componentName in font_imports:
     for font in font_imports[component.componentName]:
@@ -277,6 +281,9 @@ def generateFormCssProperties(projectname,pagename,cssclass,elem,formclass,input
   color: """+  str(elem.style.getlabeltextColor())+""";
 }
     """
+  if(elem.style.getgridArea()!=None):
+    css += "#"+ str(formclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
+
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
@@ -302,6 +309,10 @@ def generateCheckboxCssProperties(projectname,pagename,cssclass,labelclass,elem)
     top:3px;
   }
   """
+
+  if(elem.style.getgridArea()!=None):
+    css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
+    
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
@@ -332,6 +343,8 @@ def generateMenuCssProperties(projectname,pagename,cssclass,elem):
     grid-row-end: """+  str(elem.style.gridrowEnd)+""";
   }
   """
+  if(elem.style.getgridArea()!=None):
+    css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
@@ -383,6 +396,9 @@ div:deep(."""+ str(cssclass) + """ .v-field__outline) {
 }
 
   """
+  if(elem.style.getgridArea()!=None):
+    css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
+
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
@@ -413,6 +429,8 @@ def generateInputSearchFilterCssProperties(projectname,pagename,cssclass,elem):
   pointer-events: none;
 }
   """
+  if(elem.style.getgridArea()!=None):
+    css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
@@ -438,6 +456,8 @@ div:deep(."""+str(cssclass)+""" .p-slider-handle){
     --p-slider-handle-content-hover-background: """+  str(elem.style.getcolorhover()) +""";
 }
 """
+  if(elem.style.getgridArea()!=None):
+    css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
@@ -461,6 +481,8 @@ def generateTableCssProperties(projectname,pagename,cssclass,elem):
 }
 
 """
+  if(elem.style.getgridArea()!=None):
+    css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
@@ -479,6 +501,8 @@ def generateRatingCssProperties(projectname,pagename,cssclass,elem):
   """
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
+  if(elem.style.getgridArea()!=None):
+    css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
   if os.path.isfile(cssfile):
     mode = "a"
   with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
@@ -504,6 +528,8 @@ def generateDatePickerCssProperties(projectname,pagename,cssclass,elem):
 	background-color:"""+  str(elem.style.getdropdownbackgroundcolor())+""";
 }
   """
+  if(elem.style.getgridArea()!=None):
+    css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
@@ -554,6 +580,8 @@ def generateScrollCSS(projectname,pagename,cssclass,elem):
     cursor: grabbing;
   }
 """
+  if(elem.style.getgridArea()!=None):
+    css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if os.path.isfile(cssfile):
@@ -736,7 +764,7 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     csskeyvalues +=f"padding: 0;{newline}"
     gridareacss = ""
     if(elem.style.getgridArea()!=None):
-      gridareacss = "#"+elem.name.lower()+" {\n\t"+ "grid-area:"+elem.style.getgridArea()+";\n}\n\n"
+      gridareacss = "#"+cssclass+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
 
     hover=""
     if(elem.style.gethashoverProperty()==True):
