@@ -1,4 +1,4 @@
-from utils.processing import getFormatedName,getElemId,doesImageExist
+from utils.tools import getFormatedName,getElemId,doesImageExist
 
 def writeVariantComponent(name,project_name,variants):
 

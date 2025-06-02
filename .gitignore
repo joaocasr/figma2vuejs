@@ -1,5 +1,4 @@
 tests/prototype* 
-tests/shapes.json 
 !tests/.gitkeep 
 .env
 .vscode

@@ -1,6 +1,6 @@
 from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties, generatePaginatorCssProperties, generateFormCssProperties, generateCheckboxCssProperties, generateVideoCssProperties, generateMenuCssProperties, generateScrollCSS, generateTableCssProperties
 from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin, useRatingVuetifyPlugin, usePaginatorVuetifyPlugin, useFormPrimeVuePlugin, useCheckboxPrimeVuePlugin, useMenuVuetifyPlugin, useDataTablePrimevuePlugin, useToastPrimeVuePlugin
-from engine.logicgenerator import handleBehaviour, addPropsFunction
+from engine.logicgenerator import handleBehaviour, addPropsFunction, getTextDestination
 from engine.assetshelper import getPrimeVueForm, getPrimeVueCheckbox, getVuetifyMenu, getPrimeVueDataTable
 from parser.model.Mcomponent import Mcomponent
 from parser.model.Melement import Melement
@@ -10,7 +10,7 @@ from parser.model.VectorElement import VectorElement
 from parser.model.ShapeElement import ShapeElement
 from parser.model.ContainerElement import ContainerElement
 from parser.model.ImageElement import ImageElement
-from utils.processing import getFormatedName,getElemId,doesImageExist
+from utils.tools import getFormatedName,getElemId,doesImageExist
 
 from bs4 import BeautifulSoup
 import re
@@ -186,9 +186,14 @@ def applytransformation(elem,projectname,page):
         if(elem.tag==""):
             elem.tag = "p"
         txt = re.sub(r"\n", "<br/>",elem.text)
+        href = getTextDestination(elem,allPagesInfo)
+        if(href!=None):
+            elem.tag = "a"
+            href = 'href="/'+href+'" '
+        else: href = ""
         if(belongstoDataObject(cssclass,page)[1]==True):
             txt = "{{"+f'{belongstoDataObject(cssclass,page)[0]}.atr{cssclass}'+"}}"   
-        return ("<"+ elem.tag + id + ref +" class="+'"grid-item text'+ cssclass  + '" '+ ' '.join(d for d in directives)+ f"{atributeProps}"+">"+txt, "</"+elem.tag+">")
+        return ("<"+ elem.tag + id + ref +f" {href}class="+'"grid-item text'+ cssclass  + '" '+ ' '.join(d for d in directives)+ f"{atributeProps}"+">"+txt, "</"+elem.tag+">")
     if(isinstance(elem, ContainerElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         if(elem.tag==""):

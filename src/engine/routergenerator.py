@@ -1,6 +1,6 @@
 import json
 import re
-from utils.processing import getFormatedName
+from utils.tools import getFormatedName
 
 def generate_routes(name,pages):
     print("Updating routes...")

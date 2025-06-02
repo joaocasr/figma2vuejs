@@ -18,7 +18,7 @@ from parser.model.TableStyle import TableStyle
 from parser.model.FormStyle import FormStyle
 from parser.model.Checkbox import Checkbox
 from parser.model.CheckboxStyle import CheckboxStyle
-from utils.processing import getFormatedName,getElemId
+from utils.tools import getFormatedName,getElemId
 
 def convertToDropdown(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name):
     placeholder = ""

@@ -1,4 +1,4 @@
-from utils.processing import getFormatedName,getElemId
+from utils.tools import getFormatedName,getElemId
 pageEntities = dict()
 topElement = None
 

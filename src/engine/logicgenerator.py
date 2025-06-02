@@ -430,6 +430,14 @@ def handleVariants(elem,variants,hooks,elemBehaviour,allPagesInfo,beginElem=None
                 elemBehaviour[1] = hooks
     return elemBehaviour            
 
+def getTextDestination(elem,allPagesInfo):
+    destination = None
+    for interaction in elem.getInteractions():
+        for action in interaction.actions:
+            if(isinstance(action,NavigationAction)):
+                destination = getPageById(action.getDestinationID(),allPagesInfo) 
+    return destination 
+
 def getElemId(id):
     elemid = id
     if(str(id).startswith("I")):

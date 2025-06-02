@@ -26,7 +26,7 @@ from parser.model.ChangeAction import ChangeAction
 from engine.stylegenerator import calculate_lineargradientDegree, calculate_radialgradientDegree,calculate_angulargradientDegree
 from engine.datagenerator import buildPageEntities,parseEntity,getObjectsDL
 from parser.assetsconverter import convertToDropdown, convertToSearchInput, convertToDatePicker, convertToSlider, convertToRating, convertToPaginator, convertToForm, convertToCheckbox, convertToMenu, convertToTable
-from utils.processing import getFormatedName,getElemId
+from utils.tools import getFormatedName,getElemId
 
 allpages = {}
 allimages = []

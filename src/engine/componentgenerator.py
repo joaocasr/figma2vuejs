@@ -1,6 +1,6 @@
 from engine.stylegenerator import generateComponentStyle, generateElemCssProperties, generateShapeCSS, generateRatingCssProperties, generateMenuCssProperties, setComponentPositionCSS, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateFormCssProperties, generateTableCssProperties, generateSliderCssProperties, generatePaginatorCssProperties, generateVueSelectCssProperties, generateCheckboxCssProperties
 from setup.vueprojectsetup import useRatingVuetifyPlugin,useMenuVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useFormPrimeVuePlugin, useDataTablePrimevuePlugin, useSliderPrimevuePlugin, usePaginatorVuetifyPlugin, useSelectVuetifyPlugin, useCheckboxPrimeVuePlugin, useToastPrimeVuePlugin
-from engine.logicgenerator import handleBehaviour
+from engine.logicgenerator import handleBehaviour,getTextDestination
 from parser.model.Mcomponent import Mcomponent
 from engine.assetshelper import getPrimeVueForm, getPrimeVueCheckbox, getVuetifyMenu, getPrimeVueDataTable
 from parser.model.TextElement import TextElement
@@ -9,7 +9,7 @@ from parser.model.ContainerElement import ContainerElement
 from parser.model.ImageElement import ImageElement
 from parser.model.ShapeElement import ShapeElement
 from engine.assetshelper import getVuetifyMenu
-from utils.processing import getFormatedName,getElemId,doesImageExist
+from utils.tools import getFormatedName,getElemId,doesImageExist
 
 from bs4 import BeautifulSoup
 import re
@@ -88,9 +88,14 @@ def applytransformation(elem,projectname,pagename,idcomponent):
         if(elem.tag==""):
             elem.tag = "p"
         txtContent = elem.text
+        href = getTextDestination(elem,allpagesInfo)
+        if(href!=None):
+            elem.tag = "a"
+            href = 'href="/'+href+'" '
+        else: href = ""
         if("atr"+cssclass in allProps.keys()):
             txtContent = "{{"+ f"atributes.atr{cssclass}" +"}}"
-        return ("<"+elem.tag+f" {ref}class="+'"grid-item-'+ idcomponent +' text'+ cssclass +'" '+' '.join(d for d in directives)+'>'+txtContent, "</"+elem.tag+">")
+        return ("<"+elem.tag+f" {href}{ref}class="+'"grid-item-'+ idcomponent +' text'+ cssclass +'" '+' '.join(d for d in directives)+'>'+txtContent, "</"+elem.tag+">")
     if(isinstance(elem, ContainerElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         if(elem.tag==""):

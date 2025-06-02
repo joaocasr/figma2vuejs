@@ -2,9 +2,7 @@ from parser.model.ContainerElement import ContainerElement
 from parser.model.ImageElement import ImageElement
 from parser.model.VectorElement import VectorElement
 from parser.model.TextElement import TextElement
-from parser.model.Mpage import Mpage
-from parser.model.Mcomponent import Mcomponent
-from utils.processing import getFormatedName,getElemId,getName
+from utils.tools import getFormatedName,getElemId,getName
 
 
 import os
@@ -689,7 +687,8 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     else:
       csskeyvalues+=f"display: flex;{newline}"
     csskeyvalues+=f"overflow-wrap: break-word;{newline}" #word-break: break-word;{newline}
-
+    if(elem.tag=="a"):
+      csskeyvalues+=f"text-decoration: none;{newline}"
     if(elem.style.textAutoResize == "WIDTH_AND_HEIGHT"):
       csskeyvalues+=f"white-space: normal;{newline}"
     elif(elem.style.textAutoResize == "WIDTH"):
@@ -789,12 +788,9 @@ def calculate_lineargradientDegree(points,colors):
   scolors = ""
   norm_a = math.sqrt(a[0]**2 + a[1]**2) 
   norm_b = math.sqrt(b[0]**2 + b[1]**2) 
-  print(a)
-  print(b)
   cosalpha = (a[0]*b[0] + a[1]*b[1]) / (norm_a * norm_b)
   x = math.acos(cosalpha)
   degree = ((x * 180)/math.pi)  + 90
-  print(degree)
   if(b[1]>a[1]): degree-=180
   for c in colors:
     rgba = (c["color"]["r"]*255, c["color"]["g"]*255, c["color"]["b"]*255, c["color"]["a"]*255)
