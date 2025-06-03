@@ -1,6 +1,6 @@
 from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties, generatePaginatorCssProperties, generateFormCssProperties, generateCheckboxCssProperties, generateVideoCssProperties, generateMenuCssProperties, generateScrollCSS, generateTableCssProperties
 from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin, useRatingVuetifyPlugin, usePaginatorVuetifyPlugin, useFormPrimeVuePlugin, useCheckboxPrimeVuePlugin, useMenuVuetifyPlugin, useDataTablePrimevuePlugin, useToastPrimeVuePlugin
-from engine.logicgenerator import handleBehaviour, addPropsFunction, getTextDestination
+from engine.logicgenerator import handleBehaviour, addPropsFunction, getTextDestination, getKeyEventsFunction
 from engine.assetshelper import getPrimeVueForm, getPrimeVueCheckbox, getVuetifyMenu, getPrimeVueDataTable
 from parser.model.Mcomponent import Mcomponent
 from parser.model.Melement import Melement
@@ -182,7 +182,6 @@ def applytransformation(elem,projectname,page):
         compend = f"""</{component}>"""
         return (compbegin,compend)
     if(isinstance(elem, TextElement)):
-        generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
         if(elem.tag==""):
             elem.tag = "p"
         txt = re.sub(r"\n", "<br/>",elem.text)
@@ -191,6 +190,7 @@ def applytransformation(elem,projectname,page):
             elem.tag = "a"
             href = 'href="/'+href+'" '
         else: href = ""
+        generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
         if(belongstoDataObject(cssclass,page)[1]==True):
             txt = "{{"+f'{belongstoDataObject(cssclass,page)[0]}.atr{cssclass}'+"}}"   
         return ("<"+ elem.tag + id + ref +f" {href}class="+'"grid-item text'+ cssclass  + '" '+ ' '.join(d for d in directives)+ f"{atributeProps}"+">"+txt, "</"+elem.tag+">")
@@ -275,11 +275,13 @@ def writeVue(name,page,content):
     if(len(allcomponents)>0): pagecomponents="""\n    components:{\n        """+ ',\n        '.join(allcomponents) +"""\n    },"""
     for hook in allhooks[page.getPagename()]:
         if("methods" in hook or "computed" in hook or "watch" in hook): pagehooks += hook + ":{\n"
-        if("mounted" in hook or "destroyed" in hook or "setup" in hook): pagehooks += hook + "(){\n"
+        if("mounted" in hook or "destroyed" in hook or "setup" in hook or "beforeUnmount" in hook): pagehooks += hook + "(){\n"
+        if("methods" in hook and getKeyEventsFunction(page.getPagename())!=None):
+            pagehooks+=getKeyEventsFunction(page.getPagename())+","
         for content in allhooks[page.getPagename()][hook]:
             if("methods" in hook or "computed" in hook or "watch" in hook): 
                 pagehooks += content[1] + ",\n"
-            if("mounted" in hook or "setup" in hook or "destroyed" in hook): 
+            if("mounted" in hook or "setup" in hook or "destroyed" in hook or "beforeUnmount" in hook): 
                 pagehooks += content[1] + "\n\n"
         if(hook=="setup"):
             pagehooks+="        return {\n          """

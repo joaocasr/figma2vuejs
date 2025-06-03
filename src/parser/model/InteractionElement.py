@@ -7,15 +7,16 @@ class InteractionElement(object):
 		ONCLICK = 1
 		ONHOVER = 2
 		ONDRAG = 3
-	
+		ONKEYDOWN = 4
 	onclick = Interaction.ONCLICK
 	onhover = Interaction.ONHOVER
 	ondrag = Interaction.ONDRAG
-
+	onkeydown = Interaction.ONKEYDOWN
 
 	def __init__(self):
 		self.interactiontype = None
 		self.actions = []
+		self.keyCodes = []
 
 	def getInteractionType(self):
 		"""@ReturnType String"""
@@ -25,6 +26,15 @@ class InteractionElement(object):
 		"""@ParamType interactionType String
 		@ReturnType void"""
 		self.interactiontype = interactionType
+
+	def getKeyCodes(self):
+		"""@ReturnType list"""
+		return self.keyCodes
+
+	def setKeyCodes(self, keyCodes):
+		"""@ParamType keyCodes list
+		@ReturnType void"""
+		self.keyCodes = keyCodes
 
 	def getActions(self):
 		"""@ReturnType String"""

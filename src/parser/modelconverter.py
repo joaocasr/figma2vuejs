@@ -531,6 +531,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         if(isComponentVariant(data,variants)):
             componentelement.setisVariant(True)
             componentelement.setVariantName(getFormatedName(data["name"]))
+        componentelement.setisComponentInstance(isComponentInstance)
         resolveNameConflit(componentelement,componentStyle,pagename)
         assignComponentData(componentelement)
         assignComponentProps(componentelement)
@@ -620,16 +621,26 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             interactionelement.setInteractionType(InteractionElement.Interaction.ONCLICK)
         if(type == "ON_HOVER"):
             interactionelement.setInteractionType(InteractionElement.Interaction.ONHOVER)
-
+        if(type == "ON_DRAG"):
+            interactionelement.setInteractionType(InteractionElement.Interaction.ONDRAG)
+        if(type == "ON_KEY_DOWN"):
+            interactionelement.setInteractionType(InteractionElement.Interaction.ONKEYDOWN)
+            interactionelement.setKeyCodes(interaction["trigger"]["keyCodes"])
+            
         for action in interaction["actions"]:
             if(action!=None and action["type"]=="NODE" and action["navigation"]=="NAVIGATE"):
                 navigateAction = NavigationAction(action["destinationId"])
                 interactionelement.addAction(navigateAction)
             if(action!=None and action["type"]=="NODE" and action["navigation"]=="OVERLAY"):
+                offsetx = 0
+                offsety = 0
+                if("overlayRelativePosition" in action):
+                    offsetx = action["overlayRelativePosition"]["x"]
+                    offsety = action["overlayRelativePosition"]["y"]
                 #verificar se o elemento overlay se encontra no notPageElems
                 if(action["destinationId"] in notPageElems):
-                    notPageElems[action["destinationId"]]["absoluteRenderBounds"]["x"] = data["absoluteRenderBounds"]["x"]+action["overlayRelativePosition"]["x"]
-                    notPageElems[action["destinationId"]]["absoluteRenderBounds"]["y"] = data["absoluteRenderBounds"]["y"]+action["overlayRelativePosition"]["y"]
+                    notPageElems[action["destinationId"]]["absoluteRenderBounds"]["x"] = data["absoluteRenderBounds"]["x"]+offsetx
+                    notPageElems[action["destinationId"]]["absoluteRenderBounds"]["y"] = data["absoluteRenderBounds"]["y"]+offsety
                     isonPageLevel = False
                     # construir o elemento overlay tendo em conta que o elemento atual será o seu parent
                     if(parent_data!=None):
@@ -662,7 +673,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                     #  update the position of the component relatively to the node which will open the component overlay
                     compstyle = allcomponents[data["transitionNodeID"]].getComponentStyle()
                     (xe,ye) = (xielem,yielem)
-                    (rx,ry) = (int(action["overlayRelativePosition"]["x"]),int(action["overlayRelativePosition"]["y"]))
+                    (rx,ry) = (int(offsetx),int(offsety))
                     (px,py) = (rx+xe,ry+ye)
                     (vx,vy) = (px-compstyle.getX(),py-compstyle.getY())
                     compstyle.setOverlayVector(vx,vy)

@@ -12,15 +12,13 @@ import itertools
 
 # id: [vars]
 shareableEvents = {}
+keyEvents = {}
 
 def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants):
-    global shareableEvents
-    directives = []
+    global shareableEvents,keyEvents
     hooks = {}
+    if(pagename not in keyEvents): keyEvents[pagename] = {}
     elemBehaviour = [[],None]
-    #if(isinstance(elem,Mcomponent)): currentId = elem.getIdComponent()
-    #else: currentId = elem.getIdElement()
-    # from component build
     for interaction in elem.getInteractions():
         if(interaction.getInteractionType()==InteractionElement.Interaction.ONHOVER):
             for action in interaction.actions:
@@ -35,25 +33,27 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants):
                         elemBehaviour[1] = hooks
                     
                     elemBehaviour[1] = hooks
-        if(interaction.getInteractionType()==InteractionElement.Interaction.ONCLICK):
+        if(interaction.getInteractionType()==InteractionElement.Interaction.ONCLICK or 
+           interaction.getInteractionType()==InteractionElement.Interaction.ONKEYDOWN):
             for action in interaction.actions:
-                # CLICK-NAVIGATION EVENTS
+                # CLICK-NAVIGATION ACTIONS
                 if(isinstance(action,NavigationAction)):
                     destination = getPageById(action.getDestinationID(),allPagesInfo) 
                     methodName = "goto"+destination
                     insertFunction("methods",hooks,methodName,getNavigationFunction(methodName,destination))
                     elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                     elemBehaviour[1] = hooks
-                # SCROLL EVENTS
+                # SCROLL ACTIONS
                 if(isinstance(action,ScrollAction)):
                     elemBehaviour = insertScrollBehaviour(elem,action,hooks,elemBehaviour)
-                # CLICK-OVERLAY EVENTS
+                # OVERLAY ACTIONS
                 if(isinstance(action,OverlayAction)):
                     destinationid = getElemId(action.getDestinationID())
                     methodName = "changeVisibility"+destinationid
                     insertFunction("methods",hooks,methodName,getChangeVisibilityFunction(methodName,"show"+destinationid))
                     elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                     elemBehaviour[1] = hooks
+                # CLOSE ACTIONS
                 if(isinstance(action,CloseAction) and isPageRender==False and elem.getupperIdComponent()!=None):#verificar se o elemento tem uma acao close e se pertence a um elemento filho de um componente 
                     destinationid = getElemId(action.getDestinationID())
                     originid = getElemId(elem.getIdElement())
@@ -63,6 +63,11 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants):
                     insertFunction("methods",hooks,methodName,closeOverlay(methodName,"close-from"+str(originid)+"-to"+str(destinationid)))
                     elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                     elemBehaviour[1] = hooks
+                if(interaction.getInteractionType()==InteractionElement.Interaction.ONKEYDOWN):
+                    elemBehaviour[0].pop()
+                    if("mounted" not in hooks or getKeyEventListenerMounted() not in hooks["mounted"]): hooks.setdefault("mounted", []).append(getKeyEventListenerMounted())
+                    if("beforeUnmount" not in hooks or getKeyEventListenerUnMounted() not in hooks["beforeUnmount"]): hooks.setdefault("beforeUnmount", []).append(getKeyEventListenerUnMounted())
+                    setKeyCodesMethods(interaction.getKeyCodes(),pagename,"this."+methodName+"();")
         # HANDLE EVENTS ON VARIANT COMPONENTS
         if(isinstance(elem, Mcomponent) and elem.getisVariant()==True):
             elemBehaviour = handleVariants(elem,allvariants,hooks,elemBehaviour,allPagesInfo)
@@ -95,11 +100,12 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants):
         elemBehaviour[0].append('v-show="show'+getElemId(elem.getIdElement())+'==true"')
     # SHOW CONDITIONAL ELEMENTS | from page
     if(isinstance(elem,Mcomponent) and isPageRender==True):
-        idcomponent = getElemId(elem.idComponent)
         if(elem.getIdComponent() in shareableEvents):
-            for hook in shareableEvents[elem.getIdComponent()]:
-                elemBehaviour[0].append(hook[2])
-                if(hook[0]!=None and hook[1]!=None): elemBehaviour[0].append('@'+hook[0]+'="'+hook[1]+'"')
+            for event in shareableEvents[elem.getIdComponent()]:
+                elemBehaviour[0].append(event[2])
+                if(event[0]!=None and event[1]!=None): elemBehaviour[0].append('@'+event[0]+'="'+event[1]+'"')
+        if(elem.getisComponentInstance()==False):
+            elemBehaviour[0].append('v-if="show'+getElemId(elem.getIdComponent())+'"')
         elemBehaviour[1] = hooks
     return elemBehaviour
 
@@ -437,6 +443,31 @@ def getTextDestination(elem,allPagesInfo):
             if(isinstance(action,NavigationAction)):
                 destination = getPageById(action.getDestinationID(),allPagesInfo) 
     return destination 
+
+def getKeyEventListenerMounted():
+    return ("mountedKeyEventListener","       document.addEventListener('keydown', this.onKeyDown)")
+    
+def getKeyEventListenerUnMounted():
+    return ("unmountedKeyEventListener","       document.removeEventListener('keydown', this.onKeyDown)")
+
+def setKeyCodesMethods(keyCodes,pagename,funtion):
+    global keyEvents
+    for k in keyCodes:
+        if str(k) not in keyEvents[pagename]:
+            keyEvents[pagename][str(k)] = [funtion]
+        else: keyEvents[pagename][str(k)].append(funtion)
+
+def getKeyEventsFunction(pagename):
+    global keyEvents
+    function = "    onKeyDown(event){\n"
+    for k in keyEvents[pagename]:
+        function+=f"        if (event.keyCode == {k})"+"{\n"
+        for f in keyEvents[pagename][k]:
+            function+=f"            {f}"+"\n"
+        function+="     }\n"
+    function+="     }"
+    if(len(keyEvents[pagename].keys())==0): function=None
+    return function
 
 def getElemId(id):
     elemid = id
