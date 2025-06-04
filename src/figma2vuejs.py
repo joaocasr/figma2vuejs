@@ -1,4 +1,4 @@
-from setup.vueprojectsetup import setup_project, create_project, remove_boilerview, remove_boilercomponents, updateAppVue
+from setup.vueprojectsetup import setup_project, buildDependenciesScript 
 from engine.stylegenerator import overwrite_styling
 from engine.routergenerator import generate_routes
 from engine.variantgenerator import writeVariantComponent
@@ -16,6 +16,7 @@ FIGMA_API_KEY = os.environ.get("FIGMA_API_KEY")
 FILE_KEY = os.environ.get("FILE_KEY")
 
 headers = {"content-type": "application/json", "Accept-Charset": "UTF-8", 'X-FIGMA-TOKEN': FIGMA_API_KEY}
+project_name = ""
 
 if(len(sys.argv)>4 or len(sys.argv)<1):
   print("""****MANUAL****
@@ -84,4 +85,4 @@ else:
     for page in mypages:
       buildpage(project_name,mypages[page],pagesInfo,refs,variants)
 
-
+buildDependenciesScript(project_name)

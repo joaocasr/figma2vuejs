@@ -9,10 +9,9 @@ def setup_project(name):
     remove_boilercomponents(name,0)
     updateAppVue(name)
     viteconfig(name)
-    install_dependencies(name)
     updateMainJSfile(name)
     createPluginFiles(name)
-
+    
 def create_project(name):
     destination = '../output/'+name
     if os.path.isdir(destination):
@@ -27,6 +26,10 @@ def create_project(name):
         remove_boilercomponents(name,1)
         print("Removing store files from previous generation...")
         remove_boilerstore(name,1)
+        print("Updating App.vue")
+        updateAppVue(name)
+        print("Updating vite.config")
+        viteconfig(name)
         print("Updating main.js file...")
         updateMainJSfile(name)
         print("Create toast store...")
@@ -133,17 +136,6 @@ export default defineConfig({
         f.close()
     else: raise Exception("vite.config.js file not found!")
 
-
-def install_dependencies(name):
-    print("Downloading dependencies...")
-    rm =  subprocess.run(['npm',
-                    'install'],
-                    cwd='../output/'+name,capture_output=True, text=True)
-    installPrimeVueDependencies(name)
-    installVuetifyDependencies(name)
-    if rm.returncode != 0:
-      raise Exception("Error while installing dependencies!")  
-
 def updateMainJSfile(name):
   content ="""import './assets/main.css'
 
@@ -247,28 +239,6 @@ export default vuetify;
   filevuetify = "../output/"+name+"/src/plugins/vuetify.js"
   with open(filevuetify,"w") as f:
     f.write(vuetify)
-
-def installVuetifyDependencies(name):
-  vuetify =  subprocess.run(['npm','ls','vuetify'],cwd='../output/'+name,capture_output=True, text=True)
-  if("vuetify" not in vuetify.stdout):
-    print("Installing Vuetify Dependencies...")
-    vuetify =  subprocess.run(['npm','install','vuetify'],cwd='../output/'+name,capture_output=True, text=True)
-    mdifont =  subprocess.run(['npm','install','@mdi/font'],cwd='../output/'+name,capture_output=True, text=True)
-  else:
-    print("Vuetify is already installed.")
-
-
-def installPrimeVueDependencies(name):
-  primevue =  subprocess.run(['npm','ls','primevue'],cwd='../output/'+name,capture_output=True, text=True)
-  if("primevue" not in primevue.stdout):
-    print("Installing PrimeVue Dependencies...")
-    primevue =  subprocess.run(['npm','install','primevue'],cwd='../output/'+name,capture_output=True, text=True)
-    primeicons =  subprocess.run(['npm','install','primeicons'],cwd='../output/'+name,capture_output=True, text=True)
-    primevuethemes =  subprocess.run(['npm','install','@primevue/themes'],cwd='../output/'+name,capture_output=True, text=True)
-    primeforms =  subprocess.run(['npm','install','@primevue/forms'],cwd='../output/'+name,capture_output=True, text=True)
-    allDependencies["primevue"]=True
-  else:
-    print("PrimeVue is already installed.")
 
 def useSelectVuetifyPlugin(name):
   global allDependencies
@@ -559,3 +529,19 @@ def useToastPrimeVuePlugin(name):
     f.write(content)
     f.close()
     allDependencies["toast"]=True
+
+def buildDependenciesScript(name):
+  global allDependencies
+  setup = "npm install"
+  if("vselect" in allDependencies or "vrating" in allDependencies or "vpagination" in allDependencies or
+     "vpagination" in allDependencies or "vmenu" in allDependencies or "vlist" in allDependencies or "vlistitem" in allDependencies):
+    setup = "npm install vuetify\nnpm install @mdi/font\n" + setup
+  if("form" in allDependencies):
+    setup = "npm install @primevue/forms\n" + setup
+  else:
+    setup = "npm install primevue\nnpm install primeicons\nnpm install @primevue/themes\nnpm install @primevue/themes\n" + setup
+  scriptsetup = "../output/"+name+"/"+name+".sh"
+  setup = "# Install project dependencies packages\n" + setup
+  setup+="\n\n#Run Vue project\nnpm run build\nnpm run preview"
+  with open(scriptsetup,"w") as f:
+    f.write(setup)
