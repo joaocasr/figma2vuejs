@@ -2,6 +2,8 @@ import subprocess
 import os
 
 allDependencies = {}
+primevuecomponents = False
+vuetifycomponents = False
 
 def setup_project(name):
     create_project(name)
@@ -9,7 +11,6 @@ def setup_project(name):
     remove_boilercomponents(name,0)
     updateAppVue(name)
     viteconfig(name)
-    updateMainJSfile(name)
     createPluginFiles(name)
     
 def create_project(name):
@@ -26,16 +27,16 @@ def create_project(name):
         remove_boilercomponents(name,1)
         print("Removing store files from previous generation...")
         remove_boilerstore(name,1)
+        print("Removing plugin files from previous generation...")
+        remove_pluginfiles(name,1)
         print("Updating App.vue")
         updateAppVue(name)
         print("Updating vite.config")
         viteconfig(name)
-        print("Updating main.js file...")
-        updateMainJSfile(name)
+        print("updating plugin files")
+        createPluginFiles(name)
         print("Create toast store...")
         createToastStorefile(name)
-        print("Injecting plugin files...")
-        createPluginFiles(name)
 
         raise Exception("The Vue Project "+name+" already exists.")
     else:
@@ -48,7 +49,6 @@ def create_project(name):
                         '--router',
                         '--pinia',
                         ],cwd='../output/',capture_output=True,text=True)
-        print(out)
         if out.returncode != 0:
           raise Exception("Error creating Vue project "+name)
 
@@ -81,6 +81,36 @@ def remove_boilerstore(name,n):
                             capture_output=True, text=True)
     if rm.returncode != 0:
       raise Exception("Error while cleaning boilerplate code from the stores folder!")    
+
+def remove_pluginfiles(name,n):
+    if(n==0): print("Removing plugin files...")
+    directory = '../output/'+name+'/src/plugins/*'
+    rm = subprocess.run(['sh',
+                            '-c',
+                            'rm -rf '+ directory],
+                            capture_output=True, text=True)
+    if rm.returncode != 0:
+      raise Exception("Error while removing plugin files!")    
+
+def updatingPluginFiles(name):
+  global primevuecomponents,vuetifycomponents
+  primevueplugin = '../output/'+name+'/src/plugins/primevue.js'
+  vuetifyplugin = '../output/'+name+'/src/plugins/vuetify.js'
+  if(primevuecomponents==False):
+    rm = subprocess.run(['sh',
+                              '-c',
+                              'rm '+ primevueplugin],
+                              capture_output=True, text=True)
+    if rm.returncode != 0:
+      raise Exception("Error while removing primevue plugin files!")    
+
+  if(vuetifycomponents==False):
+    rm = subprocess.run(['sh',
+                              '-c',
+                              'rm '+ vuetifyplugin],
+                              capture_output=True, text=True)
+    if rm.returncode != 0:
+      raise Exception("Error while removing vuetify plugin files!")    
 
 def updateAppVue(name):
     print("Removing boilerplate code from App.vue...")
@@ -137,26 +167,36 @@ export default defineConfig({
     else: raise Exception("vite.config.js file not found!")
 
 def updateMainJSfile(name):
-  content ="""import './assets/main.css'
+  global primevuecomponents, vuetifycomponents
+  importvuetify = "import vuetify from './plugins/vuetify';"
+  importprimevue = "import usePrimeVue from './plugins/primevue';"
+  usevuetify = "app.use(vuetify)"
+  useprimevue = "usePrimeVue(app)"
+  if(primevuecomponents==False): 
+    importprimevue = ""
+    useprimevue = ""
+  if(vuetifycomponents==False):
+    importvuetify = ""
+    usevuetify = ""
+  content =f"""import './assets/main.css'
 
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
+import"""+ "{ createApp }"+ """from 'vue'
+import"""+ "{ createPinia }"+ f"""from 'pinia'
 import ToastService from 'primevue/toastservice';
+{importvuetify}
+{importprimevue}
 
 import App from './App.vue'
 import router from './router'
-import vuetify from './plugins/vuetify';
-import usePrimeVue from './plugins/primevue';
 
 const app = createApp(App)
 
 app.use(createPinia())
-app.use(vuetify)
+{usevuetify}
 app.use(ToastService)
 app.use(router)
 
-usePrimeVue(app)
-
+{useprimevue}
 
 app.mount('#app')
 """
@@ -231,9 +271,9 @@ const vuetify = createVuetify({
 export default vuetify;
 """
   plugins = "../output/"+name+"/src/plugins/"
-  fileprimevue = "../output/"+name+"/src/plugins/primevue.js"
   if not os.path.exists(plugins):
     os.makedirs(plugins)
+  fileprimevue = "../output/"+name+"/src/plugins/primevue.js"
   with open(fileprimevue,"w") as f:
     f.write(primevue)
   filevuetify = "../output/"+name+"/src/plugins/vuetify.js"
@@ -531,15 +571,20 @@ def useToastPrimeVuePlugin(name):
     allDependencies["toast"]=True
 
 def buildDependenciesScript(name):
-  global allDependencies
+  global allDependencies, primevuecomponents, vuetifycomponents
   setup = "npm install"
   if("vselect" in allDependencies or "vrating" in allDependencies or "vpagination" in allDependencies or
      "vpagination" in allDependencies or "vmenu" in allDependencies or "vlist" in allDependencies or "vlistitem" in allDependencies):
     setup = "npm install vuetify\nnpm install @mdi/font\n" + setup
+    vuetifycomponents = True
   if("form" in allDependencies):
     setup = "npm install @primevue/forms\n" + setup
-  else:
+    primevuecomponents = True
+  if("toast" in allDependencies or "datatable" in allDependencies or "column" in allDependencies or "slider" in allDependencies or "datepicker" in allDependencies
+     or "inputtext" in allDependencies or "inputicon" in allDependencies or "iconfield" in allDependencies or "checkbox" in allDependencies or
+    "message" in allDependencies):
     setup = "npm install primevue\nnpm install primeicons\nnpm install @primevue/themes\nnpm install @primevue/themes\n" + setup
+    primevuecomponents = True
   scriptsetup = "../output/"+name+"/"+name+".sh"
   setup = "# Install project dependencies packages\n" + setup
   setup+="\n\n#Run Vue project\nnpm run build\nnpm run preview"

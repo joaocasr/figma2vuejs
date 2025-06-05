@@ -1,5 +1,5 @@
-tests/prototype* 
-!tests/.gitkeep 
-.env
+server/tests/prototype* 
+!server/tests/.gitkeep 
+server/.env
 .vscode
-output/
+server/output/

@@ -50,15 +50,10 @@ figmadata = {}
 batchi=0
 batchf=50
 
-def getFigmaData(prototype,data):
+def getFigmaData(data):
     global allpages, allcomponents,pageComponents, figmadata, refs, overlayInsideInstances, pageOverlays, variants, scrollElements
     if(data!=None):
         figmadata=data
-    if(prototype!=None):
-        f = "../tests/prototype"+str(prototype)+".json"
-        with open(f,"r") as file:
-            data = json.load(file)
-            figmadata = data
     figmadata["name"] = getFormatedName(figmadata["name"])
     project_name = figmadata["name"]
     parsePageEntities(figmadata)

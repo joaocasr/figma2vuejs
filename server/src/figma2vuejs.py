@@ -1,4 +1,4 @@
-from setup.vueprojectsetup import setup_project, buildDependenciesScript 
+from setup.vueprojectsetup import setup_project, buildDependenciesScript, updateMainJSfile, updatingPluginFiles
 from engine.stylegenerator import overwrite_styling
 from engine.routergenerator import generate_routes
 from engine.variantgenerator import writeVariantComponent
@@ -7,6 +7,10 @@ from engine.pagegenerator import buildpage
 from engine.componentgenerator import buildcomponent
 from parser.modelconverter import getFigmaData,extractImages,extractSVGs
 from parser.model.VariantComponent import VariantComponent
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI
+from pydantic import BaseModel
+import json
 
 import sys,os,requests
 from dotenv import load_dotenv, find_dotenv
@@ -18,24 +22,20 @@ FILE_KEY = os.environ.get("FILE_KEY")
 headers = {"content-type": "application/json", "Accept-Charset": "UTF-8", 'X-FIGMA-TOKEN': FIGMA_API_KEY}
 project_name = ""
 
-if(len(sys.argv)>4 or len(sys.argv)<1):
-  print("""****MANUAL****
-for conversion using figma api endpoint /files/{id} and prototoype url:
-   >  python3 figma2vuejs.py
-for conversion using prototoype files:
-   >  python3 figma2vuejs.py <nrº of prototype>
-for conversion using prototoype files with grid-template:
-   >  python3 figma2vuejs.py <nrº of prototype> <nr_row> <nr_column>""")
-else:
-  prototype = None
-  data = None
-  if(len(sys.argv)>=2): prototype = sys.argv[1]
-  else:
+
+prototype = None
+data = None
+
+def convert_prototype(testfile=None):
+  global data,headers,project_name
+  if(testfile==None):
     response = requests.get("https://api.figma.com/v1/files/"+FILE_KEY, headers=headers)
     data = response.json()
+  else:
+    data = testfile
   # extract figma data and build intern model
   #try:
-  project_name, allpages, orphanComponents, refs, variants = getFigmaData(prototype,data)
+  project_name, allpages, orphanComponents, refs, variants = getFigmaData(data)
   #except Exception as e:
   #  print(e)
   #  sys.exit()
@@ -85,4 +85,33 @@ else:
     for page in mypages:
       buildpage(project_name,mypages[page],pagesInfo,refs,variants)
 
-buildDependenciesScript(project_name)
+  buildDependenciesScript(project_name)
+  updateMainJSfile(project_name)
+  updatingPluginFiles(project_name)
+
+origins = [
+    "http://localhost:4173/*",
+    "http://localhost:5173/*"
+]  
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/")
+def convert_figma2vue():
+    convert_prototype()
+    return "Conversion done!"
+
+@app.get("/test/{nr}")
+def convert_figma2vue(nr:int):
+    f = "../tests/prototype"+str(nr)+".json"
+    with open(f,"r") as file:
+        data = json.load(file)
+    convert_prototype(data)
+    return "Conversion done!"
