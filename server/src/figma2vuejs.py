@@ -8,29 +8,46 @@ from engine.componentgenerator import buildcomponent
 from parser.modelconverter import getFigmaData,extractImages,extractSVGs
 from parser.model.VariantComponent import VariantComponent
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI
+
+from typing import Optional
+from fastapi import FastAPI,HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
+import shutil
 import json
 
 import sys,os,requests
 from dotenv import load_dotenv, find_dotenv
 
-load_dotenv(find_dotenv())
-FIGMA_API_KEY = os.environ.get("FIGMA_API_KEY")
-FILE_KEY = os.environ.get("FILE_KEY")
-
-headers = {"content-type": "application/json", "Accept-Charset": "UTF-8", 'X-FIGMA-TOKEN': FIGMA_API_KEY}
+FIGMA_API_KEY = ""
+FILE_KEY = ""
+headers = {}
 project_name = ""
 
 
 prototype = None
 data = None
 
+def set_variables(filekey,token):
+  global FIGMA_API_KEY, FILE_KEY, headers
+  FIGMA_API_KEY = token
+  FILE_KEY = filekey
+  headers = {"content-type": "application/json", "Accept-Charset": "UTF-8", 'X-FIGMA-TOKEN': FIGMA_API_KEY}
+
+def load_variables():
+  global FIGMA_API_KEY, FILE_KEY, headers
+  l = load_dotenv(find_dotenv())
+  if l==True:
+    FIGMA_API_KEY = os.environ.get("FIGMA_API_KEY")
+    FILE_KEY = os.environ.get("FILE_KEY")
+    headers = {"content-type": "application/json", "Accept-Charset": "UTF-8", 'X-FIGMA-TOKEN': FIGMA_API_KEY}
+    
 def convert_prototype(testfile=None):
-  global data,headers,project_name
+  global data,headers,project_name,FIGMA_API_KEY,FILE_KEY
   if(testfile==None):
     response = requests.get("https://api.figma.com/v1/files/"+FILE_KEY, headers=headers)
     data = response.json()
+    if('status' in data and data['status']==404): raise 'Bad request. Verify your token and prototype url!'
   else:
     data = testfile
   # extract figma data and build intern model
@@ -47,8 +64,8 @@ def convert_prototype(testfile=None):
   except Exception as e:
     pass
 
-  extractImages(project_name)
-  extractSVGs(project_name)
+  extractImages(project_name,FIGMA_API_KEY,FILE_KEY)
+  extractSVGs(project_name,FIGMA_API_KEY,FILE_KEY)
 
   # generate routes to the vue pages
   generate_routes(project_name,allpages)
@@ -65,7 +82,6 @@ def convert_prototype(testfile=None):
   if(len(sys.argv)==4): mypages = generateGridTemplate(allpages,sys.argv[2],sys.argv[3])
   if(mypages!=None):
     allcomponents=[]
-    allvariants=[]
     for page in pagesInfo:
       for x in pagesInfo[page]["components"]:
         if(not any(x==c for c in allcomponents)):
@@ -89,9 +105,13 @@ def convert_prototype(testfile=None):
   updateMainJSfile(project_name)
   updatingPluginFiles(project_name)
 
+load_variables()    
+
 origins = [
-    "http://localhost:4173/*",
-    "http://localhost:5173/*"
+    "http://localhost:4173",
+    "http://localhost:5174",
+    "http://localhost:5173"
+
 ]  
 app = FastAPI()
 
@@ -103,15 +123,48 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
-def convert_figma2vue():
-    convert_prototype()
-    return "Conversion done!"
+class UserInfo(BaseModel):
+  apikey: Optional[str] = None
+  filekey: Optional[str] = None
 
+@app.post("/")
+async def convert_figma2vue(userinfo: UserInfo = None):
+  global FIGMA_API_KEY, FILE_KEY, project_name
+  if(userinfo != None and userinfo.apikey!=None and userinfo.filekey!=None):
+    set_variables(userinfo.filekey,userinfo.apikey)
+  if(FIGMA_API_KEY=="" and FILE_KEY==""):
+    return "Missing token and prototype url!"
+  else:
+    try:
+      convert_prototype()
+    except Exception as e:
+      raise HTTPException(status_code=404, detail=repr(e))
+    shutil.make_archive('../output/'+project_name, format='zip', root_dir='../output')
+    return project_name
+
+# only for testing
 @app.get("/test/{nr}")
-def convert_figma2vue(nr:int):
+def convert_figma2vue(nr:int,userinfo: UserInfo = None):
+  global FIGMA_API_KEY, FILE_KEY
+  if(userinfo != None and userinfo.apikey!=None and userinfo.filekey!=None):
+    set_variables(userinfo.filekey,userinfo.apikey)
+  if(FIGMA_API_KEY=="" and FILE_KEY==""):
+    return "Missing token and prototype url!"
+  else:
     f = "../tests/prototype"+str(nr)+".json"
     with open(f,"r") as file:
         data = json.load(file)
-    convert_prototype(data)
+    try:
+      convert_prototype(data)
+    except Exception as e:
+      raise HTTPException(status_code=404, detail=repr(e))
     return "Conversion done!"
+
+@app.get("/download")
+def download_file(path: str):
+    file_path = f"../output/{path}.zip"
+    return FileResponse(
+        path=file_path,
+        filename=f"{path}.zip",
+        media_type="application/zip"
+    )

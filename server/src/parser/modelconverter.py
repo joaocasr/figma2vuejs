@@ -887,11 +887,8 @@ def getElementTag(elem):
             tag = ntag.lower()
     return tag
 
-def extractImages(projectname):
+def extractImages(projectname,FIGMA_API_KEY,FILE_KEY):
     global allimages,batchi,batchf
-    load_dotenv(find_dotenv())
-    FIGMA_API_KEY = os.environ.get("FIGMA_API_KEY")
-    FILE_KEY = os.environ.get("FILE_KEY")
     
     headers = {"content-type": "application/json", "Accept-Charset": "UTF-8", 'X-FIGMA-TOKEN': FIGMA_API_KEY}
 
@@ -936,11 +933,8 @@ def extractImages(projectname):
     batchi=0
     batchf=50
 
-def extractSVGs(projectname):
+def extractSVGs(projectname,FIGMA_API_KEY,FILE_KEY):
     global allsvgs,batchi,batchf
-    load_dotenv(find_dotenv())
-    FIGMA_API_KEY = os.environ.get("FIGMA_API_KEY")
-    FILE_KEY = os.environ.get("FILE_KEY")
 
     headers = {"content-type": "application/json", "Accept-Charset": "UTF-8", 'X-FIGMA-TOKEN': FIGMA_API_KEY}
 

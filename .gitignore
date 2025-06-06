@@ -3,3 +3,4 @@ server/tests/prototype*
 server/.env
 .vscode
 server/output/
+*.zip

@@ -20,7 +20,7 @@
    </div>
    <br/>
    <div class="inputform316457">
-    <InputText  fluid  name="input2316457" placeholder="Figma URL prototype" type="text">
+    <InputText  fluid  name="input2316457" placeholder="Figma File Key Prototype" type="text">
     </InputText>
     <Message severity="error" size="small" v-if="$form316457.input2316457?.invalid" variant="simple">
      {{$form316457.input2316457?.error.message}}
@@ -29,6 +29,8 @@
    <button class="submitbtnform316457" label="Submit" type="submit">
     Generate
    </button>
+   <br>
+  <a v-show="showlink" ref="downloadLink" :href="fileUrl" :download="fileName">Download File</a>
   </Form>
  </div>
  <Navigationbar class="grid-item-316718 component316718"></Navigationbar>
@@ -37,17 +39,21 @@
 </template>
 
 <script>
+import axios from 'axios';
 import Navigationbar from '@/components/Navigationbar.vue';
 import { useToastStore } from "@/stores/toast";;
 import { ref } from 'vue';
+
+const fileUrl = ref(null)
+const fileName = ref('')
+
 export default {
     components:{
         Navigationbar
     },
     data(){
         return {
-                
-                
+            showlink:true
         }
     },
             setup(){
@@ -60,11 +66,11 @@ export default {
         const resolver316457 = ({ values }) => {
             const errors = {};
             if (!values.input1316457){
-                errors.input1316457 = [{ message: 'Token is required.'}];
+                errors.input1316457 = [{ message: 'Token account is required.'}];
             }
         
             if (!values.input2316457){
-                errors.input2316457 = [{ message: 'URL is required.'}];
+                errors.input2316457 = [{ message: 'Prototype file key is required.'}];
             }
         
        
@@ -79,16 +85,44 @@ export default {
             resolver316457,
           }
 	},methods:{
-    onFormSubmit316457(data) {
+    async onFormSubmit316457(data) {
         const toastStore = useToastStore();
         let message = ""
         if(data.valid==true){
-            message = "The form was successfully submited!"            
-            toastStore.showSuccess(message);
-        }
-        if(data.valid==false){
-            message = "Error in form submission!"            
-            toastStore.showError(message);
+            try{
+                
+                const result = await axios.post('http://localhost:8000/',
+            {
+                'apikey':data.states.input1316457.value,
+                'filekey':data.states.input2316457.value
+            }
+                )
+                
+                const filename = result.data
+                const resp = await axios.get(`http://localhost:8000/download?path=${filename}`, {
+                    responseType: 'blob'
+                });
+
+                const blob = new Blob([resp.data], { type: 'application/zip' });
+                fileUrl.value = URL.createObjectURL(blob);
+                fileName.value = filename + ".zip";
+
+                const link = this.$refs.downloadLink;
+                link.href = fileUrl.value
+                link.download = fileName.value
+                link.click();
+                setTimeout(() => {
+                    URL.revokeObjectURL(fileUrl.value);
+                }, 1000);
+                message = "Prototype converted successfully!"
+                toastStore.showSuccess(message);
+            }catch(err){
+                console.log(err)
+            }        
+            if(data.valid==false){
+                message = "Error in form submission!"            
+                toastStore.showError(message);
+            }
         }
     }
     
