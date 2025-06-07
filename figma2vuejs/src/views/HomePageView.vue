@@ -8,6 +8,11 @@
  <p class="grid-item text31637">
   Figma2Vuejs
  </p>
+ <div v-if="showprogressbar" class="progressbarcard">
+    <p class="progresstxt">{{progressMsg}}</p>
+    <ProgressBar class="progressbar" :value="progress" />
+ </div>
+
  <div class="form316457">
   <Form  :initialValues="initialValues316457" :resolver="resolver316457"  :validateOnBlur="true" @submit="onFormSubmit316457" v-slot="$form316457">
    <br/>
@@ -20,7 +25,7 @@
    </div>
    <br/>
    <div class="inputform316457">
-    <InputText  fluid  name="input2316457" placeholder="Figma File Key Prototype" type="text">
+    <InputText  fluid  name="input2316457" placeholder="Figma Prototype File Key " type="text">
     </InputText>
     <Message severity="error" size="small" v-if="$form316457.input2316457?.invalid" variant="simple">
      {{$form316457.input2316457?.error.message}}
@@ -42,18 +47,20 @@
 import axios from 'axios';
 import Navigationbar from '@/components/Navigationbar.vue';
 import { useToastStore } from "@/stores/toast";;
-import { ref } from 'vue';
+import { ref } from "vue";
 
 const fileUrl = ref(null)
 const fileName = ref('')
-
 export default {
     components:{
         Navigationbar
     },
     data(){
         return {
-            showlink:true
+            showlink:false,
+            showprogressbar:false,
+            progress:10,
+            progressMsg:'Generating Vue project...'
         }
     },
             setup(){
@@ -86,6 +93,7 @@ export default {
           }
 	},methods:{
     async onFormSubmit316457(data) {
+        this.showprogressbar= true
         const toastStore = useToastStore();
         let message = ""
         if(data.valid==true){
@@ -97,12 +105,13 @@ export default {
                 'filekey':data.states.input2316457.value
             }
                 )
-                
+                this.progress = 60
+                this.progressMsg = "Vue project generated. Compressing and sending..."
                 const filename = result.data
                 const resp = await axios.get(`http://localhost:8000/download?path=${filename}`, {
                     responseType: 'blob'
                 });
-
+                this.progress = 80
                 const blob = new Blob([resp.data], { type: 'application/zip' });
                 fileUrl.value = URL.createObjectURL(blob);
                 fileName.value = filename + ".zip";
@@ -111,11 +120,13 @@ export default {
                 link.href = fileUrl.value
                 link.download = fileName.value
                 link.click();
+                this.progress = 100
                 setTimeout(() => {
                     URL.revokeObjectURL(fileUrl.value);
                 }, 1000);
                 message = "Prototype converted successfully!"
                 toastStore.showSuccess(message);
+                this.showprogressbar = false
             }catch(err){
                 console.log(err)
             }        

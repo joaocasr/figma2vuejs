@@ -5,7 +5,7 @@ import Toast from 'primevue/toast';
 import { Form } from '@primevue/forms';
 import InputText from 'primevue/inputtext';
 import Message from 'primevue/message';
-
+import ProgressBar from 'primevue/progressbar';
 
 export default function usePrimeVue(app){
 
@@ -18,5 +18,6 @@ app.component('Toast',Toast);
 app.component('Form',Form)
 app.component('InputText',InputText)
 app.component('Message',Message)
+app.component('ProgressBar',ProgressBar)
 
 }
