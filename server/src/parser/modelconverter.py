@@ -56,6 +56,8 @@ def getFigmaData(data):
         figmadata=data
     figmadata["name"] = getFormatedName(figmadata["name"])
     project_name = figmadata["name"]
+    allcomponents = {}
+    pageComponents = {}
     parsePageEntities(figmadata)
 
     #update overlay components coordinates

@@ -6,12 +6,14 @@ primevuecomponents = False
 vuetifycomponents = False
 
 def setup_project(name):
-    create_project(name)
-    remove_boilerview(name)
-    remove_boilercomponents(name,0)
-    updateAppVue(name)
-    viteconfig(name)
-    createPluginFiles(name)
+  global allDependencies
+  allDependencies = {}
+  create_project(name)
+  remove_boilerview(name)
+  remove_boilercomponents(name,0)
+  updateAppVue(name)
+  viteconfig(name)
+  createPluginFiles(name)
     
 def create_project(name):
     destination = '../output/'+name
@@ -308,14 +310,14 @@ def useRatingVuetifyPlugin(name):
   content =""
   filevuetify = "../output/"+name+"/src/plugins/vuetify.js"
   if("vrating" not in allDependencies):
-    selectimport = "import { VRating } from 'vuetify/components';\n"
+    ratingimport = "import { VRating } from 'vuetify/components';\n"
     componentname ="\tVRating"
     f = open(filevuetify, "r")
     for l in f.readlines():
       l = l.strip()
       content+=l+"\n"
       if(l=="import '@mdi/font/css/materialdesignicons.css';"):
-        content+=selectimport
+        content+=ratingimport
       if(l=="components: {},"):
         content=content[:-3] +"\n"+ componentname + "\n},\n"
       if(l=="components: {"):

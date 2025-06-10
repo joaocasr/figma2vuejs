@@ -1,5 +1,6 @@
 from parser.model.ContainerElement import ContainerElement
 from parser.model.ImageElement import ImageElement
+from parser.model.Mcomponent import Mcomponent
 from parser.model.VectorElement import VectorElement
 from parser.model.TextElement import TextElement
 from utils.tools import getFormatedName,getElemId,getName
@@ -318,6 +319,20 @@ def generateCheckboxCssProperties(projectname,pagename,cssclass,labelclass,elem)
   with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
     f.write(css)
 
+def updateZIndex(projectname,pagename,elem,zindex):
+  cssclass=""
+  if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.idElement)
+  else: cssclass = getElemId(elem.idComponent)
+  css="""."""+str(cssclass) + """ {
+    z-index: """+str(zindex)+""";
+  }"""
+  cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
+  mode = "w"
+  if os.path.isfile(cssfile):
+    mode = "a"
+  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
+    f.write(css)
+  
 def generateVideoCssProperties(projectname,pagename,cssclass,elem):
   css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
@@ -543,7 +558,7 @@ def generateScrollCSS(projectname,pagename,cssclass,elem):
     white-space: nowrap;
     cursor: grab;
     user-select: none;
-  	display: flex;
+  	display: grid;
     overflow: auto;
     width: """+  str(elem.style.width) +"""px;
     height: """+  str(elem.style.height) +"""px;

@@ -179,15 +179,18 @@ def convertToRating(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,na
                     unselectedStarColor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
                     if(colorStar!=unselectedStarColor): break
     else:
+        print("oi?")
         selected = 0
         if("componentProperties" in data and "Rating" in data["componentProperties"]):
             selected = int(data["componentProperties"]["Rating"]["value"])
         for i in range(0,len(data["children"])):        
             star = data["children"][i]["children"][0]["children"][0]
-            if(selected>0 and len(star["fills"])>0):
+            if(selected>=0 and len(star["fills"])>0):
                 color = star["fills"][0]["color"]
                 colorStar = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
-                break
+                print("aqui")
+                print(colorStar)
+                break                
         for i in range(0,len(data["children"])): 
             if(len(data["children"])>selected):       
                 star = data["children"][selected]["children"][0]["children"][0]

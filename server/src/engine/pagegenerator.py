@@ -22,11 +22,11 @@ auxiliarImports = dict()
 componentAssets = dict()
 allPagesInfo = dict()
 allrefs = {}
-alvariants = []
+allvariants = []
 dataEntities = {}
 
 def buildpage(name,page,pagesInfo,refs,variants):
-    global allhooks,imports,components,allPagesInfo,allrefs,alvariants,dataEntities
+    global allhooks,imports,components,allPagesInfo,allrefs,allvariants,dataEntities
     #setup a page
     allhooks[page.pagename] = {}
     imports[page.pagename] = []
@@ -37,7 +37,7 @@ def buildpage(name,page,pagesInfo,refs,variants):
     allrefs = refs
     allPagesInfo = pagesInfo
     output = ""  
-    alvariants = variants
+    allvariants = variants
     if(anyShapes(page.elements)==True): handleClipPathOverlaping(page.elements)
     for element in page.elements:
         output += processChildren(element,name,page)
@@ -60,7 +60,7 @@ def processChildren(data,projectname,page):
 
 # Do a better handling of the tags
 def applytransformation(elem,projectname,page):
-    global allPagesInfo, allhooks, components, componentAssets, allrefs, alvariants, dataEntities
+    global allPagesInfo, allhooks, components, componentAssets, allrefs, allvariants, dataEntities
     pagename = page.pagename
     cssclass = ""
     if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.idElement)
@@ -69,7 +69,7 @@ def applytransformation(elem,projectname,page):
     if(pagename in allrefs and cssclass in allrefs[pagename]):
         ref = f' ref="ref{cssclass}" '
     # insert directives and functions if there is some behaviour
-    directives, hooks = handleBehaviour(elem,allPagesInfo,pagename,True,alvariants)
+    directives, hooks = handleBehaviour(elem,allPagesInfo,pagename,True,allvariants)
     if(hooks!=None): 
         for hook in hooks:
             allhooks[pagename].setdefault(hook, []).extend(hooks[hook])
@@ -356,7 +356,7 @@ def handleClipPathOverlaping(elementos):
                     getValue(elem1.style.gridrowStart) >= getValue(elem2.style.gridrowStart) and
                     getValue(elem1.style.gridrowEnd) <= getValue(elem2.style.gridrowEnd) and
                     isinstance(elem2, ShapeElement) and j not in repeatedElements):
-                    
+
                     elem2.children.append(elem1)
                     elem2.style.setDisplay("grid")
                     repeatedElements.append(j)
