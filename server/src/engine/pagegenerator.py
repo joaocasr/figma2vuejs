@@ -1,7 +1,8 @@
-from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties, generatePaginatorCssProperties, generateFormCssProperties, generateCheckboxCssProperties, generateVideoCssProperties, generateMenuCssProperties, generateScrollCSS, generateTableCssProperties
+from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties, generatePaginatorCssProperties, generateFormCssProperties, generateCheckboxCssProperties, generateVideoCssProperties, generateMenuCssProperties, generateScrollCSS, generateTableCssProperties, updateZIndex
 from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin, useRatingVuetifyPlugin, usePaginatorVuetifyPlugin, useFormPrimeVuePlugin, useCheckboxPrimeVuePlugin, useMenuVuetifyPlugin, useDataTablePrimevuePlugin, useToastPrimeVuePlugin
 from engine.logicgenerator import handleBehaviour, addPropsFunction, getTextDestination, getKeyEventsFunction
 from engine.assetshelper import getPrimeVueForm, getPrimeVueCheckbox, getVuetifyMenu, getPrimeVueDataTable
+from parser.modelconverter import getPosition
 from parser.model.Mcomponent import Mcomponent
 from parser.model.Melement import Melement
 from parser.model.TextElement import TextElement
@@ -24,9 +25,11 @@ allPagesInfo = dict()
 allrefs = {}
 allvariants = []
 dataEntities = {}
+pagename = ""
+projectname = ""
 
 def buildpage(name,page,pagesInfo,refs,variants):
-    global allhooks,imports,components,allPagesInfo,allrefs,allvariants,dataEntities
+    global pagename,projectname,allhooks,imports,components,allPagesInfo,allrefs,allvariants,dataEntities
     #setup a page
     allhooks[page.pagename] = {}
     imports[page.pagename] = []
@@ -38,6 +41,8 @@ def buildpage(name,page,pagesInfo,refs,variants):
     allPagesInfo = pagesInfo
     output = ""  
     allvariants = variants
+    pagename = page.pagename
+    projectname = name
     if(anyShapes(page.elements)==True): handleClipPathOverlaping(page.elements)
     for element in page.elements:
         output += processChildren(element,name,page)
@@ -347,6 +352,7 @@ def processTemplate(html_string,page):
 
 
 def handleClipPathOverlaping(elementos):
+    global pagename,projectname
     repeatedElements = []
     for i, elem2 in enumerate(elementos):
         for j, elem1 in enumerate(elementos):
@@ -356,7 +362,12 @@ def handleClipPathOverlaping(elementos):
                     getValue(elem1.style.gridrowStart) >= getValue(elem2.style.gridrowStart) and
                     getValue(elem1.style.gridrowEnd) <= getValue(elem2.style.gridrowEnd) and
                     isinstance(elem2, ShapeElement) and j not in repeatedElements):
-
+                    
+                    if(isinstance(elem1,ShapeElement) and elem1.getType()=="LINE" and elem2.getType()=="LINE"): 
+                        continue
+                    updatePosition(elem1)
+                    if(isinstance(elem1, Mcomponent) and elem1.getisVariant()==True):
+                        updateZIndex(projectname,pagename,elem1,1)
                     elem2.children.append(elem1)
                     elem2.style.setDisplay("grid")
                     repeatedElements.append(j)
@@ -416,3 +427,11 @@ def belongstodataObjectsList(elemid,page):
 
 def isComponentInstance(id):
     return "I" in id
+
+def updatePosition(elem):
+    if(elem.style.getGridcolumnEnd()>65):
+        elem.style.setGridcolumnStart(elem.style.getGridcolumnStart()-15)
+        elem.style.setGridcolumnEnd(elem.style.getGridcolumnEnd()-10)
+    if(elem.style.getGridrowEnd()>65):
+        elem.style.setGridrowStart(elem.style.getGridrowStart()-15)
+        elem.style.setGridrowEnd(elem.style.getGridrowEnd()-10)    

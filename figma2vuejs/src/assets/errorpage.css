@@ -1,0 +1,99 @@
+.grid-container {
+    display:grid;
+    grid-template-columns:repeat(64,1fr);
+    grid-template-rows:repeat(128, 18.6796875px);
+    width: 100%;
+    background-color:rgba(165.9952175617218,177.86254316568375,255.0,1.0);
+    min-height: 100vh;
+    max-height: auto;
+    margin:0;
+    padding:0;
+  }
+  
+  .grid-item {
+    display:flex;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+  .carderror{
+      grid-template-columns:repeat(64,1fr);
+      grid-template-rows:repeat(64,1fr);
+      background-color:white;
+      opacity:0.5;
+      grid-column-start: 4;
+      grid-column-end: 61;
+      grid-row-start: 2;
+      grid-row-end: 38;
+      border-radius:20px;
+      display:grid;
+   }
+  .btn1{
+      background-color:black;
+      color:white;
+      grid-column-start: 25;
+      grid-column-end: 40;
+      grid-row-start: 33;
+      grid-row-end: 39;
+      border-radius:20px;
+   } 
+  .txt1 {
+      font-style: Regular;
+      font-weight: 400;
+      font-size: 67px;
+      font-family: Inter;
+      text-align: left;
+      line-height: 80px;
+      color: rgba(0.0,0.0,0.0,1.0);
+      grid-column-start: 25;
+      grid-column-end: 63;
+      grid-row-start: 4;
+      grid-row-end: 12;
+      display: flex;
+      overflow-wrap: break-word;
+      white-space: normal;
+      width: 100%;
+      align-items: stretch;
+      justify-content: stretch;
+  }
+  
+  
+  .txt2 {
+      font-style: Regular;
+      font-weight: 400;
+      font-size: 50px;    
+      font-family: Inter;
+      text-align: left;
+      line-height: 10x;
+      color: rgba(0.0,0.0,0.0,1.0);
+      grid-column-start: 31;
+      grid-column-end: 68;
+      grid-row-start: 12;
+      grid-row-end: 22;
+      display: flex;
+      overflow-wrap: break-word;
+      white-space: normal;
+      width: 100%;
+      align-items: stretch;
+      justify-content: stretch;
+  }
+  .txt3 {
+      font-style: Regular;
+      font-weight: 400;
+      font-size: 25px;
+      font-family: Inter;
+      text-align: left;
+      color: rgba(0.0,0.0,0.0,1.0);
+      grid-column-start: 20;
+      grid-column-end: 63;
+      grid-row-start: 24;
+      grid-row-end: 33;
+      display: flex;
+      overflow-wrap: break-word;
+      white-space: normal;
+      width: 100%;
+      align-items: stretch;
+      justify-content: stretch;
+  }

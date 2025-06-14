@@ -51,13 +51,20 @@ batchi=0
 batchf=50
 
 def getFigmaData(data):
-    global allpages, allcomponents,pageComponents, figmadata, refs, overlayInsideInstances, pageOverlays, variants, scrollElements
+    global allpages, allcomponents,pageComponents, figmadata, refs, overlayInsideInstances, pageOverlays, variants, scrollElements, allimages, allsvgs
     if(data!=None):
         figmadata=data
     figmadata["name"] = getFormatedName(figmadata["name"])
     project_name = figmadata["name"]
+    allpages = {}
     allcomponents = {}
     pageComponents = {}
+    overlayInsideInstances = {}
+    pageOverlays = {}
+    scrollElements = {}
+    variants = []
+    allimages = []
+    allsvgs = []
     parsePageEntities(figmadata)
 
     #update overlay components coordinates
@@ -484,8 +491,12 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                   
     # handles TextElement
     elif(data["type"]=="TEXT"):
-        if(firstlevelelem["type"]=="COMPONENT"): pageWidth = firstlevelelem["absoluteRenderBounds"]["width"] * 3
-        fontsize = ((data["style"]["fontSize"]) / (pageWidth / 100))
+        fontsize = str((data["style"]["fontSize"]) / (pageWidth / 100)) + "vw"
+        #print(data["characters"])
+        #print(firstlevelelem["type"])
+        if(firstlevelelem["type"]=="COMPONENT" or firstlevelelem["type"]=="COMPONENT_SET"): 
+            fontsize = str(data["style"]["fontSize"]/1.5) + "px"
+            #pageWidth = firstlevelelem["absoluteRenderBounds"]["width"] * 4
         lineheight = (round(data["style"]["lineHeightPx"])) 
         color = data["fills"][0]["color"]
         rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"])
@@ -501,7 +512,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                         autoresize,
                         data["style"]["fontStyle"],
                         data["style"]["fontWeight"],
-                        str(fontsize)+"vw",
+                        fontsize,
                         data["style"]["fontFamily"],
                         "rgba("+','.join(str(val) for val in rgba)+")",
                         nr_columnstart,

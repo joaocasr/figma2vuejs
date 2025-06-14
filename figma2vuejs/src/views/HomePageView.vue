@@ -25,7 +25,7 @@
    </div>
    <br/>
    <div class="inputform316457">
-    <InputText  fluid  name="input2316457" placeholder="Figma Prototype File Key " type="text">
+    <InputText  fluid  name="input2316457" placeholder="Figma Prototype url" type="text">
     </InputText>
     <Message severity="error" size="small" v-if="$form316457.input2316457?.invalid" variant="simple">
      {{$form316457.input2316457?.error.message}}
@@ -75,12 +75,17 @@ export default {
             if (!values.input1316457){
                 errors.input1316457 = [{ message: 'Token account is required.'}];
             }
-        
+            let match = false
+            var re = new RegExp("https:\/\/www.figma.com\/([a-zA-Z]+)\/.+");
+
             if (!values.input2316457){
-                errors.input2316457 = [{ message: 'Prototype file key is required.'}];
+                errors.input2316457 = [{ message: 'Prototype url is required.'}];
+            }else{
+                match=values.input2316457.match(re);
             }
-        
-       
+            if(match===false){
+                errors.input2316457 = [{ message: 'The url is not in the right format.'}];
+            }
             return {
                 errors
             };
@@ -97,12 +102,20 @@ export default {
         const toastStore = useToastStore();
         let message = ""
         if(data.valid==true){
+            let filekey = data.states.input2316457.value.split("/")
+            if(filekey.length<5){
+                return
+            }else{
+                filekey = filekey[4]
+            }
+
+
             try{
                 
                 const result = await axios.post('http://localhost:8000/',
             {
                 'apikey':data.states.input1316457.value,
-                'filekey':data.states.input2316457.value
+                'filekey':filekey
             }
                 )
                 this.progress = 60

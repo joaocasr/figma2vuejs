@@ -44,6 +44,8 @@ def load_variables():
     
 def convert_prototype(testfile=None):
   global data,headers,project_name,FIGMA_API_KEY,FILE_KEY
+  print(FIGMA_API_KEY)
+  print(FILE_KEY)
   if(testfile==None):
     response = requests.get("https://api.figma.com/v1/files/"+FILE_KEY, headers=headers)
     data = response.json()
@@ -139,7 +141,7 @@ async def convert_figma2vue(userinfo: UserInfo = None):
     convert_prototype()
     #except Exception as e:
     #  raise HTTPException(status_code=404, detail=repr(e))
-    #shutil.make_archive('../output/'+project_name, format='zip', root_dir='../output')
+    shutil.make_archive('../output/'+project_name, format='zip', root_dir='../output')
     return project_name
 
 # only for testing

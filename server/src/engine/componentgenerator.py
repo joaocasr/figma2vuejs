@@ -1,4 +1,4 @@
-from engine.stylegenerator import generateComponentStyle, generateElemCssProperties, generateShapeCSS, generateRatingCssProperties, generateMenuCssProperties, setComponentPositionCSS, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateFormCssProperties, generateTableCssProperties, generateSliderCssProperties, generatePaginatorCssProperties, generateVueSelectCssProperties, generateCheckboxCssProperties
+from engine.stylegenerator import generateComponentStyle, generateElemCssProperties, generateShapeCSS, generateRatingCssProperties, generateMenuCssProperties, setComponentPositionCSS, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateFormCssProperties, generateTableCssProperties, generateSliderCssProperties, generatePaginatorCssProperties, generateVueSelectCssProperties, generateCheckboxCssProperties, updateZIndex
 from setup.vueprojectsetup import useRatingVuetifyPlugin,useMenuVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useFormPrimeVuePlugin, useDataTablePrimevuePlugin, useSliderPrimevuePlugin, usePaginatorVuetifyPlugin, useSelectVuetifyPlugin, useCheckboxPrimeVuePlugin, useToastPrimeVuePlugin
 from engine.logicgenerator import handleBehaviour,getTextDestination,getKeyEventsFunction
 from parser.model.Mcomponent import Mcomponent
@@ -22,9 +22,11 @@ nestedComponents = {}
 allvariants = []
 allProps = {}
 auxiliarImports = dict()
+pagename=""
+globalprojectname=""
 
 def buildcomponent(component,projectname,pagesInfo,refs,variants):
-    global allhooks,allpagesInfo,allrefs,nestedComponents,allvariants,allProps
+    global pagename,globalprojectname,allhooks,allpagesInfo,allrefs,nestedComponents,allvariants,allProps
     name = component.componentName
     allhooks[name] = {}
     auxiliarImports[name] = set()
@@ -36,7 +38,8 @@ def buildcomponent(component,projectname,pagesInfo,refs,variants):
     allpagesInfo = pagesInfo
     output = ""
     idcomponent = getElemId(component.idComponent)
-
+    pagename=name
+    globalprojectname=projectname
     # the position of the variants will be the same as their default variant instance
     for v in variants:
         for c in v.variantComponents:
@@ -323,6 +326,7 @@ def getShapes(elementos):
     return list(filter(lambda x: (isinstance(x,ShapeElement)),elementos))
 
 def handleClipPathOverlaping(elementos):
+    global pagename,globalprojectname
     repeatedElements = []
     for i, elem2 in enumerate(elementos):
         for j, elem1 in enumerate(elementos):
@@ -333,6 +337,14 @@ def handleClipPathOverlaping(elementos):
                     getValue(elem1.style.gridrowEnd) <= getValue(elem2.style.gridrowEnd) and
                     isinstance(elem2,ShapeElement) and j not in repeatedElements):
                     
+                    if(isinstance(elem1,ShapeElement) and elem1.getType()=="LINE" and elem2.getType()=="LINE"): 
+                        continue
+                    updatePosition(elem1)
+                    if(isinstance(elem1, Mcomponent) and elem1.getisVariant()==True):
+                        updateZIndex(globalprojectname,pagename,elem1,1)
+                    elem1.style.setGridcolumnStart(1)
+                    elem1.style.setGridcolumnEnd(64)                    
+
                     elem2.children.append(elem1)
                     elem2.style.setDisplay("grid")
                     repeatedElements.append(j)
@@ -381,3 +393,11 @@ def getValue(value):
     if(" span " in str(value)):
         realvalue = value.split(" span ")[1] 
         return int(realvalue)
+
+def updatePosition(elem):
+    if(elem.style.getGridcolumnEnd()>65):
+        elem.style.setGridcolumnStart(elem.style.getGridcolumnStart()-15)
+        elem.style.setGridcolumnEnd(elem.style.getGridcolumnEnd()-10)
+    if(elem.style.getGridrowEnd()>65):
+        elem.style.setGridrowStart(elem.style.getGridrowStart()-15)
+        elem.style.setGridrowEnd(elem.style.getGridrowEnd()-10)    
