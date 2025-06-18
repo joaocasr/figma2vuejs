@@ -19,6 +19,8 @@ from parser.model.VideoElement import VideoElement
 from parser.model.VideoStyle import VideoStyle
 from parser.model.InteractionElement import InteractionElement
 from parser.model.NavigationAction import NavigationAction 
+from parser.model.OpenLinkAction import OpenLinkAction 
+from parser.model.SwapAction import SwapAction 
 from parser.model.CloseAction import CloseAction
 from parser.model.OverlayAction import OverlayAction
 from parser.model.ScrollAction import ScrollAction
@@ -45,13 +47,14 @@ tags = ["nav","footer","main","section","aside","article","p","header","h1","h2"
 notPageElems = {}
 overlayInsideInstances = {}
 pageOverlays = {}
+overlayTriggers = []
 figmadata = {}
 
 batchi=0
 batchf=50
 
 def getFigmaData(data):
-    global allpages, allcomponents,pageComponents, figmadata, refs, overlayInsideInstances, pageOverlays, variants, scrollElements, allimages, allsvgs
+    global allpages, allcomponents,pageComponents, figmadata, refs, overlayInsideInstances, pageOverlays, overlayTriggers, variants, scrollElements, allimages, allsvgs
     if(data!=None):
         figmadata=data
     figmadata["name"] = getFormatedName(figmadata["name"])
@@ -61,6 +64,7 @@ def getFigmaData(data):
     pageComponents = {}
     overlayInsideInstances = {}
     pageOverlays = {}
+    overlayTriggers = []
     scrollElements = {}
     variants = []
     allimages = []
@@ -82,7 +86,8 @@ def getFigmaData(data):
     for p in pageOverlays:
         for el in pageOverlays[p]:
             if p in allpages:
-                if(el[0]==None): allpages[p].addElement(el[1])
+                if(el[0]==None):
+                    allpages[p].addElement(el[1])
                 else:
                     manipulateComponentDom(allpages[p].elements,el)
                 
@@ -173,7 +178,7 @@ def iterate_nestedElements(data):
 
 
 def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstlevelelem,parent_data=None):
-    global allcomponents,pageComponents,allpages,pageWidth,figmadata,allimages,allsvgs,refs,overlayInsideInstances,pageOverlays,variants,scrollElements
+    global allcomponents,pageComponents,allpages,pageWidth,figmadata,allimages,allsvgs,refs,overlayInsideInstances,pageOverlays,variants,scrollElements,overlayTriggers
     children = []    
     if(data["absoluteRenderBounds"]!=None):
         elementwidth = data["absoluteRenderBounds"]["width"]
@@ -495,7 +500,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         #print(data["characters"])
         #print(firstlevelelem["type"])
         if(firstlevelelem["type"]=="COMPONENT" or firstlevelelem["type"]=="COMPONENT_SET"): 
-            fontsize = str(data["style"]["fontSize"]/1.5) + "px"
+            fontsize = str(data["style"]["fontSize"]/1.1) + "px"
             #pageWidth = firstlevelelem["absoluteRenderBounds"]["width"] * 4
         lineheight = (round(data["style"]["lineHeightPx"])) 
         color = data["fills"][0]["color"]
@@ -636,10 +641,13 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             interactionelement.setKeyCodes(interaction["trigger"]["keyCodes"])
             
         for action in interaction["actions"]:
+            if(action!=None and action["type"]=="URL"):
+                openlinkaction = OpenLinkAction(action["url"],action["openInNewTab"])
+                interactionelement.addAction(openlinkaction)
             if(action!=None and action["type"]=="NODE" and action["navigation"]=="NAVIGATE"):
                 navigateAction = NavigationAction(action["destinationId"])
                 interactionelement.addAction(navigateAction)
-            if(action!=None and action["type"]=="NODE" and action["navigation"]=="OVERLAY"):
+            if(action!=None and action["type"]=="NODE" and (action["navigation"]=="OVERLAY" or action["navigation"]=="SWAP")):
                 offsetx = 0
                 offsety = 0
                 if("overlayRelativePosition" in action):
@@ -650,21 +658,24 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                     notPageElems[action["destinationId"]]["absoluteRenderBounds"]["x"] = data["absoluteRenderBounds"]["x"]+offsetx
                     notPageElems[action["destinationId"]]["absoluteRenderBounds"]["y"] = data["absoluteRenderBounds"]["y"]+offsety
                     isonPageLevel = False
+                    overlayElem = None
                     # construir o elemento overlay tendo em conta que o elemento atual será o seu parent
-                    if(parent_data!=None):
-                        overlayElem = processElement(parent_data["name"],notPageElems[action["destinationId"]]["name"],notPageElems[action["destinationId"]],parent_data["absoluteRenderBounds"]["width"],parent_data["absoluteRenderBounds"]["height"],parent_data["absoluteRenderBounds"]["x"],parent_data["absoluteRenderBounds"]["y"],firstlevelelem,parent_data)
-                        if(not firstlevelelem["name"] in allpages):
-                            addComponentVariable(firstlevelelem["name"],{"show"+getElemId(overlayElem.getIdElement()):"false"})
+                    if(data["id"] not in overlayTriggers):
+                        overlayTriggers.append(data["id"]) # evitar recursividade infinita
+                        if(parent_data!=None):
+                            overlayElem = processElement(parent_data["name"],notPageElems[action["destinationId"]]["name"],notPageElems[action["destinationId"]],parent_data["absoluteRenderBounds"]["width"],parent_data["absoluteRenderBounds"]["height"],parent_data["absoluteRenderBounds"]["x"],parent_data["absoluteRenderBounds"]["y"],firstlevelelem,parent_data)
+                            if(not firstlevelelem["name"] in allpages):
+                                addComponentVariable(firstlevelelem["name"],{"show"+getElemId(overlayElem.getIdElement()):"false"})
+                            else:
+                                allpages[firstlevelelem["name"]].addVariable({"show"+getElemId(overlayElem.getIdElement()):"false"})   
                         else:
-                            allpages[firstlevelelem["name"]].addVariable({"show"+getElemId(overlayElem.getIdElement()):"false"})   
-                    else:
-                        overlayElem = processElement(pagename,notPageElems[action["destinationId"]]["name"],notPageElems[action["destinationId"]],page_width,page_height,pageX,pageY,firstlevelelem,parent_data)                        
-                        isonPageLevel = True
-                        if(not pagename in allpages):
-                            addComponentVariable(pagename,{"show"+getElemId(overlayElem.getIdElement()):"false"})
-                        else:
-                            allpages[pagename].addVariable({"show"+getElemId(overlayElem.getIdElement()):"false"})   
-                    if(type=="ON_HOVER" or type=="ON_CLICK"): 
+                            overlayElem = processElement(pagename,notPageElems[action["destinationId"]]["name"],notPageElems[action["destinationId"]],page_width,page_height,pageX,pageY,firstlevelelem,parent_data)                        
+                            isonPageLevel = True
+                            if(not pagename in allpages):
+                                addComponentVariable(pagename,{"show"+getElemId(overlayElem.getIdElement()):"false"})
+                            else:
+                                allpages[pagename].addVariable({"show"+getElemId(overlayElem.getIdElement()):"false"})   
+                    if(type=="ON_HOVER" and overlayElem!=None or (type=="ON_CLICK" and overlayElem!=None and action["navigation"]!="SWAP")): #or type=="ON_CLICK"
                         # caso exista overlaping sao adicionadas as propriedades de hovering
                         overlaps = setHoverProperties(overlayElem,melement,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
                         if(not overlaps):
@@ -672,10 +683,21 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                             overlayAction = OverlayAction(action["destinationId"])
                             interactionelement.addAction(overlayAction)
                             resetHoverProperties(melement,overlayElem)
-                    if(isonPageLevel==True): pageOverlays.setdefault(pagename, []).append((None,overlayElem))
-                    else: pageOverlays.setdefault(pagename, []).append((parent_data["id"],overlayElem))
-                    if(firstlevelelem["type"]=="INSTANCE"):
-                        overlayInsideInstances.setdefault(firstlevelelem["id"], []).append((parent_data["id"],overlayElem)) # só fazer isto se a posicao do overlay estiver contida numa instance/component
+                    if(type=="ON_CLICK" and overlayElem!=None and action["navigation"]=="SWAP"): 
+                        swapaction = SwapAction(action["destinationId"])
+                        interactionelement.addAction(swapaction)
+                        elid = getElemId(data["id"])
+                        visibility = "true"
+                        if(data["id"] in notPageElems): visibility = "false"
+                        if(not pagename in allpages):
+                            addComponentVariable(pagename,{"showswaped"+elid:visibility})
+                        else:
+                            allpages[pagename].addVariable({"showswaped"+elid:visibility})
+                    if(overlayElem!=None):
+                        if(isonPageLevel==True): pageOverlays.setdefault(pagename, []).append((None,overlayElem))
+                        elif(isonPageLevel==False and parent_data!=None): pageOverlays.setdefault(pagename, []).append((parent_data["id"],overlayElem))
+                        if(firstlevelelem["type"]=="INSTANCE" and parent_data!=None):
+                            overlayInsideInstances.setdefault(firstlevelelem["id"], []).append((parent_data["id"],overlayElem)) # só fazer isto se a posicao do overlay estiver contida numa instance/component
                 #verificar se o elemento overlay é uma instancia(componente)
                 elif(action["destinationId"] in allcomponents): 
                     #  update the position of the component relatively to the node which will open the component overlay

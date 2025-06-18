@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
+from utils.tools import getId
 
 class Mpage(object):
 
@@ -54,12 +55,22 @@ class Mpage(object):
 		self.style = style
 
 	def addElement(self,element):
-		self.elements.append(element)
+		exists = False
+		for x in self.elements:
+			if(getId(x)==getId(element)):
+				self.elements[self.elements.index(x)] = element
+				exists = True
+		if(exists==False): self.elements.append(element)
 
 	def addVariable(self,var):
-		if(var not in self.data):
+		exists = False
+		for k in list(var.keys()):
+			for d in self.data:
+				if(k in d.keys()):
+					exists = True
+		if(exists==False):
 			self.data.append(var)
-
+   
 	def getData(self):
 		return self.data
 		

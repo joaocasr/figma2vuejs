@@ -15,6 +15,7 @@ class Mcomponent(object):
 		self.upperIdComponent = None
 		self.zindex = 0
 		self.isComponentInstance = False
+		self.initialOpacity = None
 		self.hasConditionalVisibility = False
 		self.isVariant = False
 		self.variantName = None
@@ -70,7 +71,13 @@ class Mcomponent(object):
 
 	def setisVariant(self, isVariant):
 		self.isVariant = isVariant
+	
+	def getinitialOpacity(self):
+		return self.initialOpacity
 
+	def setinitialOpacity(self, initialOpacity):
+		self.initialOpacity = initialOpacity
+  
 	def getupperIdComponent(self):
 		return self.upperIdComponent
 

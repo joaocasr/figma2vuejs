@@ -21,6 +21,8 @@ class ComponentStyle(object):
 		self.borderWidth = None
 		self.borderStyle = None
 		self.borderRadius = None
+		self.opacity = None
+		self.hashover = False
 		self.gridcolumnStart = None
 		self.gridcolumnEnd = None
 		self.gridrowStart = None
@@ -173,6 +175,18 @@ class ComponentStyle(object):
 		"""@ParamType borderRadius String
 		@ReturnType void"""
 		self.borderRadius = borderRadius
+
+	def getOpacity(self):
+		return self.opacity
+
+	def setOpacity(self,opacity):
+		self.opacity=opacity  
+  
+	def gethashoverProperty(self):
+		return self.hashover
+
+	def sethashoverProperty(self,hashover):
+		self.hashover = hashover
 
 	def getGridcolumnStart(self):
 		"""@ReturnType String"""

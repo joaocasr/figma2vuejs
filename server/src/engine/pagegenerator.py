@@ -74,7 +74,7 @@ def applytransformation(elem,projectname,page):
     if(pagename in allrefs and cssclass in allrefs[pagename]):
         ref = f' ref="ref{cssclass}" '
     # insert directives and functions if there is some behaviour
-    directives, hooks = handleBehaviour(elem,allPagesInfo,pagename,True,allvariants)
+    directives, hooks = handleBehaviour(elem,allPagesInfo,pagename,True,allvariants,page.getData())
     if(hooks!=None): 
         for hook in hooks:
             allhooks[pagename].setdefault(hook, []).extend(hooks[hook])

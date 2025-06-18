@@ -31,3 +31,9 @@ def getName(e):
     elif(isinstance(e,Mcomponent)):
         name = getFormatedName(e.getNameComponent()) + getElemId(e.idComponent)
     return name
+
+def getId(e):
+    if(isinstance(e,Melement)):
+        return e.idElement
+    elif(isinstance(e,Mcomponent)):
+        return e.idComponent

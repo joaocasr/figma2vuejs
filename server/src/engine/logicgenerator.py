@@ -3,6 +3,8 @@ from parser.model.NavigationAction import NavigationAction
 from parser.model.OverlayAction import OverlayAction 
 from parser.model.CloseAction import CloseAction
 from parser.model.ScrollAction import ScrollAction
+from parser.model.OpenLinkAction import OpenLinkAction 
+from parser.model.SwapAction import SwapAction 
 from parser.model.ChangeAction import ChangeAction
 from parser.model.Mcomponent import Mcomponent
 from parser.model.Melement import Melement
@@ -13,12 +15,19 @@ import itertools
 # id: [vars]
 shareableEvents = {}
 keyEvents = {}
+swapDestinationIds = []
+alldata = {}
 
-def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants):
-    global shareableEvents,keyEvents
+def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data):
+    global shareableEvents,keyEvents,swapDestinationIds, alldata
+    alldata = data
     hooks = {}
     if(pagename not in keyEvents): keyEvents[pagename] = {}
     elemBehaviour = [[],None]
+    elementid = elem.idElement if isinstance(elem,Melement) else elem.idComponent
+    # SWAP ACTIONS
+    if(elementid in swapDestinationIds):
+        elemBehaviour[0].append(f'v-if="showswaped{getElemId(elementid)}"')
     for interaction in elem.getInteractions():
         if(interaction.getInteractionType()==InteractionElement.Interaction.ONHOVER):
             for action in interaction.actions:
@@ -36,11 +45,25 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants):
         if(interaction.getInteractionType()==InteractionElement.Interaction.ONCLICK or 
            interaction.getInteractionType()==InteractionElement.Interaction.ONKEYDOWN):
             for action in interaction.actions:
+                # SWAP ACTIONS
+                if(isinstance(action,SwapAction)):
+                    methodName = "swap"+getElemId(elementid)
+                    destinationid = action.getDestinationID()
+                    swapDestinationIds.append(destinationid)
+                    insertFunction("methods",hooks,methodName,getSwapFunction(methodName,elementid,destinationid))
+                    elemBehaviour[0].append(f'v-if="showswaped{getElemId(elementid)}" '+'v-on:click="'+methodName+'()"')
+                    elemBehaviour[1] = hooks
                 # CLICK-NAVIGATION ACTIONS
                 if(isinstance(action,NavigationAction)):
                     destination = getPageById(action.getDestinationID(),allPagesInfo) 
                     methodName = "goto"+destination
                     insertFunction("methods",hooks,methodName,getNavigationFunction(methodName,destination))
+                    elemBehaviour[0].append('v-on:click="'+methodName+'()"')
+                    elemBehaviour[1] = hooks
+                # OPEN LINK ACTIONS
+                if(isinstance(action,OpenLinkAction)):
+                    methodName = "openLink"+getElemId(elementid)
+                    insertFunction("methods",hooks,methodName,getOpenLinkFunction(methodName,action))
                     elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                     elemBehaviour[1] = hooks
                 # SCROLL ACTIONS
@@ -138,8 +161,14 @@ def getNavigationFunction(name,destination):
     return function
     
 def getChangeVisibilityFunction(name,variable):
+    global alldata
+    changeswaped = ""
+    for x in alldata:
+        if("showswaped"+variable[4:] in x):
+            changeswaped = "this.showswaped"+variable[4:]+"= true"
     function = """\t\t""" + name + "(){" + """
-            this.""" + variable +  """ = true;
+            this.""" + variable +  """ = true;"""+f"""
+            {changeswaped}"""+"""
         }""" 
     return function
 
@@ -410,6 +439,23 @@ def getVariantNavigationFunction(methodName,beginElem,currentElem,destination):
                 this.$router.push({path:"/""" + destination.lower() + """"});
             }
     \t}""" 
+    return function
+
+def getOpenLinkFunction(methodName,action):            
+    function =f"    {methodName}"+"""(){
+       """
+    if(action.getopenInNewTab()==True):
+        function+="window.open('"+action.getUrl()+"', '_blank'); "
+    else:
+        function+="window.location.href = '"+ action.getUrl() + "'"
+    function += "\n\t}"
+    return function
+
+def getSwapFunction(methodName,elementid,destinationid):
+    function =f"    {methodName}"+"""(){
+        """+ f"""this.showswaped{getElemId(elementid)}=!this.showswaped{getElemId(elementid)}""" + """
+        """+ f"""this.showswaped{getElemId(destinationid)}=!this.showswaped{getElemId(destinationid)}"""
+    function += "\n\t}"
     return function
 
 def handleVariants(elem,variants,hooks,elemBehaviour,allPagesInfo,beginElem=None):

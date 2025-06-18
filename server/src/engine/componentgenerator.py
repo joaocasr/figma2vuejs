@@ -24,9 +24,10 @@ allProps = {}
 auxiliarImports = dict()
 pagename=""
 globalprojectname=""
+componentData = {}
 
 def buildcomponent(component,projectname,pagesInfo,refs,variants):
-    global pagename,globalprojectname,allhooks,allpagesInfo,allrefs,nestedComponents,allvariants,allProps
+    global pagename,globalprojectname,allhooks,allpagesInfo,allrefs,nestedComponents,allvariants,allProps,componentData
     name = component.componentName
     allhooks[name] = {}
     auxiliarImports[name] = set()
@@ -34,6 +35,7 @@ def buildcomponent(component,projectname,pagesInfo,refs,variants):
     nestedComponents[name] = set()
     allrefs = refs
     allProps = component.getProps()
+    componentData = component.getData()
     # build elements from the component  
     allpagesInfo = pagesInfo
     output = ""
@@ -71,7 +73,7 @@ def processChildren(data,projectname,name,idcomponent):
         return output
 
 def applytransformation(elem,projectname,pagename,idcomponent):
-    global allhooks, allpagesInfo, allrefs, nestedComponents, allvariants, allProps
+    global allhooks, allpagesInfo, allrefs, nestedComponents, allvariants, allProps, componentData
     cssclass = ""
     if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.idElement)
     else: cssclass = getElemId(elem.idComponent)
@@ -81,7 +83,7 @@ def applytransformation(elem,projectname,pagename,idcomponent):
         ref = f' ref="ref{cssclass}" '
     if(elem.style.getgridArea()!=None):
         id = ' id="'+elem.style.getgridArea()+'"'
-    directives, hooks = handleBehaviour(elem,allpagesInfo,pagename,False,allvariants)
+    directives, hooks = handleBehaviour(elem,allpagesInfo,pagename,False,allvariants,componentData)
     if(hooks!=None): 
         for hook in hooks:
             allhooks[pagename].setdefault(hook, []).extend(hooks[hook])
