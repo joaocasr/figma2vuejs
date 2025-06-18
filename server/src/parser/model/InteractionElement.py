@@ -8,15 +8,18 @@ class InteractionElement(object):
 		ONHOVER = 2
 		ONDRAG = 3
 		ONKEYDOWN = 4
+		AFTERTIMEOUT = 5
 	onclick = Interaction.ONCLICK
 	onhover = Interaction.ONHOVER
 	ondrag = Interaction.ONDRAG
 	onkeydown = Interaction.ONKEYDOWN
+	aftertimeout = Interaction.AFTERTIMEOUT
 
 	def __init__(self):
 		self.interactiontype = None
 		self.actions = []
 		self.keyCodes = []
+		self.timeout = 0
 
 	def getInteractionType(self):
 		"""@ReturnType String"""
@@ -47,3 +50,12 @@ class InteractionElement(object):
 
 	def addAction(self,action):
 		self.actions.append(action)
+  
+	def getTimeout(self):
+		"""@ReturnType int"""
+		return self.timeout
+
+	def setTimeout(self, timeout):
+		"""@ParamType timeout int
+		@ReturnType void"""
+		self.timeout = timeout

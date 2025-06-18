@@ -280,13 +280,13 @@ def writeVue(name,page,content):
     if(len(allcomponents)>0): pagecomponents="""\n    components:{\n        """+ ',\n        '.join(allcomponents) +"""\n    },"""
     for hook in allhooks[page.getPagename()]:
         if("methods" in hook or "computed" in hook or "watch" in hook): pagehooks += hook + ":{\n"
-        if("mounted" in hook or "destroyed" in hook or "setup" in hook or "beforeUnmount" in hook): pagehooks += hook + "(){\n"
+        if("mounted" in hook or "destroyed" in hook or "setup" in hook or "beforeUnmount" in hook or "created" in hook): pagehooks += hook + "(){\n"
         if("methods" in hook and getKeyEventsFunction(page.getPagename())!=None):
             pagehooks+=getKeyEventsFunction(page.getPagename())+","
         for content in allhooks[page.getPagename()][hook]:
             if("methods" in hook or "computed" in hook or "watch" in hook): 
                 pagehooks += content[1] + ",\n"
-            if("mounted" in hook or "setup" in hook or "destroyed" in hook or "beforeUnmount" in hook): 
+            if("mounted" in hook or "setup" in hook or "destroyed" in hook or "beforeUnmount" in hook or "created" in hook): 
                 pagehooks += content[1] + "\n\n"
         if(hook=="setup"):
             pagehooks+="        return {\n          """
@@ -296,7 +296,7 @@ def writeVue(name,page,content):
             pagehooks += "}\n\n"
         pagehooks=pagehooks[:-2]+"\n\t},"
     pagehooks = pagehooks[:-1]
-    if(len(pagehooks)>0): pagehooks= ",\n            "+pagehooks
+    if(len(pagehooks)>0): pagehooks= ",\n    "+pagehooks
     variables = ",\n            ".join(str(key)+":"+str(value) for variables in page.getData() for key, value in variables.items())
     dataObjects = ',\n            '.join(str(key)+":"+str(value) for key, value in page.getobjectDL().items())
     if(variables!="" and dataObjects!=""):

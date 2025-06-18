@@ -4,6 +4,7 @@ from parser.model.OverlayAction import OverlayAction
 from parser.model.CloseAction import CloseAction
 from parser.model.ScrollAction import ScrollAction
 from parser.model.OpenLinkAction import OpenLinkAction 
+from parser.model.BackAction import BackAction 
 from parser.model.SwapAction import SwapAction 
 from parser.model.ChangeAction import ChangeAction
 from parser.model.Mcomponent import Mcomponent
@@ -43,6 +44,8 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data):
                     
                     elemBehaviour[1] = hooks
         if(interaction.getInteractionType()==InteractionElement.Interaction.ONCLICK or 
+           interaction.getInteractionType()==InteractionElement.Interaction.ONDRAG or 
+           interaction.getInteractionType()==InteractionElement.Interaction.AFTERTIMEOUT or 
            interaction.getInteractionType()==InteractionElement.Interaction.ONKEYDOWN):
             for action in interaction.actions:
                 # SWAP ACTIONS
@@ -66,6 +69,12 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data):
                     insertFunction("methods",hooks,methodName,getOpenLinkFunction(methodName,action))
                     elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                     elemBehaviour[1] = hooks
+                # BACK ACTIONS
+                if(isinstance(action,BackAction)):
+                    methodName = "goBack"+getElemId(elementid)
+                    insertFunction("methods",hooks,methodName,getBackFunction(methodName))
+                    elemBehaviour[0].append('v-on:click="'+methodName+'()"')
+                    elemBehaviour[1] = hooks
                 # SCROLL ACTIONS
                 if(isinstance(action,ScrollAction)):
                     elemBehaviour = insertScrollBehaviour(elem,action,hooks,elemBehaviour)
@@ -86,6 +95,10 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data):
                     insertFunction("methods",hooks,methodName,closeOverlay(methodName,"close-from"+str(originid)+"-to"+str(destinationid)))
                     elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                     elemBehaviour[1] = hooks
+                if(interaction.getInteractionType()==InteractionElement.Interaction.AFTERTIMEOUT):
+                    insertFunction("created",hooks,methodName,getTimeoutFunction(methodName,interaction))
+                    elemBehaviour[0].pop()
+                    elemBehaviour[1] = hooks                    
                 if(interaction.getInteractionType()==InteractionElement.Interaction.ONKEYDOWN):
                     elemBehaviour[0].pop()
                     if("mounted" not in hooks or getKeyEventListenerMounted() not in hooks["mounted"]): hooks.setdefault("mounted", []).append(getKeyEventListenerMounted())
@@ -155,7 +168,7 @@ def getPageById(id,allPages):
     return ""
 
 def getNavigationFunction(name,destination):
-    function = """\t""" + name + "(){" + """
+    function = """\t\t""" + name + "(){" + """
             this.$router.push({path:"/""" + destination.lower() + """"});
         }""" 
     return function
@@ -393,30 +406,30 @@ def getComponentVariant(id,variants):
     return None
 
 def changeToHoveredFunction(elem,destelem):
-    function = """\t""" + f"changeToHovered{getElemId(elem.idComponent)}()"+"{" + f"""
+    function = """\t\t""" + f"changeToHovered{getElemId(elem.idComponent)}()"+"{" + f"""
             this.selectedClass{getElemId(elem.idComponent)}=this.componentclass{getElemId(destelem.idComponent)};
             this.currentVariant{getElemId(elem.idComponent)}= '{getFormatedName(destelem.getNameComponent()).lower()}'
-"""+"\t}"
+"""+"\t\t}"
     return function
 
 def changeToDefaultFunction(elem,destelem):
-    function = """\t""" + f"changeToDefault{getElemId(elem.idComponent)}()"+"{" + f"""
+    function = """\t\t""" + f"changeToDefault{getElemId(elem.idComponent)}()"+"{" + f"""
             this.selectedClass{getElemId(elem.idComponent)}=this.componentclass{getElemId(elem.idComponent)};
             this.currentVariant{getElemId(elem.idComponent)}= '{getFormatedName(elem.getNameComponent()).lower()}'
-"""+"\t}"
+"""+"\t\t}"
     return function
 
 def changeVariantFunction(elem,destinations):
     elsecond = False
     elsecondst = "if"
-    function = """\t""" + f"changeVariant{getElemId(elem.idComponent)}()"+"{" 
+    function = """\t\t""" + f"changeVariant{getElemId(elem.idComponent)}()"+"{" 
     for variant in destinations: 
         if(elsecond==True): elsecondst = "else if"      
         function+=f"""
         {elsecondst}(this.selectedClass{getElemId(elem.idComponent)}==this.componentclass{getElemId(variant[0].idComponent)})"""+"{"+f"""
                 this.selectedClass{getElemId(elem.idComponent)}=this.componentclass{getElemId(variant[1].idComponent)};
                 this.currentVariant{getElemId(elem.idComponent)}= '{getFormatedName(variant[1].getNameComponent()).lower()}'
-"""+"""\t}"""
+"""+"""\t\t}"""
         elsecond = True
     function+="}"
     return function
@@ -434,7 +447,7 @@ def getDestinations(beginid,elem,variants,destinations):
                 
 def getVariantNavigationFunction(methodName,beginElem,currentElem,destination):
     if(beginElem==None and currentElem!=None): beginElem = currentElem  
-    function = """\t""" + methodName + "(){" + f"""
+    function = """\t\t""" + methodName + "(){" + f"""
             if(this.selectedClass{getElemId(beginElem.idComponent)}==this.componentclass{getElemId(currentElem.idComponent)})"""+"{"+"""
                 this.$router.push({path:"/""" + destination.lower() + """"});
             }
@@ -442,21 +455,36 @@ def getVariantNavigationFunction(methodName,beginElem,currentElem,destination):
     return function
 
 def getOpenLinkFunction(methodName,action):            
-    function =f"    {methodName}"+"""(){
+    function =f"        {methodName}"+"""(){
        """
     if(action.getopenInNewTab()==True):
-        function+="window.open('"+action.getUrl()+"', '_blank'); "
+        function+="            window.open('"+action.getUrl()+"', '_blank'); "
     else:
-        function+="window.location.href = '"+ action.getUrl() + "'"
-    function += "\n\t}"
+        function+="            window.location.href = '"+ action.getUrl() + "'"
+    function += "\n\t\t}"
     return function
 
 def getSwapFunction(methodName,elementid,destinationid):
+    function =f"        {methodName}"+"""(){
+            """+ f"""this.showswaped{getElemId(elementid)}=!this.showswaped{getElemId(elementid)}""" + """
+            """+ f"""this.showswaped{getElemId(destinationid)}=!this.showswaped{getElemId(destinationid)}"""
+    function += "\n        }"
+    return function
+
+def getBackFunction(methodName):
     function =f"    {methodName}"+"""(){
-        """+ f"""this.showswaped{getElemId(elementid)}=!this.showswaped{getElemId(elementid)}""" + """
-        """+ f"""this.showswaped{getElemId(destinationid)}=!this.showswaped{getElemId(destinationid)}"""
+        """+ f"""this.$router.back()"""
     function += "\n\t}"
     return function
+
+def getTimeoutFunction(methodName,interaction):
+    timeout = str(interaction.getTimeout()*1000)
+    function ="""
+        setTimeout(()=>{"""+f"""
+            this.{methodName}()
+        """+"""}, """+f"""{timeout})
+        """
+    return function    
 
 def handleVariants(elem,variants,hooks,elemBehaviour,allPagesInfo,beginElem=None):
     for i in elem.interactions:

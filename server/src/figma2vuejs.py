@@ -127,7 +127,7 @@ class UserInfo(BaseModel):
   apikey: Optional[str] = None
   filekey: Optional[str] = None
 
-@app.get("/")
+@app.post("/")
 async def convert_figma2vue(userinfo: UserInfo = None):
   global FIGMA_API_KEY, FILE_KEY, project_name
   if(userinfo != None and userinfo.apikey!=None and userinfo.filekey!=None):
@@ -142,6 +142,19 @@ async def convert_figma2vue(userinfo: UserInfo = None):
     shutil.make_archive('../output/'+project_name, format='zip', root_dir='../output')
     return project_name
 
+
+# only for testing
+@app.get("/")
+async def convert_figma2vue(userinfo: UserInfo = None):
+  global FIGMA_API_KEY, FILE_KEY, project_name
+  if(userinfo != None and userinfo.apikey!=None and userinfo.filekey!=None):
+    set_variables(userinfo.filekey,userinfo.apikey)
+  if(FIGMA_API_KEY=="" and FILE_KEY==""):
+    return "Missing token and prototype url!"
+  else:
+    convert_prototype()
+    return project_name
+
 # only for testing
 @app.get("/test/{nr}")
 def convert_figma2vue(nr:int,userinfo: UserInfo = None):
@@ -154,11 +167,8 @@ def convert_figma2vue(nr:int,userinfo: UserInfo = None):
     f = "../tests/prototype"+str(nr)+".json"
     with open(f,"r") as file:
         data = json.load(file)
-    #try:
     convert_prototype(data)
-    #except Exception as e:
-    #  raise HTTPException(status_code=404, detail=repr(e))
-    #return "Conversion done!"
+    return "Conversion done!"
 
 @app.get("/download")
 def download_file(path: str):

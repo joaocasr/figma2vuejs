@@ -20,6 +20,7 @@ from parser.model.VideoStyle import VideoStyle
 from parser.model.InteractionElement import InteractionElement
 from parser.model.NavigationAction import NavigationAction 
 from parser.model.OpenLinkAction import OpenLinkAction 
+from parser.model.BackAction import BackAction 
 from parser.model.SwapAction import SwapAction 
 from parser.model.CloseAction import CloseAction
 from parser.model.OverlayAction import OverlayAction
@@ -639,11 +640,17 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         if(type == "ON_KEY_DOWN"):
             interactionelement.setInteractionType(InteractionElement.Interaction.ONKEYDOWN)
             interactionelement.setKeyCodes(interaction["trigger"]["keyCodes"])
+        if(type == "AFTER_TIMEOUT"):
+            interactionelement.setInteractionType(InteractionElement.Interaction.AFTERTIMEOUT)
+            interactionelement.setTimeout(interaction["trigger"]["timeout"])
             
         for action in interaction["actions"]:
             if(action!=None and action["type"]=="URL"):
                 openlinkaction = OpenLinkAction(action["url"],action["openInNewTab"])
                 interactionelement.addAction(openlinkaction)
+            if(action!=None and action["type"]=="BACK"):
+                backaction = BackAction()
+                interactionelement.addAction(backaction)
             if(action!=None and action["type"]=="NODE" and action["navigation"]=="NAVIGATE"):
                 navigateAction = NavigationAction(action["destinationId"])
                 interactionelement.addAction(navigateAction)

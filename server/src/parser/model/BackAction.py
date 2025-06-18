@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 from  parser.model.ElementAction import ElementAction
 
-class ChangeAction(ElementAction):
-	def __init__(self,id):
+class BackAction(ElementAction):
+	def __init__(self):
 
 		super().__init__("BACK") 

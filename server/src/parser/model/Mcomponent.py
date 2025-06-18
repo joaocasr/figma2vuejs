@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
+
 class Mcomponent(object):
 	def __init__(self,id,name,tag,type,elementos=[]):
 		self.idComponent = id
@@ -100,7 +101,12 @@ class Mcomponent(object):
 		self.props = props
 
 	def addVariable(self,var):
-		if(var not in self.data):
+		exists = False
+		for k in list(var.keys()):
+			for d in self.data:
+				if(k in d.keys()):
+					exists = True
+		if(exists==False):
 			self.data.append(var)
 
 	def getHasCloseAction(self):
