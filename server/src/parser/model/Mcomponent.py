@@ -17,6 +17,7 @@ class Mcomponent(object):
 		self.zindex = 0
 		self.isComponentInstance = False
 		self.initialOpacity = None
+		self.hasAnimation = False
 		self.hasConditionalVisibility = False
 		self.isVariant = False
 		self.variantName = None
@@ -57,6 +58,24 @@ class Mcomponent(object):
 		@ReturnType void"""
 		self.type = type
 
+	def gethasAnimation(self):
+		"""@ReturnType boolean"""
+		return self.hasAnimation
+
+	def sethasAnimation(self, hasAnimation):
+		"""@ParamType type boolean
+		@ReturnType void"""
+		self.hasAnimation = hasAnimation
+
+	def getransition_nodeids(self):
+		"""@ReturnType list"""
+		return self.transition_nodeids
+
+	def setransition_nodeids(self, transition_nodeids):
+		"""@ParamType transition_nodeids
+		@ReturnType void"""
+		self.transition_nodeids = transition_nodeids
+  
 	def setComponentStyle(self, style):
 		"""@ParamType type String
 		@ReturnType void"""

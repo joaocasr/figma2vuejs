@@ -3,9 +3,9 @@
 from  parser.model.ElementAction import ElementAction
 
 class ScrollAction(ElementAction):
-	def __init__(self,id):
+	def __init__(self,id,transition):
 
-		super().__init__("SCROLL") 
+		super().__init__("SCROLL",transition) 
 		self.destinationID = id
 
 	def getDestinationID(self):

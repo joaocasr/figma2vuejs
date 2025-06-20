@@ -3,13 +3,12 @@
 from  parser.model.ElementAction import ElementAction
 
 class OverlayAction(ElementAction):
-	def __init__(self,id):
+	def __init__(self,id,transition):
 
-		super().__init__("OVERLAY") 
+		super().__init__("OVERLAY",transition) 
 		self.destinationID = id
 		self.position=None
 		self.closeClickOutside=None
-		self.resetscrollposition=None
 		self.background = None
 
 	def getDestinationID(self):
@@ -38,12 +37,3 @@ class OverlayAction(ElementAction):
 		"""@ParamType closeClickOutside
 		@ReturnType boolean"""
 		self.closeClickOutside = closeClickOutside
-  
-	def getResetScrollPosition(self):
-		"""@ReturnType resetscrollposition"""
-		return self.resetscrollposition
-
-	def setResetScrollPosition(self, resetscrollposition):
-		"""@ParamType resetscrollposition String
-		@ReturnType boolean"""
-		self.resetscrollposition = resetscrollposition

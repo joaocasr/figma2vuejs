@@ -1,6 +1,6 @@
-from engine.stylegenerator import generateComponentStyle, generateElemCssProperties, generateShapeCSS, generateRatingCssProperties, generateMenuCssProperties, setComponentPositionCSS, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateFormCssProperties, generateTableCssProperties, generateSliderCssProperties, generatePaginatorCssProperties, generateVueSelectCssProperties, generateCheckboxCssProperties, updateZIndex
+from engine.stylegenerator import generateComponentStyle, generateElemCssProperties, generateShapeCSS, generateRatingCssProperties, generateMenuCssProperties, setComponentPositionCSS, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateFormCssProperties, generateTableCssProperties, generateSliderCssProperties, generatePaginatorCssProperties, generateVueSelectCssProperties, generateCheckboxCssProperties, updateZIndex, generateTransitionAnimation
 from setup.vueprojectsetup import useRatingVuetifyPlugin,useMenuVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useFormPrimeVuePlugin, useDataTablePrimevuePlugin, useSliderPrimevuePlugin, usePaginatorVuetifyPlugin, useSelectVuetifyPlugin, useCheckboxPrimeVuePlugin, useToastPrimeVuePlugin
-from engine.logicgenerator import handleBehaviour,getTextDestination,getKeyEventsFunction
+from engine.logicgenerator import handleBehaviour,getTextDestination,getKeyEventsFunction,hasAnimationVar, addSetAnimationVarFunction
 from parser.model.Mcomponent import Mcomponent
 from engine.assetshelper import getPrimeVueForm, getPrimeVueCheckbox, getVuetifyMenu, getPrimeVueDataTable
 from parser.model.TextElement import TextElement
@@ -9,7 +9,7 @@ from parser.model.ContainerElement import ContainerElement
 from parser.model.ImageElement import ImageElement
 from parser.model.ShapeElement import ShapeElement
 from engine.assetshelper import getVuetifyMenu
-from utils.tools import getFormatedName,getElemId,doesImageExist
+from utils.tools import getFormatedName,getElemId,doesImageExist,getId
 
 from bs4 import BeautifulSoup
 import re
@@ -20,14 +20,15 @@ componentAssets = dict()
 allrefs = {}
 nestedComponents = {}
 allvariants = []
+alltransitionodes = []
 allProps = {}
 auxiliarImports = dict()
 pagename=""
 globalprojectname=""
 componentData = {}
 
-def buildcomponent(component,projectname,pagesInfo,refs,variants):
-    global pagename,globalprojectname,allhooks,allpagesInfo,allrefs,nestedComponents,allvariants,allProps,componentData
+def buildcomponent(component,projectname,pagesInfo,refs,variants,transition_nodeIds):
+    global pagename,globalprojectname,allhooks,allpagesInfo,allrefs,nestedComponents,allvariants,allProps,componentData,alltransitionodes
     name = component.componentName
     allhooks[name] = {}
     auxiliarImports[name] = set()
@@ -49,6 +50,10 @@ def buildcomponent(component,projectname,pagesInfo,refs,variants):
                 updatePositions(component,v.variantComponents)
 
     allvariants = variants
+    alltransitionodes = transition_nodeIds
+    if(hasAnimationVar(component.getData())):
+        componentAssets[name].extend([" Transition"])
+        addSetAnimationVarFunction(allhooks,pagename)
     if(anyShapes(component.children)==True): handleClipPathOverlaping(component.children)
     if(len(component.interactions)>0 and len(component.children)>0): component.children[0].interactions.extend(component.interactions)
     for element in component.children:
@@ -62,6 +67,7 @@ def processChildren(data,projectname,name,idcomponent):
     if(len(data.children)>0):
         content=""
         output, endtag = applytransformation(data,projectname,name,idcomponent)
+        output, endtag = insertTransitionComponent(data,output, endtag)
         for element in data.children:
             content += processChildren(element,projectname,name,idcomponent)
 
@@ -69,6 +75,7 @@ def processChildren(data,projectname,name,idcomponent):
 
     else:
         output, endtag = applytransformation(data,projectname,name,idcomponent)
+        output, endtag = insertTransitionComponent(data,output, endtag)
         output += endtag    
         return output
 
@@ -87,7 +94,7 @@ def applytransformation(elem,projectname,pagename,idcomponent):
     if(hooks!=None): 
         for hook in hooks:
             allhooks[pagename].setdefault(hook, []).extend(hooks[hook])
-
+    generateActionsAnimationStyle(projectname,pagename,cssclass,elem)
     if(isinstance(elem, TextElement)):
         if(elem.tag==""):
             elem.tag = "p"
@@ -403,3 +410,16 @@ def updatePosition(elem):
     if(elem.style.getGridrowEnd()>65):
         elem.style.setGridrowStart(elem.style.getGridrowStart()-15)
         elem.style.setGridrowEnd(elem.style.getGridrowEnd()-10)    
+        
+def generateActionsAnimationStyle(projectname,pagename,cssclass,elem):
+    for interaction in elem.getInteractions():
+        for action in interaction.actions:
+            if(action.getTransition()!=None):
+                generateTransitionAnimation(projectname,pagename,cssclass,action.getTransition())
+                
+def insertTransitionComponent(element,output, endtag):
+    global alltransitionodes
+    if(getId(element) in alltransitionodes):
+        output = '<Transition :name="animationName">'+ output 
+        endtag = endtag + '</Transition>'
+    return output, endtag

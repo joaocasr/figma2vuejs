@@ -3,6 +3,7 @@ from parser.model.ImageElement import ImageElement
 from parser.model.Mcomponent import Mcomponent
 from parser.model.VectorElement import VectorElement
 from parser.model.TextElement import TextElement
+from parser.model.Transition import Transition
 from utils.tools import getFormatedName,getElemId,getName
 
 
@@ -386,6 +387,43 @@ def setComponentPositionCSS(projectname,pagename,componentName,elem):
   with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
     f.write(css)
 
+def generateTransitionAnimation(projectname,pagename,cssclass,transition):
+  transform = ""
+  if(transition.getDirection()=="RIGHT"):
+    transform = "translateX(-100%);"
+  if(transition.getDirection()=="LEFT"):
+    transform = "translateX(100%);"
+  if(transition.getDirection()=="TOP"):
+    transform = "translateY(100%);"
+  if(transition.getDirection()=="BOTTOM"):
+    transform = "translateY(-100%);"
+  
+  css =f"""
+.el{cssclass}"""+"""-enter-active{"""+f"""
+  transition: all {str(round(transition.getDuration(),1))}s {getCurve(transition.getCurve())};
+"""+"""}
+  """+f"""
+.el{cssclass}"""+"""-enter-from{"""+f"""
+  transform: {transform}
+  opacity: 0;
+"""+"""}
+  """
+  cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
+  mode = "w"
+  if os.path.isfile(cssfile):
+    mode = "a"
+  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
+    f.write(css)
+
+def getCurve(curve):
+  function = ""
+  if(curve=="EASE_IN"): function = "ease-in"
+  if(curve=="EASE_OUT"): function = "ease-out"
+  if(curve=="EASE"): function = "ease"
+  if(curve=="EASE_IN_AND_OUT"): function = "ease-in-out"
+  if(curve=="LINEAR"): function = "linear"
+  return function
+  
 def generateVueSelectCssProperties(projectname,pagename,cssclass,elem):
   css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";

@@ -3,9 +3,9 @@
 from  parser.model.ElementAction import ElementAction
 
 class CloseAction(ElementAction):
-	def __init__(self,id):
+	def __init__(self,id,transition):
 
-		super().__init__("CLOSE") 
+		super().__init__("CLOSE",transition) 
 		self.destinationID = id
 
 	def getDestinationID(self):

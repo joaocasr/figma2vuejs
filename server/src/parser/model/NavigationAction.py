@@ -3,9 +3,9 @@
 from  parser.model.ElementAction import ElementAction
 
 class NavigationAction(ElementAction):
-	def __init__(self,id):
+	def __init__(self,id,transition):
 
-		super().__init__("NAVIGATION") 
+		super().__init__("NAVIGATION",transition) 
 		self.destinationID = id
 
 	def getDestinationID(self):

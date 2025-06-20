@@ -3,9 +3,9 @@
 from  parser.model.ElementAction import ElementAction
 
 class OpenLinkAction(ElementAction):
-	def __init__(self,url,openInNewTab):
+	def __init__(self,url,openInNewTab,transition):
 
-		super().__init__("URL") 
+		super().__init__("URL",transition) 
 		self.url = url
 		self.openInNewTab = openInNewTab
 

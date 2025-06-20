@@ -52,7 +52,7 @@ def convert_prototype(testfile=None):
     data = testfile
   # extract figma data and build intern model
   #try:
-  project_name, allpages, orphanComponents, refs, variants = getFigmaData(data)
+  project_name, allpages, orphanComponents, refs, variants, transition_nodeIds = getFigmaData(data)
   #except Exception as e:
   #  print(e)
   #  sys.exit()
@@ -88,18 +88,18 @@ def convert_prototype(testfile=None):
           allcomponents.append(x)
    
     for component in allcomponents:
-      buildcomponent(component,project_name,pagesInfo,refs,variants)
+      buildcomponent(component,project_name,pagesInfo,refs,variants,transition_nodeIds)
 
     for orphan in orphanComponents:
       if(not isinstance(orphan,VariantComponent) and not orphan.getisVariant()==True):
-        buildcomponent(orphan,project_name,pagesInfo,refs,variants)
+        buildcomponent(orphan,project_name,pagesInfo,refs,variants,transition_nodeIds)
           
     for v in variants:
       writeVariantComponent(v.getNameComponent(),project_name,v.variantComponents)    
           
     # build each page (elements within, styling and components)
     for page in mypages:
-      buildpage(project_name,mypages[page],pagesInfo,refs,variants)
+      buildpage(project_name,mypages[page],pagesInfo,refs,variants,transition_nodeIds)
 
   buildDependenciesScript(project_name)
   updateMainJSfile(project_name)

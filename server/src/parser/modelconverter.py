@@ -1,5 +1,4 @@
-import json,re,os,requests,wget
-from dotenv import load_dotenv, find_dotenv
+import re,os,requests,wget
 from parser.model.Mpage import Mpage
 from parser.model.Melement import Melement
 from parser.model.ContainerElement import ContainerElement
@@ -26,6 +25,7 @@ from parser.model.CloseAction import CloseAction
 from parser.model.OverlayAction import OverlayAction
 from parser.model.ScrollAction import ScrollAction
 from parser.model.ChangeAction import ChangeAction
+from parser.model.Transition import Transition
 from engine.stylegenerator import calculate_lineargradientDegree, calculate_radialgradientDegree,calculate_angulargradientDegree
 from engine.datagenerator import buildPageEntities,parseEntity,getObjectsDL
 from parser.assetsconverter import convertToDropdown, convertToSearchInput, convertToDatePicker, convertToSlider, convertToRating, convertToPaginator, convertToForm, convertToCheckbox, convertToMenu, convertToTable
@@ -49,6 +49,7 @@ notPageElems = {}
 overlayInsideInstances = {}
 pageOverlays = {}
 overlayTriggers = []
+transition_nodeIds = []
 figmadata = {}
 
 batchi=0
@@ -112,7 +113,7 @@ def getFigmaData(data):
         if(allcomponents[id].getNameComponent() not in l and allcomponents[id] not in orphanComponents):
             orphanComponents.append(allcomponents[id])
             
-    return (project_name, allpages, orphanComponents, refs, variants)
+    return (project_name, allpages, orphanComponents, refs, variants, transition_nodeIds)
 
 def parsePageEntities(data):
     global allpages
@@ -179,7 +180,7 @@ def iterate_nestedElements(data):
 
 
 def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstlevelelem,parent_data=None):
-    global allcomponents,pageComponents,allpages,pageWidth,figmadata,allimages,allsvgs,refs,overlayInsideInstances,pageOverlays,variants,scrollElements,overlayTriggers
+    global allcomponents,pageComponents,allpages,pageWidth,figmadata,allimages,allsvgs,refs,overlayInsideInstances,pageOverlays,variants,scrollElements,overlayTriggers,transition_nodeIds
     children = []    
     if(data["absoluteRenderBounds"]!=None):
         elementwidth = data["absoluteRenderBounds"]["width"]
@@ -635,7 +636,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             interactionelement.setInteractionType(InteractionElement.Interaction.ONCLICK)
         if(type == "ON_HOVER"):
             interactionelement.setInteractionType(InteractionElement.Interaction.ONHOVER)
-        if(type == "ON_DRAG"):
+        if(type == "DRAG"):
             interactionelement.setInteractionType(InteractionElement.Interaction.ONDRAG)
         if(type == "ON_KEY_DOWN"):
             interactionelement.setInteractionType(InteractionElement.Interaction.ONKEYDOWN)
@@ -645,14 +646,21 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             interactionelement.setTimeout(interaction["trigger"]["timeout"])
             
         for action in interaction["actions"]:
+            transition = None
+            if(action != None and "transition" in action and action["transition"]!=None and "direction" in action["transition"] and "duration" in action["transition"]):
+                transition = Transition(action["transition"]["type"],action["transition"]["direction"],action["transition"]["easing"]["type"],action["transition"]["duration"])
+                if(not pagename in allpages): addComponentVariable(pagename,{"animationName":'""'})
+                else: allpages[pagename].addVariable({"animationName":'""'})
+                melement.sethasAnimation(True)
+                transition_nodeIds.append(action["destinationId"])
             if(action!=None and action["type"]=="URL"):
-                openlinkaction = OpenLinkAction(action["url"],action["openInNewTab"])
+                openlinkaction = OpenLinkAction(action["url"],action["openInNewTab"],transition)
                 interactionelement.addAction(openlinkaction)
             if(action!=None and action["type"]=="BACK"):
-                backaction = BackAction()
+                backaction = BackAction(transition)
                 interactionelement.addAction(backaction)
             if(action!=None and action["type"]=="NODE" and action["navigation"]=="NAVIGATE"):
-                navigateAction = NavigationAction(action["destinationId"])
+                navigateAction = NavigationAction(action["destinationId"],transition)
                 interactionelement.addAction(navigateAction)
             if(action!=None and action["type"]=="NODE" and (action["navigation"]=="OVERLAY" or action["navigation"]=="SWAP")):
                 offsetx = 0
@@ -687,11 +695,11 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                         overlaps = setHoverProperties(overlayElem,melement,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
                         if(not overlaps):
                             overlayElem.sethascondvisib(True)
-                            overlayAction = OverlayAction(action["destinationId"])
+                            overlayAction = OverlayAction(action["destinationId"],transition)
                             interactionelement.addAction(overlayAction)
                             resetHoverProperties(melement,overlayElem)
                     if(type=="ON_CLICK" and overlayElem!=None and action["navigation"]=="SWAP"): 
-                        swapaction = SwapAction(action["destinationId"])
+                        swapaction = SwapAction(action["destinationId"],transition)
                         interactionelement.addAction(swapaction)
                         elid = getElemId(data["id"])
                         visibility = "true"
@@ -732,17 +740,17 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                     else:
                         allpages[pagename].addVariable({"show"+idcomponent:"false"})
 
-                    overlayAction = OverlayAction(action["destinationId"])
+                    overlayAction = OverlayAction(action["destinationId"],transition)
                     interactionelement.addAction(overlayAction)
             if(action!=None and action["type"]=="NODE" and action["navigation"]=="CHANGE_TO"):
-                changeAction = ChangeAction(action["destinationId"])
+                changeAction = ChangeAction(action["destinationId"],transition)
                 interactionelement.addAction(changeAction)
             if(action!=None and action["type"]=="NODE" and action["navigation"]=="SCROLL_TO"):
                 refs.setdefault(pagename, []).append(getElemId(action["destinationId"]))
-                scrollAction = ScrollAction(action["destinationId"])
+                scrollAction = ScrollAction(action["destinationId"],transition)
                 interactionelement.addAction(scrollAction)
             if(action!=None and action["type"]=="CLOSE"):
-                closeAction = CloseAction(firstlevelelem["id"])
+                closeAction = CloseAction(firstlevelelem["id"],transition)
                 interactionelement.addAction(closeAction)
 
         element_interactions.append(interactionelement)

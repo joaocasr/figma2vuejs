@@ -3,6 +3,6 @@
 from  parser.model.ElementAction import ElementAction
 
 class BackAction(ElementAction):
-	def __init__(self):
+	def __init__(self,transition):
 
-		super().__init__("BACK") 
+		super().__init__("BACK",transition) 

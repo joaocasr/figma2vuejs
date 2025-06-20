@@ -15,6 +15,7 @@ class Melement(object):
 		self.upperIdComponent = None
 		self.zindex = 0
 		self.initialOpacity = None
+		self.hasAnimation = False
 		self.hasConditionalVisibility = False
   
 	def getIdElement(self):
@@ -61,6 +62,15 @@ class Melement(object):
 
 	def setzindex(self, zindex):
 		self.zindex = zindex
+
+	def gethasAnimation(self):
+		"""@ReturnType boolean"""
+		return self.hasAnimation
+
+	def sethasAnimation(self, hasAnimation):
+		"""@ParamType type boolean
+		@ReturnType void"""
+		self.hasAnimation = hasAnimation
 
 	def gethascondvisib(self):
 		return self.hasConditionalVisibility

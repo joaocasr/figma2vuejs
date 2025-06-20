@@ -29,6 +29,8 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data):
     # SWAP ACTIONS
     if(elementid in swapDestinationIds):
         elemBehaviour[0].append(f'v-if="showswaped{getElemId(elementid)}"')
+    # ACTION ANIMATIONS
+    elemAnimation = elem.gethasAnimation()
     for interaction in elem.getInteractions():
         if(interaction.getInteractionType()==InteractionElement.Interaction.ONHOVER):
             for action in interaction.actions:
@@ -82,7 +84,7 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data):
                 if(isinstance(action,OverlayAction)):
                     destinationid = getElemId(action.getDestinationID())
                     methodName = "changeVisibility"+destinationid
-                    insertFunction("methods",hooks,methodName,getChangeVisibilityFunction(methodName,"show"+destinationid))
+                    insertFunction("methods",hooks,methodName,getChangeVisibilityFunction(methodName,"show"+destinationid,elementid,elemAnimation))
                     elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                     elemBehaviour[1] = hooks
                 # CLOSE ACTIONS
@@ -98,6 +100,10 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data):
                 if(interaction.getInteractionType()==InteractionElement.Interaction.AFTERTIMEOUT):
                     insertFunction("created",hooks,methodName,getTimeoutFunction(methodName,interaction))
                     elemBehaviour[0].pop()
+                    elemBehaviour[1] = hooks                    
+                if(interaction.getInteractionType()==InteractionElement.Interaction.ONDRAG):
+                    elemBehaviour[0].pop()
+                    elemBehaviour[0].append('draggable="true" @dragstart="'+methodName+'()"')                    
                     elemBehaviour[1] = hooks                    
                 if(interaction.getInteractionType()==InteractionElement.Interaction.ONKEYDOWN):
                     elemBehaviour[0].pop()
@@ -173,15 +179,18 @@ def getNavigationFunction(name,destination):
         }""" 
     return function
     
-def getChangeVisibilityFunction(name,variable):
+def getChangeVisibilityFunction(name,variable,elementid,elemAnimation):
     global alldata
     changeswaped = ""
+    setanimationvar = ""
     for x in alldata:
         if("showswaped"+variable[4:] in x):
-            changeswaped = "this.showswaped"+variable[4:]+"= true"
+            changeswaped = "this.showswaped"+variable[4:]+"= true"+"\n"
+    if(elemAnimation==True):
+        setanimationvar = f"this.setAnimationName('el{getElemId(elementid)}')"+"\n"
     function = """\t\t""" + name + "(){" + """
             this.""" + variable +  """ = true;"""+f"""
-            {changeswaped}"""+"""
+            {changeswaped}{setanimationvar}"""+"""
         }""" 
     return function
 
@@ -389,6 +398,15 @@ def addPropsFunction(allhooks,pagename):
         allhooks[pagename].setdefault("methods", []).extend(lhooks["methods"])
     return function
 
+def addSetAnimationVarFunction(allhooks,pagename):
+    function = getAnimationVarFunction()
+    lhooks = {}
+    lhooks.setdefault("methods", []).append(("setAnimationName",function))
+    if("methods" not in allhooks[pagename]): allhooks[pagename]["methods"] = []
+    if(("setAnimationName",function) not in allhooks[pagename]["methods"]):
+        allhooks[pagename].setdefault("methods", []).extend(lhooks["methods"])
+    return function
+
 def getVariantVariables(elem,id):
     return f"""            this.selectedClass{id} = this.componentclass{id};
             this.currentVariant{id} = '{getFormatedName(elem.getNameComponent()).lower()}';"""
@@ -542,6 +560,21 @@ def getKeyEventsFunction(pagename):
     function+="     }"
     if(len(keyEvents[pagename].keys())==0): function=None
     return function
+
+def getAnimationVarFunction():
+    function = """        setAnimationName(name){
+            this.animationName = name
+        }"""
+    return function
+
+def hasAnimationVar(data):
+    has = False
+    for x in data:
+        for y in x.keys():
+            if("animationName"==y):
+                has = True
+                break
+    return has
 
 def getElemId(id):
     elemid = id

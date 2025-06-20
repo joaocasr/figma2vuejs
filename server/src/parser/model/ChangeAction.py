@@ -3,9 +3,9 @@
 from  parser.model.ElementAction import ElementAction
 
 class ChangeAction(ElementAction):
-	def __init__(self,id):
+	def __init__(self,id,transition):
 
-		super().__init__("CHANGE") 
+		super().__init__("CHANGE",transition) 
 		self.destinationID = id
 
 	def getDestinationID(self):

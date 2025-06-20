@@ -1,8 +1,7 @@
-from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties, generatePaginatorCssProperties, generateFormCssProperties, generateCheckboxCssProperties, generateVideoCssProperties, generateMenuCssProperties, generateScrollCSS, generateTableCssProperties, updateZIndex
+from engine.stylegenerator import generatePageStyle, generateElemCssProperties, generateShapeCSS, generateShapeShadowCSS, generateVueSelectCssProperties, generateInputSearchFilterCssProperties, generateDatePickerCssProperties, generateSliderCssProperties,setComponentPositionCSS, generateRatingCssProperties, generatePaginatorCssProperties, generateFormCssProperties, generateCheckboxCssProperties, generateVideoCssProperties, generateMenuCssProperties, generateScrollCSS, generateTableCssProperties, updateZIndex, generateTransitionAnimation
 from setup.vueprojectsetup import useSelectVuetifyPlugin, useIconFieldPrimevuePlugin, useDatePickerPrimevuePlugin, useSliderPrimevuePlugin, useRatingVuetifyPlugin, usePaginatorVuetifyPlugin, useFormPrimeVuePlugin, useCheckboxPrimeVuePlugin, useMenuVuetifyPlugin, useDataTablePrimevuePlugin, useToastPrimeVuePlugin
-from engine.logicgenerator import handleBehaviour, addPropsFunction, getTextDestination, getKeyEventsFunction
+from engine.logicgenerator import handleBehaviour, addPropsFunction, getTextDestination, getKeyEventsFunction, hasAnimationVar, addSetAnimationVarFunction
 from engine.assetshelper import getPrimeVueForm, getPrimeVueCheckbox, getVuetifyMenu, getPrimeVueDataTable
-from parser.modelconverter import getPosition
 from parser.model.Mcomponent import Mcomponent
 from parser.model.Melement import Melement
 from parser.model.TextElement import TextElement
@@ -11,7 +10,7 @@ from parser.model.VectorElement import VectorElement
 from parser.model.ShapeElement import ShapeElement
 from parser.model.ContainerElement import ContainerElement
 from parser.model.ImageElement import ImageElement
-from utils.tools import getFormatedName,getElemId,doesImageExist
+from utils.tools import getFormatedName,getElemId,doesImageExist,getId
 
 from bs4 import BeautifulSoup
 import re
@@ -24,12 +23,13 @@ componentAssets = dict()
 allPagesInfo = dict()
 allrefs = {}
 allvariants = []
+alltransitionodes = []
 dataEntities = {}
 pagename = ""
 projectname = ""
 
-def buildpage(name,page,pagesInfo,refs,variants):
-    global pagename,projectname,allhooks,imports,components,allPagesInfo,allrefs,allvariants,dataEntities
+def buildpage(name,page,pagesInfo,refs,variants,transition_nodeIds):
+    global pagename,projectname,allhooks,imports,components,allPagesInfo,allrefs,allvariants,dataEntities,alltransitionodes
     #setup a page
     allhooks[page.pagename] = {}
     imports[page.pagename] = []
@@ -41,8 +41,12 @@ def buildpage(name,page,pagesInfo,refs,variants):
     allPagesInfo = pagesInfo
     output = ""  
     allvariants = variants
+    alltransitionodes = transition_nodeIds
     pagename = page.pagename
     projectname = name
+    if(hasAnimationVar(page.getData())):
+        componentAssets[pagename].extend([" Transition"])
+        addSetAnimationVarFunction(allhooks,pagename)
     if(anyShapes(page.elements)==True): handleClipPathOverlaping(page.elements)
     for element in page.elements:
         output += processChildren(element,name,page)
@@ -53,6 +57,7 @@ def processChildren(data,projectname,page):
     if(len(data.children)>0):
         content=""
         output, endtag = applytransformation(data,projectname,page)
+        output, endtag = insertTransitionComponent(data,output, endtag)
         for element in data.children:
             content += processChildren(element,projectname,page)
 
@@ -60,6 +65,7 @@ def processChildren(data,projectname,page):
 
     else:
         output, endtag = applytransformation(data,projectname,page)
+        output, endtag = insertTransitionComponent(data,output, endtag)
         output += endtag    
         return output
 
@@ -84,6 +90,7 @@ def applytransformation(elem,projectname,page):
     if(elem.style.getgridArea()!=None):
         id = ' id="'+elem.style.getgridArea()+'"'
     atributeProps = ""
+    generateActionsAnimationStyle(projectname,pagename,cssclass,elem)
     if(belongstodataObjectsList(cssclass,page)==True):
         atributeProps = ' :atributes="getProps(dataObjects)"'
         addPropsFunction(allhooks,pagename)
@@ -435,3 +442,16 @@ def updatePosition(elem):
     if(elem.style.getGridrowEnd()>65):
         elem.style.setGridrowStart(elem.style.getGridrowStart()-15)
         elem.style.setGridrowEnd(elem.style.getGridrowEnd()-10)    
+
+def generateActionsAnimationStyle(projectname,pagename,cssclass,elem):
+    for interaction in elem.getInteractions():
+        for action in interaction.actions:
+            if(action.getTransition()!=None):
+                generateTransitionAnimation(projectname,pagename,cssclass,action.getTransition())
+                
+def insertTransitionComponent(element,output, endtag):
+    global alltransitionodes
+    if(getId(element) in alltransitionodes):
+        output = '<Transition :name="animationName">'+ output 
+        endtag = endtag + '</Transition>'
+    return output, endtag
