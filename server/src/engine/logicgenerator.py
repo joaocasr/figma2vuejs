@@ -45,10 +45,7 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data):
                         elemBehaviour[1] = hooks
                     
                     elemBehaviour[1] = hooks
-        if(interaction.getInteractionType()==InteractionElement.Interaction.ONCLICK or 
-           interaction.getInteractionType()==InteractionElement.Interaction.ONDRAG or 
-           interaction.getInteractionType()==InteractionElement.Interaction.AFTERTIMEOUT or 
-           interaction.getInteractionType()==InteractionElement.Interaction.ONKEYDOWN):
+        else:
             for action in interaction.actions:
                 # SWAP ACTIONS
                 if(isinstance(action,SwapAction)):
@@ -96,6 +93,34 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data):
                     methodName = "close"+destinationid
                     insertFunction("methods",hooks,methodName,closeOverlay(methodName,"close-from"+str(originid)+"-to"+str(destinationid)))
                     elemBehaviour[0].append('v-on:click="'+methodName+'()"')
+                    elemBehaviour[1] = hooks
+                if(interaction.getInteractionType()==InteractionElement.Interaction.ONMOUSEDOWN):
+                    elemBehaviour[0].pop()
+                    if(interaction.getTimeout()>0):
+                        insertFunction("methods",hooks,"delayed"+methodName,getdelayedFunction(methodName,interaction.getTimeout())) 
+                        methodName="delayed"+methodName                   
+                    elemBehaviour[0].append('v-on:mousedown="'+methodName+'()"')                    
+                    elemBehaviour[1] = hooks
+                if(interaction.getInteractionType()==InteractionElement.Interaction.ONMOUSEUP):
+                    elemBehaviour[0].pop()
+                    if(interaction.getTimeout()>0):
+                        insertFunction("methods",hooks,"delayed"+methodName,getdelayedFunction(methodName,interaction.getTimeout())) 
+                        methodName="delayed"+methodName                   
+                    elemBehaviour[0].append('v-on:mouseup="'+methodName+'()"')                    
+                    elemBehaviour[1] = hooks
+                if(interaction.getInteractionType()==InteractionElement.Interaction.ONMOUSEENTER):
+                    elemBehaviour[0].pop()
+                    if(interaction.getTimeout()>0):
+                        insertFunction("methods",hooks,"delayed"+methodName,getdelayedFunction(methodName,interaction.getTimeout())) 
+                        methodName="delayed"+methodName                   
+                    elemBehaviour[0].append('v-on:mouseenter="'+methodName+'()"')                    
+                    elemBehaviour[1] = hooks
+                if(interaction.getInteractionType()==InteractionElement.Interaction.ONMOUSELEAVE):
+                    elemBehaviour[0].pop()
+                    if(interaction.getTimeout()>0):
+                        insertFunction("methods",hooks,"delayed"+methodName,getdelayedFunction(methodName,interaction.getTimeout())) 
+                        methodName="delayed"+methodName                   
+                    elemBehaviour[0].append('v-on:mouseleave="'+methodName+'()"')                    
                     elemBehaviour[1] = hooks
                 if(interaction.getInteractionType()==InteractionElement.Interaction.AFTERTIMEOUT):
                     insertFunction("created",hooks,methodName,getTimeoutFunction(methodName,interaction))
@@ -472,6 +497,12 @@ def getVariantNavigationFunction(methodName,beginElem,currentElem,destination):
     \t}""" 
     return function
 
+def getdelayedFunction(methodName,timeout):
+    function = f"        delayed{methodName}"+"""(){
+            setTimeout(() => """ +f"""this.{methodName},"""+f"""{str(timeout)})
+        """+"""}"""
+    return function    
+    
 def getOpenLinkFunction(methodName,action):            
     function =f"        {methodName}"+"""(){
        """

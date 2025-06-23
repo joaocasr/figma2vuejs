@@ -66,15 +66,6 @@ class Mcomponent(object):
 		"""@ParamType type boolean
 		@ReturnType void"""
 		self.hasAnimation = hasAnimation
-
-	def getransition_nodeids(self):
-		"""@ReturnType list"""
-		return self.transition_nodeids
-
-	def setransition_nodeids(self, transition_nodeids):
-		"""@ParamType transition_nodeids
-		@ReturnType void"""
-		self.transition_nodeids = transition_nodeids
   
 	def setComponentStyle(self, style):
 		"""@ParamType type String

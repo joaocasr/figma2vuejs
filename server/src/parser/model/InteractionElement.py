@@ -7,11 +7,17 @@ class InteractionElement(object):
 		ONCLICK = 1
 		ONHOVER = 2
 		ONDRAG = 3
-		ONKEYDOWN = 4
-		AFTERTIMEOUT = 5
+		ONMOUSEDOWN = 4
+		ONMOUSEUP = 5
+		ONMOUSEENTER = 6
+		ONMOUSELEAVE = 7
+		ONKEYDOWN = 8
+		AFTERTIMEOUT = 9
 	onclick = Interaction.ONCLICK
 	onhover = Interaction.ONHOVER
 	ondrag = Interaction.ONDRAG
+	onmousedown = Interaction.ONMOUSEDOWN
+	onmouseup = Interaction.ONMOUSEUP
 	onkeydown = Interaction.ONKEYDOWN
 	aftertimeout = Interaction.AFTERTIMEOUT
 

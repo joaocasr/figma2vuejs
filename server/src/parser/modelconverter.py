@@ -638,6 +638,18 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             interactionelement.setInteractionType(InteractionElement.Interaction.ONHOVER)
         if(type == "DRAG"):
             interactionelement.setInteractionType(InteractionElement.Interaction.ONDRAG)
+        if(type == "MOUSE_DOWN"):
+            interactionelement.setInteractionType(InteractionElement.Interaction.ONMOUSEDOWN)
+            interactionelement.setTimeout(interaction["trigger"]["delay"])
+        if(type == "MOUSE_UP"):
+            interactionelement.setInteractionType(InteractionElement.Interaction.ONMOUSEUP)
+            interactionelement.setTimeout(interaction["trigger"]["delay"])
+        if(type == "MOUSE_ENTER"):
+            interactionelement.setInteractionType(InteractionElement.Interaction.ONMOUSEENTER)
+            interactionelement.setTimeout(interaction["trigger"]["delay"])
+        if(type == "MOUSE_LEAVE"):
+            interactionelement.setInteractionType(InteractionElement.Interaction.ONMOUSELEAVE)
+            interactionelement.setTimeout(interaction["trigger"]["delay"])
         if(type == "ON_KEY_DOWN"):
             interactionelement.setInteractionType(InteractionElement.Interaction.ONKEYDOWN)
             interactionelement.setKeyCodes(interaction["trigger"]["keyCodes"])
