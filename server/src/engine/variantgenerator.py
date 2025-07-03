@@ -1,7 +1,6 @@
 from utils.tools import getFormatedName,getElemId,doesImageExist
 
 def writeVariantComponent(name,project_name,variants):
-
     template = """<template >
     <component :is="selectedComponent" :class="componentprops" :key="variant"></component>
 </template>
@@ -15,8 +14,8 @@ const componentsMap = {
 """
     for comp in variants:
       template+=getFormatedName(str(comp.getNameComponent())).lower()+":"+getFormatedName(str(comp.getNameComponent())).capitalize()+",\n"
-
-    template = template[:-2] + "};\n"
+    if(len(variants)==0): template+= "};\n"
+    else: template = template[:-2] + "};\n"
     template += """export default {
     props: {
       variant: {
@@ -26,8 +25,18 @@ const componentsMap = {
 """
     for comp in variants:
         template+="""            '"""+getFormatedName(str(comp.getNameComponent())).lower()+"""',\n"""
-        
-    template=template[:-2]+"""].includes(value),
+      
+    if(len(variants)==0): template+= """].includes(value),
+      },
+      componentprops: {
+        type: String,
+        required: true,
+        default: '',
+      },
+    },
+    computed: {
+      selectedComponent() {"""
+    else: template=template[:-2]+"""].includes(value),
       },
       componentprops: {
         type: String,

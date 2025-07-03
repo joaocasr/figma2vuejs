@@ -841,7 +841,9 @@ def calculate_lineargradientDegree(points,colors):
   scolors = ""
   norm_a = math.sqrt(a[0]**2 + a[1]**2) 
   norm_b = math.sqrt(b[0]**2 + b[1]**2) 
-  cosalpha = (a[0]*b[0] + a[1]*b[1]) / (norm_a * norm_b)
+  normprod = norm_a * norm_b
+  if(normprod==0): normprod = 1
+  cosalpha = (a[0]*b[0] + a[1]*b[1]) / (normprod)
   x = math.acos(cosalpha)
   degree = ((x * 180)/math.pi)  + 90
   if(b[1]>a[1]): degree-=180
@@ -870,8 +872,10 @@ def calculate_angulargradientDegree(points,colors):
   b = (endPoint["x"]-startPoint["x"], endPoint["y"]-startPoint["y"])
   norm_a = math.sqrt(a[0]**2 + a[1]**2) 
   norm_b = math.sqrt(b[0]**2 + b[1]**2) 
+  normprod = norm_a * norm_b
+  if(normprod==0): normprod = 1
 
-  cosalpha = (a[0]*b[0] + a[1]*b[1]) / (norm_a * norm_b)
+  cosalpha = (a[0]*b[0] + a[1]*b[1]) / (normprod)
 
   x = math.acos(cosalpha)
   degree = math.degrees(x)

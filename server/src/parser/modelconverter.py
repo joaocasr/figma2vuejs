@@ -76,9 +76,11 @@ def getFigmaData(data):
     #update overlay components coordinates
     for p in pageComponents:
         for c in pageComponents[p]:
-            if(c.getTypeComponent()=="OVERLAY"):
+            if(c.getTypeComponent()=="OVERLAY" and p in allpages):
                 updateOverlayPosition(c,c.style.getOverlayVector()[0],c.style.getOverlayVector()[1],allpages[p].style.getWidth(),allpages[p].style.getHeight())
                 allpages[p].addElement(c)
+            elif(c.getTypeComponent()=="OVERLAY" and p not in allpages):
+                pass
             if(c.getIdComponent() in overlayInsideInstances):
                 for i in overlayInsideInstances[c.getIdComponent()]:
                     if(i[0]==c.getIdComponent()):
@@ -156,7 +158,7 @@ def iterate_nestedElements(data):
             if(isComponentVariant(melement,variants)==True):
                 v = VariantComponent(melement["id"],tag,melement["name"],"",elements)
                 setVariantProperties(v,melement["componentPropertyDefinitions"])
-                variants.append(v)
+                addVariant(variants,v)
             setComponentStyle(melement)
                 
 
@@ -739,6 +741,9 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                         allcomponents[data["transitionNodeID"]].setzindex(6)
                     else:
                         allcomponents[data["transitionNodeID"]].setzindex(2)
+                    topname = ""
+                    if(firstlevelelem!=None and pagename not in allpages): topname = getTopLayer_pagename(firstlevelelem)
+                    if(topname!=""): pageComponents.setdefault(topname, []).append(allcomponents[data["transitionNodeID"]])
 
                     allcomponents[data["transitionNodeID"]].setComponentStyle(compstyle)
                     allcomponents[data["transitionNodeID"]].setTypeComponent("OVERLAY")
@@ -789,13 +794,20 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             if(c.getIdComponent()==melement.getIdComponent()): pageComponents[pagename][index]=melement 
     if(data["type"]=="INSTANCE" and isComponentVariant(data,variants)):
         #update the default variant instances
-        updateDefaultVariants(melement,data["componentId"],variants)
+        updateDefaultVariants(data,melement,data["componentId"],variants)
         if(pagename in allpages):
             for v in variants:
                 for (index,c) in enumerate(v.variantComponents):
                     allpages[pagename].addVariable({f"componentclass{getElemId(c.getIdComponent())}":f'"grid-item-{getElemId(c.getIdComponent())} component{getElemId(c.getIdComponent())}"'})
             allpages[pagename].addVariable({f"selectedClass{getElemId(melement.getIdComponent())}":"''"})
             allpages[pagename].addVariable({f"currentVariant{getElemId(melement.getIdComponent())}":"''"})
+        else:                  
+            for v in variants:
+                for (index,c) in enumerate(v.variantComponents):
+                    addComponentVariable(pagename,{f"componentclass{getElemId(c.getIdComponent())}":f'"grid-item-{getElemId(c.getIdComponent())} component{getElemId(c.getIdComponent())}"'})
+            addComponentVariable(pagename,{f"selectedClass{getElemId(melement.getIdComponent())}":"''"})
+            addComponentVariable(pagename,{f"currentVariant{getElemId(melement.getIdComponent())}":"''"})
+
     return melement
 
 # auxiliar function to calculate element positioning
@@ -1138,10 +1150,10 @@ def isComponentVariant(elem,variants):
     r = False
     if((elem["type"]=="COMPONENT_SET" or elem["type"]=="COMPONENT" or elem["type"]=="INSTANCE") and 
        ("componentPropertyDefinitions" in elem or "componentProperties" in elem)):
-        r = True
+        return True
     if(elem["type"]=="INSTANCE" and r==True and len(variants)>0):
-        if(not any(elem["componentId"]==c.getIdComponent() for v in variants for c in v.variantComponents)):
-            r = False
+        if(not any(elem["componentId"]==c.getIdComponent() or elem["id"]==c.getIdComponent() for v in variants for c in v.variantComponents)):
+            return False
     return r
 
 def isAllImages(elem):
@@ -1170,10 +1182,86 @@ def setVariantProperties(component,properties):
         cproperties[property] = val
     component.setVariantProperties(cproperties)
     
-def updateDefaultVariants(melement,componentId,variants):
+def addVariant(variants,v):
+    exists = False
+    for (index,variant) in enumerate(variants):
+        if variant.getIdComponent()==v.getIdComponent():
+            exists = True
+            variants[index] = v
+    if(exists==False): variants.append(v)
+
+def getTop(elem,ids,path=None):
+    if path is None:
+        path = []
+
+    current_path = path + [elem.get("name", elem.get("componentId", "unnamed"))]
+    
+    if "children" in elem and len(elem["children"]) == 0 and elem.get("componentId") not in ids:
+        return False, []
+    else:
+        if("children" in elem):
+            for el in elem["children"]:
+                if("componentId" in el and el["componentId"] in ids):
+                    print("*** "+el["componentId"])                
+                    return True, current_path + [el.get("name", el["componentId"])]
+                else:
+                    r, res_path = getTop(el, ids, current_path)
+                    if r:
+                        return True, res_path
+        return False, []
+         
+def getTopLayer_pagename(elem):
+    global figmadata
+    childids = []
+    for ch in elem["children"]:
+        childids.append(ch["id"])
+    for el in figmadata["document"]["children"][0]["children"]:
+        if("#Page" in el["name"]):
+            name = el["name"]
+            r, path = getTop(el, childids)
+            print("Matched Path:", " > ".join(path))
+            if(r==True):
+                return name
+
+def updateDefaultVariants(data,melement,componentId,variants):
+    global figmadata
+    found = False
     for v in variants:
         for (index,c) in enumerate(v.variantComponents):
             if(componentId==c.getIdComponent()):
+                found = True
                 melement.setNameComponent(c.getNameComponent())
                 v.variantComponents[index] = melement
                 v.setDefaultComponent(getFormatedName(melement.getNameComponent()))
+    if(found==False):
+        id = data["componentId"]
+        componentsetid=""
+        for cid in figmadata["components"]:
+            if(cid==id):
+                componentsetid = figmadata["components"][cid]["componentSetId"]
+        chcomponents = []
+        componentsinvolved = []
+        for element in figmadata["document"]["children"][0]["children"]:
+            if(element["id"]==componentsetid):
+                for ch in element["children"]:
+                    chcomponents.append(ch)
+        for (idx,chcomp) in enumerate(chcomponents):
+            if(data["componentId"]==chcomp["id"]):
+               chcomponents[idx]=data
+        
+        v = VariantComponent(data["id"],"",data["name"],"",[])
+        for ch in chcomponents:                    
+            name = ch["name"]
+            if(ch["type"]=="INSTANCE"): name = figmadata["components"][ch["componentId"]]["name"]
+            c = Mcomponent(ch["id"],name,"","",[])
+            style = setComponentStyle(ch)
+            c.setComponentStyle(style)
+            componentsinvolved.append(c)
+        name = v.getNameComponent()
+        for c in componentsinvolved:
+            if(data["id"]==c.getIdComponent()):
+                name = c.getNameComponent()
+        v.setVariantComponents(componentsinvolved)    
+        melement.setNameComponent(name)
+        v.setDefaultComponent(getFormatedName(name))
+        addVariant(variants,v)

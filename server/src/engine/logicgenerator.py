@@ -241,7 +241,7 @@ def getpopulateCheckboxFunction(functionname,values,boxes):
 
 def getScrollBehaviourFunction(elem,action):
     function =f"""        scrollTo{getElemId(elem.getIdElement())}()"""+"{"+f"""
-            this.$refs.ref{getElemId(action.getDestinationID())}?.scrollIntoView("""+"{ behavior: 'smooth' });"+"""
+            this.$refs.ref{getElemId(action.getDestinationID())}?.scrollIntoView("""+"{ behavior: 'smooth', block: 'nearest', inline: 'center' });"+"""
         }""" 
     return function
 

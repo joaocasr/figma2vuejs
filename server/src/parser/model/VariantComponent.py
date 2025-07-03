@@ -13,6 +13,9 @@ class VariantComponent(Mcomponent):
 	def getVariantProperties(self):
 		return self.variantProperties
 
+	def setVariantComponents(self, variantComponents):
+		self.variantComponents = variantComponents
+  
 	def setVariantProperties(self, variantProperties):
 		self.variantProperties = variantProperties
 

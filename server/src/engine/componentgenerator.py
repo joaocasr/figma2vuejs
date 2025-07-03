@@ -219,6 +219,12 @@ def applytransformation(elem,projectname,pagename,idcomponent):
         generateCheckboxCssProperties(projectname,pagename,cssclass,f"label{cssclass}",elem)
         componentAssets[pagename].extend([" Checkbox"])
         return checkbox
+    if(isinstance(elem, Mcomponent) and elem.getisVariant()==True):
+        component = getFormatedName("Variant"+elem.getVariantName().lower().capitalize())
+        nestedComponents.setdefault(pagename, {}).add(component)
+        compbegin = f"""<{component} """+' '.join(d for d in directives) + f''' :variant="currentVariant{cssclass}"'''+f''' :componentprops="'''+f"selectedClass{cssclass}"+ '">'
+        compend = f"""</{component}>"""
+        return (compbegin,compend)
     if(isinstance(elem, Mcomponent)):
         componentName = getFormatedName(elem.componentName.capitalize())
         classname = ' class="'+"grid-item-"+getElemId(elem.idComponent)+' component'+ getElemId(elem.idComponent)    
