@@ -18,10 +18,12 @@ shareableEvents = {}
 keyEvents = {}
 swapDestinationIds = []
 alldata = {}
+allEmissions = {}
 
-def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data):
-    global shareableEvents,keyEvents,swapDestinationIds, alldata
+def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,allEmissionpaths):
+    global shareableEvents,keyEvents,swapDestinationIds, alldata, allEmissions
     alldata = data
+    allEmissions = allEmissionpaths
     hooks = {}
     if(pagename not in keyEvents): keyEvents[pagename] = {}
     elemBehaviour = [[],None]
@@ -81,8 +83,19 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data):
                 if(isinstance(action,OverlayAction)):
                     destinationid = getElemId(action.getDestinationID())
                     methodName = "changeVisibility"+destinationid
-                    insertFunction("methods",hooks,methodName,getChangeVisibilityFunction(methodName,"show"+destinationid,elementid,elemAnimation))
-                    elemBehaviour[0].append('v-on:click="'+methodName+'()"')
+                    if(checkOverlayTrigger(elementid)!=None): 
+                        pair = checkOverlayTrigger(elementid)
+                        methodName = "openOverlay"+getElemId(pair[0])+"_"+getElemId(pair[1])
+                        if(pair[2]==True):
+                            methodName = "changeVisibility"+getElemId(pair[1])
+                            insertFunction("methods",hooks,methodName,getChangeVisibilityFunction(methodName,"show"+getElemId(pair[1]),getElemId(pair[0]),elemAnimation))
+                            elemBehaviour[0].append('v-on:click="'+methodName+'()"')
+                        else:
+                            insertFunction("methods",hooks,methodName,openTopOverlay(methodName,"openoverlay"+getElemId(pair[0])+getElemId(pair[1])))
+                            elemBehaviour[0].append("@click"+'="'+methodName+'"')
+                    else:
+                        insertFunction("methods",hooks,methodName,getChangeVisibilityFunction(methodName,"show"+destinationid,elementid,elemAnimation))
+                        elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                     elemBehaviour[1] = hooks
                 # CLOSE ACTIONS
                 if(isinstance(action,CloseAction) and isPageRender==False and elem.getupperIdComponent()!=None):#verificar se o elemento tem uma acao close e se pertence a um elemento filho de um componente 
@@ -167,6 +180,16 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data):
         elemBehaviour[0].append('v-show="show'+getElemId(elem.getIdElement())+'==true"')
     # SHOW CONDITIONAL ELEMENTS | from page
     if(isinstance(elem,Mcomponent) and isPageRender==True):
+        if(checkIDinEventspath(elem.getIdComponent())!=None): 
+            pair = checkIDinEventspath(elem.getIdComponent())
+            methodName = "openOverlay"+getElemId(pair[0])+"_"+getElemId(pair[1])
+            if(pair[2]==True):
+                methodName = "changeVisibility"+getElemId(pair[1])
+                insertFunction("methods",hooks,methodName,getChangeVisibilityFunction(methodName,"show"+getElemId(pair[1]),getElemId(pair[0]),elemAnimation))
+            else:
+                insertFunction("methods",hooks,methodName,openTopOverlay(methodName,"openoverlay"+getElemId(pair[0])+getElemId(pair[1])))
+            elemBehaviour[0].append('@'+"openoverlay"+getElemId(pair[0])+getElemId(pair[1])+'="'+methodName+'"')
+
         if(elem.getIdComponent() in shareableEvents):
             for event in shareableEvents[elem.getIdComponent()]:
                 elemBehaviour[0].append(event[2])
@@ -216,6 +239,12 @@ def getChangeVisibilityFunction(name,variable,elementid,elemAnimation):
     function = """\t\t""" + name + "(){" + """
             this.""" + variable +  """ = true;"""+f"""
             {changeswaped}{setanimationvar}"""+"""
+        }""" 
+    return function
+
+def openTopOverlay(name,event):
+    function = """\t\t""" + name + "(){" + """
+            this.$emit('""" + event +  """');
         }""" 
     return function
 
@@ -536,6 +565,15 @@ def getTimeoutFunction(methodName,interaction):
     return function    
 
 def handleVariants(elem,variants,hooks,elemBehaviour,allPagesInfo,beginElem=None):
+    if(checkIDinEventspath(getElemId(elem.getIdComponent()))!=None): 
+        pair = checkIDinEventspath(getElemId(elem.getIdComponent()))
+        methodName = "openOverlay"+getElemId(pair[0])+"_"+getElemId(pair[1])
+        if(pair[2]==True):
+            methodName = "changeVisibility"+getElemId(pair[1])
+            insertFunction("methods",hooks,methodName,getChangeVisibilityFunction(methodName,"show"+getElemId(pair[1]),getElemId(pair[0]),False))
+        else:
+            insertFunction("methods",hooks,methodName,openTopOverlay(methodName,"openoverlay"+getElemId(pair[0])+getElemId(pair[1])))
+        elemBehaviour[0].append('@'+"openoverlay"+getElemId(pair[0])+getElemId(pair[1])+'="'+methodName+'"')
     for i in elem.interactions:
          for a in i.actions:
             destelem = getComponentVariant(a.destinationID,variants)
@@ -591,6 +629,34 @@ def getKeyEventsFunction(pagename):
     function+="     }"
     if(len(keyEvents[pagename].keys())==0): function=None
     return function
+
+def isAllFrame(l):
+    allframe = True
+    for el in l:
+        if(el[2]!="FRAME"): allframe = False
+    if(len(l)==0): return False
+    return allframe
+
+def checkOverlayTrigger(id):
+    global allEmissions
+    for pair in allEmissions:
+        if(id==pair[0] and isAllFrame(allEmissions[pair])==True):
+            return(getElemId(pair[0]),getElemId(pair[1]),True)
+        if(getElemId(id)==getElemId(pair[0]) and len(allEmissions[pair])>0 and len(allEmissions[pair])>=2):
+            return(getElemId(pair[0]),getElemId(pair[1]),False)
+        if(getElemId(id)==getElemId(pair[0]) and len(allEmissions[pair])>0 and len(allEmissions[pair])<2):
+            return(getElemId(pair[0]),getElemId(pair[1]),True)
+    return None    
+
+def checkIDinEventspath(id):
+    global allEmissions
+    isOnPageLevel = False
+    for pair in allEmissions:
+        for (idx,s) in enumerate(allEmissions[pair]):
+            if((getElemId(id)==s[1] or getElemId(id)==s[3]) and s[2]=="INSTANCE"):
+                if(idx-1>=0 and "#Page"in allEmissions[pair][idx-1][0]): isOnPageLevel=True
+                return (getElemId(pair[0]),getElemId(pair[1]),isOnPageLevel)
+    return None    
 
 def getAnimationVarFunction():
     function = """        setAnimationName(name){

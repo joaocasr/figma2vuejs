@@ -21,14 +21,15 @@ allrefs = {}
 nestedComponents = {}
 allvariants = []
 alltransitionodes = []
+allEmissionpaths = {}
 allProps = {}
 auxiliarImports = dict()
 pagename=""
 globalprojectname=""
 componentData = {}
 
-def buildcomponent(component,projectname,pagesInfo,refs,variants,transition_nodeIds):
-    global pagename,globalprojectname,allhooks,allpagesInfo,allrefs,nestedComponents,allvariants,allProps,componentData,alltransitionodes
+def buildcomponent(component,projectname,pagesInfo,refs,variants,transition_nodeIds,event_EmissionPaths):
+    global pagename,globalprojectname,allhooks,allpagesInfo,allrefs,nestedComponents,allvariants,allProps,componentData,alltransitionodes,allEmissionpaths
     name = component.componentName
     allhooks[name] = {}
     auxiliarImports[name] = set()
@@ -37,6 +38,7 @@ def buildcomponent(component,projectname,pagesInfo,refs,variants,transition_node
     allrefs = refs
     allProps = component.getProps()
     componentData = component.getData()
+    allEmissionpaths = event_EmissionPaths
     # build elements from the component  
     allpagesInfo = pagesInfo
     output = ""
@@ -80,7 +82,7 @@ def processChildren(data,projectname,name,idcomponent):
         return output
 
 def applytransformation(elem,projectname,pagename,idcomponent):
-    global allhooks, allpagesInfo, allrefs, nestedComponents, allvariants, allProps, componentData
+    global allhooks, allpagesInfo, allrefs, nestedComponents, allvariants, allProps, componentData, allEmissionpaths
     cssclass = ""
     if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.idElement)
     else: cssclass = getElemId(elem.idComponent)
@@ -90,7 +92,7 @@ def applytransformation(elem,projectname,pagename,idcomponent):
         ref = f' ref="ref{cssclass}" '
     if(elem.style.getgridArea()!=None):
         id = ' id="'+elem.style.getgridArea()+'"'
-    directives, hooks = handleBehaviour(elem,allpagesInfo,pagename,False,allvariants,componentData)
+    directives, hooks = handleBehaviour(elem,allpagesInfo,pagename,False,allvariants,componentData,allEmissionpaths)
     if(hooks!=None): 
         for hook in hooks:
             allhooks[pagename].setdefault(hook, []).extend(hooks[hook])

@@ -48,6 +48,7 @@ tags = ["nav","footer","main","section","aside","article","p","header","h1","h2"
 notPageElems = {}
 overlayInsideInstances = {}
 pageOverlays = {}
+event_EmissionPaths = {}
 overlayTriggers = []
 transition_nodeIds = []
 figmadata = {}
@@ -56,7 +57,7 @@ batchi=0
 batchf=50
 
 def getFigmaData(data):
-    global allpages, allcomponents,pageComponents, figmadata, refs, overlayInsideInstances, pageOverlays, overlayTriggers, variants, scrollElements, allimages, allsvgs
+    global allpages, allcomponents,pageComponents, figmadata, refs, overlayInsideInstances, pageOverlays, overlayTriggers, variants, scrollElements, allimages, allsvgs, event_EmissionPaths
     if(data!=None):
         figmadata=data
     figmadata["name"] = getFormatedName(figmadata["name"])
@@ -80,7 +81,7 @@ def getFigmaData(data):
                 updateOverlayPosition(c,c.style.getOverlayVector()[0],c.style.getOverlayVector()[1],allpages[p].style.getWidth(),allpages[p].style.getHeight())
                 allpages[p].addElement(c)
             elif(c.getTypeComponent()=="OVERLAY" and p not in allpages):
-                pass
+                print(c.getIdComponent())
             if(c.getIdComponent() in overlayInsideInstances):
                 for i in overlayInsideInstances[c.getIdComponent()]:
                     if(i[0]==c.getIdComponent()):
@@ -115,7 +116,7 @@ def getFigmaData(data):
         if(allcomponents[id].getNameComponent() not in l and allcomponents[id] not in orphanComponents):
             orphanComponents.append(allcomponents[id])
             
-    return (project_name, allpages, orphanComponents, refs, variants, transition_nodeIds)
+    return (project_name, allpages, orphanComponents, refs, variants, transition_nodeIds, event_EmissionPaths)
 
 def parsePageEntities(data):
     global allpages
@@ -136,8 +137,9 @@ def iterate_nestedElements(data):
         if((page["type"]=="FRAME" or page["type"]=="GROUP") and "children" in page and "#Page" not in page["name"]):
             notPageElems[page["id"]]=page
 
-    #iterate first for all the components nodes (except primevue components)
-    for melement in data["document"]["children"][0]["children"]:
+    #iterate first for all the components nodes (except primevue & vuetify components)
+    l = orderComponents(data["document"]["children"][0]["children"])
+    for melement in l:
         elements = []
         if((melement["type"]=="COMPONENT" or isComponentVariant(melement,variants)==True) and "children" in melement and melement["name"] not in assetComponents):
             pageWidth = melement["absoluteRenderBounds"]["width"]*1.2
@@ -160,7 +162,6 @@ def iterate_nestedElements(data):
                 setVariantProperties(v,melement["componentPropertyDefinitions"])
                 addVariant(variants,v)
             setComponentStyle(melement)
-                
 
     #iterate the frame nodes which represent PAGES
     for page in data["document"]["children"][0]["children"]:
@@ -742,13 +743,14 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                     else:
                         allcomponents[data["transitionNodeID"]].setzindex(2)
                     topname = ""
-                    if(firstlevelelem!=None and pagename not in allpages): topname = getTopLayer_pagename(firstlevelelem)
-                    if(topname!=""): pageComponents.setdefault(topname, []).append(allcomponents[data["transitionNodeID"]])
+                    if(firstlevelelem!=None): topname = getTopLayer_pagename(firstlevelelem,data,parent_data,data["transitionNodeID"])
+                    if(topname!="" and topname!=None): 
+                        pagename=topname
 
                     allcomponents[data["transitionNodeID"]].setComponentStyle(compstyle)
                     allcomponents[data["transitionNodeID"]].setTypeComponent("OVERLAY")
-                    pageComponents.setdefault(pagename, []).append(allcomponents[data["transitionNodeID"]])
-                    #allpages[pagename].addElement(allcomponents[data["transitionNodeID"]])
+                    pageComponents.setdefault(pagename, []).append(allcomponents[data["transitionNodeID"]],)
+                    if(pagename in allpages): allpages[pagename].addElement(allcomponents[data["transitionNodeID"]])
 
                     #adicionar variavel na pagina visto que o componente não estará visivel no imediato
                     idcomponent = getElemId(action["destinationId"])
@@ -1190,36 +1192,70 @@ def addVariant(variants,v):
             variants[index] = v
     if(exists==False): variants.append(v)
 
-def getTop(elem,ids,path=None):
+def getCompTopPath(elem,ids,path=None):
     if path is None:
         path = []
 
-    current_path = path + [elem.get("name", elem.get("componentId", "unnamed"))]
+    current_path = path + [(elem.get("name"),getElemId(elem.get("id")),elem.get("type"), getElemId(elem.get("componentId", "_")))]
     
-    if "children" in elem and len(elem["children"]) == 0 and elem.get("componentId") not in ids:
+    if "children" in elem and "componentId" in elem and len(elem["children"]) == 0 and getElemId(elem.get("componentId")) not in ids:
         return False, []
     else:
         if("children" in elem):
             for el in elem["children"]:
-                if("componentId" in el and el["componentId"] in ids):
-                    print("*** "+el["componentId"])                
-                    return True, current_path + [el.get("name", el["componentId"])]
+                if("componentId" in el and getElemId(el["componentId"]) in ids):
+                    return True, current_path + [(el.get("name"),getElemId(el.get("id")),el.get("type"), getElemId(el.get("componentId")))]
                 else:
-                    r, res_path = getTop(el, ids, current_path)
+                    r, res_path = getCompTopPath(el, ids, current_path)
                     if r:
                         return True, res_path
         return False, []
          
-def getTopLayer_pagename(elem):
-    global figmadata
+def getElemTopPath(elem,ids,path=None):
+    if path is None:
+        path = []
+
+    current_path = path + [(elem.get("name"),getElemId(elem.get("id")),elem.get("type"), getElemId(elem.get("id")))]
+    
+    if "children" in elem and len(elem["children"]) == 0 and getElemId(elem.get("id")) not in ids:
+        return False, []
+    else:
+        if("children" in elem):
+            for el in elem["children"]:
+                if(getElemId(el["id"]) in ids):
+                    return True, current_path + [(el.get("name"),getElemId(el.get("id")),el.get("type"), getElemId(el.get("id")))]
+                else:
+                    r, res_path = getElemTopPath(el, ids, current_path)
+                    if r:
+                        return True, res_path
+        return False, []
+
+def getTopLayer_pagename(elem,data,parentelem,overlayId):
+    global figmadata, event_EmissionPaths
     childids = []
-    for ch in elem["children"]:
-        childids.append(ch["id"])
+    iscomponent = False
+    if(elem["type"]=="COMPOENNT" or elem["type"]=="COMPONENT_SET"):
+        iscomponent = True
+        for ch in elem["children"]:
+            childids.append(getElemId(ch["id"]))
+    else: childids = [getElemId(elem["id"])]
     for el in figmadata["document"]["children"][0]["children"]:
         if("#Page" in el["name"]):
             name = el["name"]
-            r, path = getTop(el, childids)
-            print("Matched Path:", " > ".join(path))
+            r, path = False, {}
+            if(iscomponent==True): r, path =getCompTopPath(el, childids)
+            else: r, path =getElemTopPath(el, childids)
+            #print("Matched Path:", " -> ", path)
+            if(elem["type"]!="COMPOENNT" and elem["type"]!="COMPONENT_SET"):
+                event_EmissionPaths[(data["id"],overlayId)] = path
+            elif(parentelem!=None):
+                elid = parentelem["id"]
+                if(parentelem["type"]=="COMPONENT" and "children" in parentelem): elid = parentelem["children"][0]["id"]
+                event_EmissionPaths[(elid,overlayId)] = path
+            else:
+                elid = data["id"]
+                if(data["type"]=="COMPONENT" and "children" in data): elid = data["children"][0]["id"]
+                event_EmissionPaths[(elid,overlayId)] = path
             if(r==True):
                 return name
 
@@ -1265,3 +1301,22 @@ def updateDefaultVariants(data,melement,componentId,variants):
         melement.setNameComponent(name)
         v.setDefaultComponent(getFormatedName(name))
         addVariant(variants,v)
+        
+def countNestedInstances(elem,counter):
+    if elem.get("type") == "INSTANCE":
+        counter += 1
+    if "children" in elem:
+        for ch in elem["children"]:
+            counter = countNestedInstances(ch, counter)
+    return counter
+               
+def orderComponents(l):
+    for elem in l:
+        counter = 0
+        if(elem["type"]=="COMPONENT"):
+            c = countNestedInstances(elem,counter)
+            if(c!=None):
+                elem["nrInstances"] = c
+        else: elem["nrInstances"] = 0
+    components = sorted(l,key=lambda x:x["nrInstances"]) 
+    return components
