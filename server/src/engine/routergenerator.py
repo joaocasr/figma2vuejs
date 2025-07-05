@@ -24,7 +24,7 @@ def generate_routes(name,pages):
             newx["component"]["path"]='/:catchAll(.*)'
             element_routes.remove(x)
             element_routes.append(newx)
-    if(newx==None):
+    if(newx==None and len(pages)>0):
         element_routes.append({
                     "component":{
                         'path': '/:catchAll(.*)',
@@ -143,7 +143,7 @@ def get_Errorpagecss(background):
 	font-style: Regular;
 	font-weight: 400;
 	font-size: 67px;
-	font-family: Inter;
+	font-family: 'Inter', sans-serif;
 	text-align: left;
 	line-height: 80px;
 	color: rgba(0.0,0.0,0.0,1.0);
@@ -164,9 +164,9 @@ def get_Errorpagecss(background):
 	font-style: Regular;
 	font-weight: 400;
 	font-size: 50px;    
-    font-family: Inter;
+    font-family: 'Inter', sans-serif;
 	text-align: left;
-	line-height: 10x;
+	line-height: 10px;
 	color: rgba(0.0,0.0,0.0,1.0);
     grid-column-start: 31;
 	grid-column-end: 68;
@@ -183,7 +183,7 @@ def get_Errorpagecss(background):
 	font-style: Regular;
 	font-weight: 400;
 	font-size: 25px;
-	font-family: Inter;
+	font-family: 'Inter', sans-serif;
 	text-align: left;
 	color: rgba(0.0,0.0,0.0,1.0);
     grid-column-start: 20;

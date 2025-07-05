@@ -20,6 +20,7 @@ componentAssets = dict()
 allrefs = {}
 nestedComponents = {}
 allvariants = []
+componentMethods = {}
 alltransitionodes = []
 allEmissionpaths = {}
 allProps = {}
@@ -131,12 +132,12 @@ def applytransformation(elem,projectname,pagename,idcomponent):
         if("atr"+cssclass in allProps.keys()):
             imgPath = ':src="'+ f"atributes.atr{cssclass}" +'"'
         doesImageExist(elem.getimgpath(),elem,projectname)
-        return ("<"+elem.tag +f" {ref}class="+'"grid-item-'+ idcomponent + ' container'+ cssclass + '" ' + imgPath + ' '.join(d for d in directives) , "/>")
+        return ("<"+elem.tag +f" {ref}class="+'"grid-item-'+ idcomponent + ' container'+ cssclass + '" ' + imgPath +f' alt="container{cssclass}" '+ ' '.join(d for d in directives) , "/>")
     
     if(isinstance(elem, VectorElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         doesImageExist(elem.getsvgpath(),elem,projectname)
-        return ("<"+elem.tag +f" {ref}class="+'"grid-item-'+idcomponent+' container'+ cssclass + '" '+ 'src="' + elem.getsvgpath() + '"' + ' '.join(d for d in directives) , "/>")
+        return ("<"+elem.tag +f" {ref}class="+'"grid-item-'+idcomponent+' container'+ cssclass + '" '+ 'src="' + elem.getsvgpath() + '"' +f' alt="container{cssclass}" '+ ' '.join(d for d in directives) , "/>")
 
     if(isinstance(elem, Mcomponent) and (elem.getNameComponent()=="ReadOnlyRating" or elem.getNameComponent()=="InteractiveRating")):
         useRatingVuetifyPlugin(projectname)
@@ -239,7 +240,8 @@ def applytransformation(elem,projectname,pagename,idcomponent):
     return ("","")
 
 def writeVueComponent(name,project_name,content,component,pagesInfo):
-    global allhooks 
+    global allhooks, componentMethods
+    componentMethods[name] = []
     componentsimports="\n"
     for comp in nestedComponents[name]:
         componentsimports += "import "+getFormatedName(str(comp).capitalize())+" from '@/components/"+getFormatedName(str(comp).capitalize())+".vue';\n" 
@@ -258,7 +260,10 @@ def writeVueComponent(name,project_name,content,component,pagesInfo):
         if("methods" in hook and getKeyEventsFunction(name)!=None):
             pagehooks+=getKeyEventsFunction(name)+","
         for chook in allhooks[name][hook]:
-            if("methods" in hook or "computed" in hook or "watch" in hook): 
+            if("methods" in hook and chook[1] not in componentMethods[name]):
+                pagehooks += chook[1] + ",\n"
+                componentMethods[name].append(chook[1])               
+            if("computed" in hook or "watch" in hook): 
                 pagehooks += chook[1] + ",\n"
             if("mounted" in hook or "setup" in hook or "destroyed" in hook or "beforeUnmount" in hook or "created" in hook): 
                 pagehooks += chook[1] + "\n\n"

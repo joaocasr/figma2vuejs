@@ -22,6 +22,7 @@ auxiliarImports = dict()
 componentAssets = dict()
 allPagesInfo = dict()
 allrefs = {}
+pageMethods = {}
 allvariants = []
 alltransitionodes = []
 allEmissionpaths = {}
@@ -235,11 +236,11 @@ def applytransformation(elem,projectname,page):
         imagepath = 'src="' + elem.getimgpath()  + '"'
         if(belongstoDataObject(cssclass,page)[1]==True):
             imagepath =  ':src="' + f'{belongstoDataObject(cssclass,page)[0]}.atr{cssclass}'+'"'
-        return ("<"+elem.tag+ id + ref +" class="+'"grid-item container'+ cssclass + '" '+ imagepath + ' '.join(d for d in directives) + f"{atributeProps}", "/>")
+        return ("<"+elem.tag+ id + ref +f' alt="container{cssclass}"'+" class="+'"grid-item container'+ cssclass + '" '+ imagepath + ' '.join(d for d in directives) + f"{atributeProps}", "/>")
     if(isinstance(elem, VectorElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         doesImageExist(elem.getsvgpath(),elem,projectname)
-        return ("<"+elem.tag+ id + ref +" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getsvgpath() + '"' + ' '.join(d for d in directives) + f"{atributeProps}", "/>")
+        return ("<"+elem.tag+ id + ref +f' alt="container{cssclass}"'+" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getsvgpath() + '"' + ' '.join(d for d in directives) + f"{atributeProps}", "/>")
     if(isinstance(elem, VideoElement)):
         cssclass= "svideo" + cssclass
         generateVideoCssProperties(projectname,pagename,cssclass,elem)
@@ -274,7 +275,8 @@ def applytransformation(elem,projectname,page):
     return ("","")
 
 def writeVue(name,page,content):
-    global allhooks, components
+    global allhooks, components, pageMethods
+    pageMethods[page.getPagename()] = []
     componentsimports="\n"
     for comp in components[page.getPagename()]:
         componentsimports += "import "+getFormatedName(str(comp).capitalize())+" from '@/components/"+getFormatedName(str(comp).capitalize())+".vue';\n" 
@@ -293,7 +295,10 @@ def writeVue(name,page,content):
         if("methods" in hook and getKeyEventsFunction(page.getPagename())!=None):
             pagehooks+=getKeyEventsFunction(page.getPagename())+","
         for content in allhooks[page.getPagename()][hook]:
-            if("methods" in hook or "computed" in hook or "watch" in hook): 
+            if("methods" in hook and content[1] not in pageMethods[page.getPagename()]):
+                pagehooks += content[1] + ",\n"
+                pageMethods[page.getPagename()].append(content[1])
+            if("computed" in hook or "watch" in hook): 
                 pagehooks += content[1] + ",\n"
             if("mounted" in hook or "setup" in hook or "destroyed" in hook or "beforeUnmount" in hook or "created" in hook): 
                 pagehooks += content[1] + "\n\n"

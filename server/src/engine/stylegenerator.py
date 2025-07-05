@@ -12,6 +12,8 @@ import math
 
 # key: page_name; value: list_of_font_imports -> list(string)
 font_imports = {}
+pageCssproperties = {}
+componentFonts = []
 
 def overwrite_styling(name):
     print("Updating global css properties...")
@@ -50,10 +52,9 @@ def overwrite_styling(name):
   --vt-c-text-light-2: rgba(60, 60, 60, 0.66);
   --vt-c-text-dark-1: var(--vt-c-white);
   --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
-}
-
+  
 /* semantic color variables for this project */
-:root {
+
   --color-background: var(--vt-c-white);
   --color-background-soft: var(--vt-c-white-soft);
   --color-background-mute: var(--vt-c-white-mute);
@@ -166,7 +167,7 @@ def generatePageStyle(name,page):
       f.writelines(lines)
 
 def generateComponentStyle(name,component):
-  global font_imports
+  global font_imports, componentFonts
   idcomponent = getElemId(component.idComponent)
 
   width = component.style.width
@@ -228,6 +229,8 @@ def generateComponentStyle(name,component):
       f.writelines(lines)
 
 def generatePaginatorCssProperties(projectname,pagename,cssclass,elem):
+  global pageCssproperties
+  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
   css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
@@ -247,12 +250,16 @@ def generatePaginatorCssProperties(projectname,pagename,cssclass,elem):
   """
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if os.path.isfile(cssfile):
-    mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
-    f.write(css)
+  if(css not in pageCssproperties[pagename]):
+    if os.path.isfile(cssfile):
+      mode = "a"
+    with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
+      f.write(css)
+    pageCssproperties[pagename].append(css)
 
 def generateFormCssProperties(projectname,pagename,cssclass,elem,formclass,inputclass,btnclass):
+  global pageCssproperties
+  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
   css ="""\n."""+ str(formclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
@@ -286,12 +293,16 @@ def generateFormCssProperties(projectname,pagename,cssclass,elem,formclass,input
 
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if os.path.isfile(cssfile):
-    mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
-    f.write(css)
+  if(css not in pageCssproperties[pagename]):
+    if os.path.isfile(cssfile):
+      mode = "a"
+    with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
+      f.write(css)
+    pageCssproperties[pagename].append(css)
 
 def generateCheckboxCssProperties(projectname,pagename,cssclass,labelclass,elem):
+  global pageCssproperties
+  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
   css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
@@ -315,12 +326,16 @@ def generateCheckboxCssProperties(projectname,pagename,cssclass,labelclass,elem)
     
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if os.path.isfile(cssfile):
-    mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
-    f.write(css)
+  if(css not in pageCssproperties[pagename]):
+    if os.path.isfile(cssfile):
+      mode = "a"
+    with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
+      f.write(css)
+    pageCssproperties[pagename].append(css)
 
 def updateZIndex(projectname,pagename,elem,zindex):
+  global pageCssproperties
+  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
   cssclass=""
   if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.idElement)
   else: cssclass = getElemId(elem.idComponent)
@@ -329,12 +344,16 @@ def updateZIndex(projectname,pagename,elem,zindex):
   }"""
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if os.path.isfile(cssfile):
-    mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
-    f.write(css)
+  if(css not in pageCssproperties[pagename]):
+    if os.path.isfile(cssfile):
+      mode = "a"
+    with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
+      f.write(css)
+    pageCssproperties[pagename].append(css)
   
 def generateVideoCssProperties(projectname,pagename,cssclass,elem):
+  global pageCssproperties
+  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
   css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
@@ -344,12 +363,16 @@ def generateVideoCssProperties(projectname,pagename,cssclass,elem):
   """
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if os.path.isfile(cssfile):
-    mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
-    f.write(css)
+  if(css not in pageCssproperties[pagename]):
+    if os.path.isfile(cssfile):
+      mode = "a"
+    with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
+      f.write(css)
+    pageCssproperties[pagename].append(css)
 
 def generateMenuCssProperties(projectname,pagename,cssclass,elem):
+  global pageCssproperties
+  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
   css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
@@ -361,12 +384,16 @@ def generateMenuCssProperties(projectname,pagename,cssclass,elem):
     css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if os.path.isfile(cssfile):
-    mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
-    f.write(css)
+  if(css not in pageCssproperties[pagename]):
+    if os.path.isfile(cssfile):
+      mode = "a"
+    with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
+      f.write(css)
+    pageCssproperties[pagename].append(css)
 
 def setComponentPositionCSS(projectname,pagename,componentName,elem):
+  global pageCssproperties
+  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
   top="0%"
   left="0%"
   if(elem.style.gridrowStart>=2):
@@ -382,12 +409,16 @@ def setComponentPositionCSS(projectname,pagename,componentName,elem):
 """
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if os.path.isfile(cssfile):
-    mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
-    f.write(css)
+  if(css not in pageCssproperties[pagename]):
+    if os.path.isfile(cssfile):
+      mode = "a"
+    with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
+      f.write(css)
+    pageCssproperties[pagename].append(css)
 
 def generateTransitionAnimation(projectname,pagename,cssclass,transition):
+  global pageCssproperties
+  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
   transform = ""
   if(transition.getDirection()=="RIGHT"):
     transform = "translateX(-100%);"
@@ -410,10 +441,12 @@ def generateTransitionAnimation(projectname,pagename,cssclass,transition):
   """
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if os.path.isfile(cssfile):
-    mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
-    f.write(css)
+  if(css not in pageCssproperties[pagename]):
+    if os.path.isfile(cssfile):
+      mode = "a"
+    with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
+      f.write(css)
+    pageCssproperties[pagename].append(css)
 
 def getCurve(curve):
   function = ""
@@ -425,6 +458,8 @@ def getCurve(curve):
   return function
   
 def generateVueSelectCssProperties(projectname,pagename,cssclass,elem):
+  global pageCssproperties
+  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
   css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
@@ -452,12 +487,16 @@ div:deep(."""+ str(cssclass) + """ .v-field__outline) {
 
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if os.path.isfile(cssfile):
-    mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
-    f.write(css)
+  if(css not in pageCssproperties[pagename]):
+    if os.path.isfile(cssfile):
+      mode = "a"
+    with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
+      f.write(css)
+    pageCssproperties[pagename].append(css)
 
 def generateInputSearchFilterCssProperties(projectname,pagename,cssclass,elem):
+  global pageCssproperties
+  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
   css ="""\n."""+ str(cssclass) + """ {
     position: relative;  
     display: flex;       
@@ -484,12 +523,16 @@ def generateInputSearchFilterCssProperties(projectname,pagename,cssclass,elem):
     css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if os.path.isfile(cssfile):
-    mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
-    f.write(css)
+  if(css not in pageCssproperties[pagename]):
+    if os.path.isfile(cssfile):
+      mode = "a"
+    with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
+      f.write(css)
+    pageCssproperties[pagename].append(css)
 
 def generateSliderCssProperties(projectname,pagename,cssclass,elem):
+  global pageCssproperties
+  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
   css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
@@ -511,12 +554,16 @@ div:deep(."""+str(cssclass)+""" .p-slider-handle){
     css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if os.path.isfile(cssfile):
-    mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
-    f.write(css)
+  if(css not in pageCssproperties[pagename]):
+    if os.path.isfile(cssfile):
+      mode = "a"
+    with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
+      f.write(css)
+    pageCssproperties[pagename].append(css)
 
 def generateTableCssProperties(projectname,pagename,cssclass,elem):
+  global pageCssproperties
+  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []  
   css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
@@ -536,12 +583,16 @@ def generateTableCssProperties(projectname,pagename,cssclass,elem):
     css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if os.path.isfile(cssfile):
-    mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
-    f.write(css)
+  if(css not in pageCssproperties[pagename]):
+    if os.path.isfile(cssfile):
+      mode = "a"
+    with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
+      f.write(css)
+    pageCssproperties[pagename].append(css)
 
 def generateRatingCssProperties(projectname,pagename,cssclass,elem):
+  global pageCssproperties
+  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
   css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
@@ -554,12 +605,16 @@ def generateRatingCssProperties(projectname,pagename,cssclass,elem):
   mode = "w"
   if(elem.style.getgridArea()!=None):
     css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
-  if os.path.isfile(cssfile):
-    mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
-    f.write(css)
+  if(css not in pageCssproperties[pagename]):
+    if os.path.isfile(cssfile):
+      mode = "a"
+    with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
+      f.write(css)
+    pageCssproperties[pagename].append(css)
 
 def generateDatePickerCssProperties(projectname,pagename,cssclass,elem):
+  global pageCssproperties
+  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
   css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
@@ -583,12 +638,16 @@ def generateDatePickerCssProperties(projectname,pagename,cssclass,elem):
     css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if os.path.isfile(cssfile):
-    mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
-    f.write(css)
+  if(css not in pageCssproperties[pagename]):
+    if os.path.isfile(cssfile):
+      mode = "a"
+    with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
+      f.write(css)
+    pageCssproperties[pagename].append(css)
 
 def generateScrollCSS(projectname,pagename,cssclass,elem):
+  global pageCssproperties
+  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
   if(elem.style.getOverflowDirection()=="HORIZONTAL"):
     css=""".scroll-wrapper"""+ str(cssclass) +""" {
     overflow-x: auto;
@@ -635,12 +694,16 @@ def generateScrollCSS(projectname,pagename,cssclass,elem):
     css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if os.path.isfile(cssfile):
-    mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
-    f.write(css)
+  if(css not in pageCssproperties[pagename]):
+    if os.path.isfile(cssfile):
+      mode = "a"
+    with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
+      f.write(css)
+    pageCssproperties[pagename].append(css)
 
 def generateShapeCSS(projectname,pagename,cssclass,type,elem):
+  global pageCssproperties
+  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
   clippath=""
   if(type=="STAR"):
     clippath = "polygon(50% 0,79% 90%,2% 35%,98% 35%,21% 90%)"
@@ -674,7 +737,6 @@ def generateShapeCSS(projectname,pagename,cssclass,type,elem):
     grid-row-end: """+  str(elem.style.gridrowEnd)+""";
     background: """+  str(elem.style.background)+""";
     height: 1px;
-    border: 0;
     padding: 0;
     """
   if(elem.style.getBackground()!=None): css+="background:"+elem.style.getBackground()+";\n\t"
@@ -692,13 +754,17 @@ def generateShapeCSS(projectname,pagename,cssclass,type,elem):
   if(elem.style.getOpacity() != None): css+=f"opacity: {elem.style.getOpacity()};"+'\n\t'
   if(elem.style.getBorderColor()!=None):
     css+="    border: solid;\n"+'    '+ f"border-color: {elem.style.getBorderColor()};"+'    '+ f"border-radius: {elem.style.getborderRadius()}px;"+'    '+ f"border-width: {elem.style.getborderWidth()}px;"+'\n'
+  else:
+    css+="  border: 0;"
   css = css + "}"
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if os.path.isfile(cssfile):
-    mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
-    f.write(css)
+  if(css not in pageCssproperties[pagename]):
+    if os.path.isfile(cssfile):
+      mode = "a"
+    with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
+      f.write(css)
+    pageCssproperties[pagename].append(css)
 
 def generateShapeShadowCSS(projectname,pagename,cssclass,elem):
   css ="""\n."""+ cssclass + """ {
@@ -711,13 +777,16 @@ def generateShapeShadowCSS(projectname,pagename,cssclass,elem):
   """
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if os.path.isfile(cssfile):
-    mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
-    f.write(css)
+  if(css not in pageCssproperties[pagename]):
+    if os.path.isfile(cssfile):
+      mode = "a"
+    with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
+      f.write(css)
+    pageCssproperties[pagename].append(css)
 
 def generateElemCssProperties(projectname,pagename,cssclass,elem):
-  global font_imports
+  global font_imports, pageCssproperties
+  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
   csskeyvalues = ""
   css = ""
   newline = '\n\t'
@@ -725,8 +794,7 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     if elem.style.fontStyle != None: csskeyvalues+=f"font-style: {elem.style.fontStyle};{newline}"
     if elem.style.fontWeight != None: csskeyvalues+=f"font-weight: {elem.style.fontWeight};{newline}"
     if elem.style.fontSize != None: csskeyvalues+=f"font-size: {elem.style.fontSize};{newline}"
-    if elem.style.opacity != None: csskeyvalues+=f"opacity: {elem.style.opacity};{newline}"
-    if elem.style.fontFamily != None: csskeyvalues+=f"font-family: {elem.style.fontFamily};{newline}"
+    if elem.style.fontFamily != None: csskeyvalues+=f"font-family: '{elem.style.fontFamily}', {getFontFallback(elem.style.fontFamily)};{newline}"
     if elem.style.textHorizontalAlign != None: csskeyvalues+=f"text-align: {elem.style.textHorizontalAlign.lower()};{newline}"
     if elem.style.lineHeight != None: csskeyvalues+=f"line-height: {str(elem.style.lineHeight)};{newline}"
     if elem.style.color != None: csskeyvalues+=f"color: {elem.style.color};{newline}"
@@ -826,10 +894,13 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if os.path.isfile(cssfile):
-    mode = "a"
-  with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
-    f.write(css)
+  if(css not in pageCssproperties[pagename]):
+    if os.path.isfile(cssfile):
+      mode = "a"
+    with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
+      f.write(css)
+    pageCssproperties[pagename].append(css)
+    
 
 
 def calculate_lineargradientDegree(points,colors):
@@ -892,3 +963,44 @@ def calculate_angulargradientDegree(points,colors):
   angulargradient=angulargradient[:-2]
   angulargradient+=");"
   return angulargradient
+
+font_fallbacks = {
+  "Poppins": "sans-serif",
+  "Roboto": "sans-serif",
+  "Open Sans": "sans-serif",
+  "Helvetica Neue": "sans-serif",
+  "Arial": "sans-serif",
+  "Actor": "sans-serif",
+  "Inter": "sans-serif",
+  "Segoe UI": "sans-serif",
+  "San Francisco": "sans-serif",
+  "Alegreya Sans": "sans-serif",
+  "Alegreya Sans SC": "sans-serif",
+  "Ubuntu": "sans-serif",
+  "Lato": "sans-serif",
+  "Raleway": "sans-serif",
+  "Abel": "sans-serif",
+  "Georgia": "serif",
+  "Merriweather": "serif",
+  "Times New Roman": "serif",
+  "Playfair Display": "serif",
+  "Courier New": "monospace",
+  "Fira Code": "monospace",
+  "Source Code Pro": "monospace",
+  "Consolas": "monospace",
+  "Roboto Mono": "monospace",
+  "Monaco": "monospace",
+  "Ubuntu Mono": "monospace",
+  "Pacifico": "cursive",
+  "Dancing Script": "cursive",
+  "Brush Script MT": "cursive",
+  "Great Vibes": "cursive",
+  "Satisfy": "cursive",
+  "Papyrus": "fantasy",
+  "Jokerman": "fantasy",
+  "Impact": "fantasy",
+}
+
+def getFontFallback(font):
+  global font_fallbacks
+  return font_fallbacks.get(font, "sans-serif")  

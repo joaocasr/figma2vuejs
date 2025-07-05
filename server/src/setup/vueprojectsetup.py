@@ -117,7 +117,7 @@ def updatingPluginFiles(name):
 def updateAppVue(name):
     print("Removing boilerplate code from App.vue...")
     appvue = """<script setup>
-import { RouterLink, RouterView } from 'vue-router'
+import { RouterView } from 'vue-router'
 </script>
 
 <template>

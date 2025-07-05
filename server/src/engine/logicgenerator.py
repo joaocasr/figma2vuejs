@@ -28,6 +28,7 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,all
     if(pagename not in keyEvents): keyEvents[pagename] = {}
     elemBehaviour = [[],None]
     elementid = elem.idElement if isinstance(elem,Melement) else elem.idComponent
+    methodName = ""
     # SWAP ACTIONS
     if(elementid in swapDestinationIds):
         elemBehaviour[0].append(f'v-if="showswaped{getElemId(elementid)}"')
@@ -108,28 +109,28 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,all
                     elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                     elemBehaviour[1] = hooks
                 if(interaction.getInteractionType()==InteractionElement.Interaction.ONMOUSEDOWN):
-                    elemBehaviour[0].pop()
+                    if(len(elemBehaviour[0])>0): elemBehaviour[0].pop()
                     if(interaction.getTimeout()>0):
                         insertFunction("methods",hooks,"delayed"+methodName,getdelayedFunction(methodName,interaction.getTimeout())) 
                         methodName="delayed"+methodName                   
                     elemBehaviour[0].append('v-on:mousedown="'+methodName+'()"')                    
                     elemBehaviour[1] = hooks
                 if(interaction.getInteractionType()==InteractionElement.Interaction.ONMOUSEUP):
-                    elemBehaviour[0].pop()
+                    if(len(elemBehaviour[0])>0): elemBehaviour[0].pop()
                     if(interaction.getTimeout()>0):
                         insertFunction("methods",hooks,"delayed"+methodName,getdelayedFunction(methodName,interaction.getTimeout())) 
                         methodName="delayed"+methodName                   
                     elemBehaviour[0].append('v-on:mouseup="'+methodName+'()"')                    
                     elemBehaviour[1] = hooks
                 if(interaction.getInteractionType()==InteractionElement.Interaction.ONMOUSEENTER):
-                    elemBehaviour[0].pop()
+                    if(len(elemBehaviour[0])>0): elemBehaviour[0].pop()
                     if(interaction.getTimeout()>0):
                         insertFunction("methods",hooks,"delayed"+methodName,getdelayedFunction(methodName,interaction.getTimeout())) 
                         methodName="delayed"+methodName                   
                     elemBehaviour[0].append('v-on:mouseenter="'+methodName+'()"')                    
                     elemBehaviour[1] = hooks
                 if(interaction.getInteractionType()==InteractionElement.Interaction.ONMOUSELEAVE):
-                    elemBehaviour[0].pop()
+                    if(len(elemBehaviour[0])>0): elemBehaviour[0].pop()
                     if(interaction.getTimeout()>0):
                         insertFunction("methods",hooks,"delayed"+methodName,getdelayedFunction(methodName,interaction.getTimeout())) 
                         methodName="delayed"+methodName                   
@@ -137,14 +138,14 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,all
                     elemBehaviour[1] = hooks
                 if(interaction.getInteractionType()==InteractionElement.Interaction.AFTERTIMEOUT):
                     insertFunction("created",hooks,methodName,getTimeoutFunction(methodName,interaction))
-                    elemBehaviour[0].pop()
+                    if(len(elemBehaviour[0])>0): elemBehaviour[0].pop()
                     elemBehaviour[1] = hooks                    
                 if(interaction.getInteractionType()==InteractionElement.Interaction.ONDRAG):
-                    elemBehaviour[0].pop()
+                    if(len(elemBehaviour[0])>0): elemBehaviour[0].pop()
                     elemBehaviour[0].append('draggable="true" @dragstart="'+methodName+'()"')                    
                     elemBehaviour[1] = hooks                    
                 if(interaction.getInteractionType()==InteractionElement.Interaction.ONKEYDOWN):
-                    elemBehaviour[0].pop()
+                    if(len(elemBehaviour[0])>0): elemBehaviour[0].pop()
                     if("mounted" not in hooks or getKeyEventListenerMounted() not in hooks["mounted"]): hooks.setdefault("mounted", []).append(getKeyEventListenerMounted())
                     if("beforeUnmount" not in hooks or getKeyEventListenerUnMounted() not in hooks["beforeUnmount"]): hooks.setdefault("beforeUnmount", []).append(getKeyEventListenerUnMounted())
                     setKeyCodesMethods(interaction.getKeyCodes(),pagename,"this."+methodName+"();")
@@ -478,10 +479,12 @@ def getComponentVariant(id,variants):
     return None
 
 def changeToHoveredFunction(elem,destelem):
-    function = """\t\t""" + f"changeToHovered{getElemId(elem.idComponent)}()"+"{" + f"""
-            this.selectedClass{getElemId(elem.idComponent)}=this.componentclass{getElemId(destelem.idComponent)};
-            this.currentVariant{getElemId(elem.idComponent)}= '{getFormatedName(destelem.getNameComponent()).lower()}'
-"""+"\t\t}"
+    function = ""
+    if(destelem!=None):
+        function = """\t\t""" + f"changeToHovered{getElemId(elem.idComponent)}()"+"{" + f"""
+                this.selectedClass{getElemId(elem.idComponent)}=this.componentclass{getElemId(destelem.idComponent)};
+                this.currentVariant{getElemId(elem.idComponent)}= '{getFormatedName(destelem.getNameComponent()).lower()}'
+    """+"\t\t}"
     return function
 
 def changeToDefaultFunction(elem,destelem):
@@ -581,7 +584,7 @@ def handleVariants(elem,variants,hooks,elemBehaviour,allPagesInfo,beginElem=None
                 elemBehaviour[0].extend([f'@mouseover="changeToHovered{getElemId(elem.idComponent)}"',f'@mouseleave="changeToDefault{getElemId(elem.idComponent)}"'])
                 hooks.setdefault("methods", []).append((f'changeToHovered{getElemId(elem.idComponent)}',changeToHoveredFunction(elem,destelem)))
                 hooks.setdefault("methods", []).append((f'changeToDefault{getElemId(elem.idComponent)}',changeToDefaultFunction(elem,destelem)))
-                if(len(destelem.interactions)>0):
+                if(destelem!=None and len(destelem.interactions)>0):
                     handleVariants(destelem,variants,hooks,elemBehaviour,allPagesInfo,elem)
                 elemBehaviour[1] = hooks
             if(isinstance(a,ChangeAction) and i.getInteractionType()==InteractionElement.Interaction.ONCLICK and len(destelem.interactions)>=0):
@@ -641,6 +644,8 @@ def checkOverlayTrigger(id):
     global allEmissions
     for pair in allEmissions:
         if(id==pair[0] and isAllFrame(allEmissions[pair])==True):
+            return(getElemId(pair[0]),getElemId(pair[1]),True)
+        if(getElemId(id)==getElemId(pair[0]) and len(allEmissions[pair])>0 and len(allEmissions[pair])==2 and getElemId(allEmissions[pair][len(allEmissions[pair])-1][3])==getElemId(id)):
             return(getElemId(pair[0]),getElemId(pair[1]),True)
         if(getElemId(id)==getElemId(pair[0]) and len(allEmissions[pair])>0 and len(allEmissions[pair])>=2):
             return(getElemId(pair[0]),getElemId(pair[1]),False)
