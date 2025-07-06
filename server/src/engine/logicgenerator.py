@@ -104,7 +104,7 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,all
                     originid = getElemId(elem.getIdElement())
                     # in order to capture the emit signals close-from222310-to22238
                     shareableEvents.setdefault(elem.getupperIdComponent(), []).append(("close-from"+str(originid)+"-to"+str(destinationid),"show"+destinationid+'=false','v-if="show'+destinationid+'==true"'))
-                    methodName = "close"+destinationid
+                    methodName = "close"+originid+destinationid
                     insertFunction("methods",hooks,methodName,closeOverlay(methodName,"close-from"+str(originid)+"-to"+str(destinationid)))
                     elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                     elemBehaviour[1] = hooks
@@ -223,7 +223,7 @@ def getPageById(id,allPages):
     return ""
 
 def getNavigationFunction(name,destination):
-    function = """\t\t""" + name + "(){" + """
+    function = """        """ + name + "(){" + """
             this.$router.push({path:"/""" + destination.lower() + """"});
         }""" 
     return function
@@ -354,14 +354,14 @@ def showOverlayonHover(name,variable):
 def insertDropdownLogic(dropdownid,hooks,elemBehaviour):
     
     hooks.setdefault("methods", []).append(('getDropdownOptions'+str(dropdownid),getpopulateDropdownFunction('getDropdownOptions'+str(dropdownid),'allOptionValues'+str(dropdownid),'allOptions'+str(dropdownid))))
-    hooks.setdefault("mounted", []).append(('getDropdownOptions'+str(dropdownid),"        this."+'getDropdownOptions'+str(dropdownid)+"();"))
+    hooks.setdefault("mounted", []).append(('getDropdownOptions'+str(dropdownid),"          this."+'getDropdownOptions'+str(dropdownid)+"();"))
     elemBehaviour[1] = hooks
     return elemBehaviour
 
 def insertCheckboxLogic(checkboxid,hooks,elemBehaviour):
     
     hooks.setdefault("methods", []).append(('getCheckboxOptions'+str(checkboxid),getpopulateCheckboxFunction('getCheckboxOptions'+str(checkboxid),'boxesValues'+str(checkboxid),'boxes'+str(checkboxid))))
-    hooks.setdefault("mounted", []).append(('getCheckboxOptions'+str(checkboxid),"        this."+'getCheckboxOptions'+str(checkboxid)+"();"))
+    hooks.setdefault("mounted", []).append(('getCheckboxOptions'+str(checkboxid),"          this."+'getCheckboxOptions'+str(checkboxid)+"();"))
     elemBehaviour[1] = hooks
     return elemBehaviour
 
@@ -377,8 +377,8 @@ def insertMenuLogic(elem,allPagesInfo,hooks,elemBehaviour):
     return elemBehaviour
 
 def handleScrollBehaviour(elem,hooks,elemBehaviour):
-    mountedFunction = f'        window.addEventListener("mouseup", this.onMouseUp{getElemId(elem.idElement)});'
-    destroyedFunction = f'      window.removeEventListener("mouseup", this.onMouseUp{getElemId(elem.idElement)});'
+    mountedFunction = f'          window.addEventListener("mouseup", this.onMouseUp{getElemId(elem.idElement)});'
+    destroyedFunction = f'          window.removeEventListener("mouseup", this.onMouseUp{getElemId(elem.idElement)});'
 
     hooks.setdefault("mounted", []).append((f"getMountedFunction{getElemId(elem.idElement)}",mountedFunction))
     hooks.setdefault("destroyed", []).append((f"getDestroyedFunction{getElemId(elem.idElement)}",destroyedFunction))
@@ -426,7 +426,7 @@ def getDatatableValuesFunction(tableid,values):
 
 def insertTableLogic(elem,allPagesInfo,hooks,elemBehaviour):
     hooks.setdefault("methods", []).append((f'getDatatableValues{getElemId(elem.idComponent)}',getDatatableValuesFunction(getElemId(elem.idComponent),elem.values)))
-    hooks.setdefault("mounted", []).append((f'getDatatableValues{getElemId(elem.idComponent)}',f"        this.getDatatableValues{getElemId(elem.idComponent)}();"))
+    hooks.setdefault("mounted", []).append((f'getDatatableValues{getElemId(elem.idComponent)}',f"          this.getDatatableValues{getElemId(elem.idComponent)}();"))
     elemBehaviour[1] = hooks
     return elemBehaviour
 
@@ -463,8 +463,8 @@ def addSetAnimationVarFunction(allhooks,pagename):
     return function
 
 def getVariantVariables(elem,id):
-    return f"""            this.selectedClass{id} = this.componentclass{id};
-            this.currentVariant{id} = '{getFormatedName(elem.getNameComponent()).lower()}';"""
+    return f"""          this.selectedClass{id} = this.componentclass{id};
+          this.currentVariant{id} = '{getFormatedName(elem.getNameComponent()).lower()}';"""
     
 def declareMountedVariables(elem,hooks,elemBehaviour):
     hooks.setdefault("mounted", []).append((f'getVariantVariables{getElemId(elem.idComponent)}',getVariantVariables(elem,getElemId(elem.idComponent))))

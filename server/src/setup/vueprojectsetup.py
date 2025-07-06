@@ -1,3 +1,4 @@
+from engine.stylegenerator import overwrite_styling
 import subprocess
 import os
 
@@ -9,6 +10,7 @@ def setup_project(name):
   global allDependencies
   allDependencies = {}
   create_project(name)
+  overwrite_styling(name)
   remove_boilerview(name)
   remove_boilercomponents(name,0)
   updateAppVue(name)
@@ -35,6 +37,8 @@ def create_project(name):
         updateAppVue(name)
         print("Updating vite.config")
         viteconfig(name)
+        print("Overwrite global styling.")
+        overwrite_styling(name)
         print("updating plugin files")
         createPluginFiles(name)
         print("Create toast store...")

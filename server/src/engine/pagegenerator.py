@@ -244,7 +244,7 @@ def applytransformation(elem,projectname,page):
     if(isinstance(elem, VideoElement)):
         cssclass= "svideo" + cssclass
         generateVideoCssProperties(projectname,pagename,cssclass,elem)
-        return (f'<div {id}{ref}class="{cssclass}"><iframe width="{elem.style.getwidth()}px" height="{elem.style.getheight()}px" controls=1 src="{elem.getSrc()}">',"</iframe></div>")
+        return (f'<div {id}{ref}class="{cssclass}"><iframe title="{cssclass}" width="{elem.style.getwidth()}px" height="{elem.style.getheight()}px" controls=1 src="{elem.getSrc()}">',"</iframe></div>")
     if(isinstance(elem, ShapeElement)):
         cssclassifier = ""
         cssclassifier = elem.getType().lower() + str(cssclass)

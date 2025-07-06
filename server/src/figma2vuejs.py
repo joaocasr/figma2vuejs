@@ -1,5 +1,4 @@
 from setup.vueprojectsetup import setup_project, buildDependenciesScript, updateMainJSfile, updatingPluginFiles
-from engine.stylegenerator import overwrite_styling
 from engine.routergenerator import generate_routes
 from engine.variantgenerator import writeVariantComponent
 from engine.gridgenerator import generateGridTemplate
@@ -8,6 +7,7 @@ from engine.componentgenerator import buildcomponent
 from parser.modelconverter import getFigmaData,extractImages,extractSVGs
 from parser.model.VariantComponent import VariantComponent
 from fastapi.middleware.cors import CORSMiddleware
+from engine.stylegenerator import StyleGenerator
 
 from typing import Optional
 from fastapi import FastAPI,HTTPException
@@ -60,13 +60,13 @@ def convert_prototype(testfile=None):
   # project setup
   try:
     setup_project(project_name)
-    overwrite_styling(project_name)
   except Exception as e:
     pass
 
   extractImages(project_name,FIGMA_API_KEY,FILE_KEY)
   extractSVGs(project_name,FIGMA_API_KEY,FILE_KEY)
-
+  StyleGenerator()
+  
   # generate routes to the vue pages
   generate_routes(project_name,allpages)
 
@@ -104,6 +104,7 @@ def convert_prototype(testfile=None):
   buildDependenciesScript(project_name)
   updateMainJSfile(project_name)
   updatingPluginFiles(project_name)
+  return project_name
 
 load_variables()    
 
@@ -167,8 +168,8 @@ def convert_figma2vue(nr:int,userinfo: UserInfo = None):
     f = "../tests/prototype"+str(nr)+".json"
     with open(f,"r") as file:
         data = json.load(file)
-    convert_prototype(data)
-    return "Conversion done!"
+    projectname = convert_prototype(data)
+    return projectname
 
 @app.get("/download")
 def download_file(path: str):

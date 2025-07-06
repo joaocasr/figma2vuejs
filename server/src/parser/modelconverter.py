@@ -69,6 +69,8 @@ def getFigmaData(data):
     pageOverlays = {}
     overlayTriggers = []
     scrollElements = {}
+    transition_nodeIds = []
+    event_EmissionPaths = {}
     variants = []
     allimages = []
     allsvgs = []

@@ -8,10 +8,12 @@ def getPrimeVueForm(elem,formid,inputsinfo,buttontext):
     nr_input = 0
     for minput in inputsinfo:
       nr_input+=1
+      label = ""
       if("label" in minput):
-        template+=f'<label class="label{formid}" for="input{nr_input}{formid}">{minput["label"]["text"]}</label><br>'
+        label=f'<label class="label{formid}" for="input{nr_input}{formid}">{minput["label"]["text"]}</label><br>'
       template+=f'''<div class="inputform{formid}">
-                <InputText name="input{nr_input}{formid}" type="text" placeholder="{minput["placeholder"]}" fluid />
+                {label}
+                <InputText id="input{nr_input}{formid}" name="input{nr_input}{formid}" type="text" placeholder="{minput["placeholder"]}" fluid />
                 '''+f'''<Message v-if="'''+f'$form{formid}.input{nr_input}{formid}?.invalid" severity="error" size="small" variant="simple">'+'{{'+f'$form{formid}.input{nr_input}{formid}?.error.message'+'}}'+"""</Message> 
             </div>
             """

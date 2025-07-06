@@ -31,7 +31,9 @@ def overwrite_styling(name):
         f= open(filemain,"w")
         f.write(maincss)
         f.close()
-        basecss= """/* color palette from <https://github.com/vuejs/theme> */
+    else:
+        raise Exception("main.css file not found!")
+    basecss= """/* color palette from <https://github.com/vuejs/theme> */
 :root {
   --vt-c-white: #ffffff;
   --vt-c-white-soft: #f8f8f8;
@@ -53,7 +55,7 @@ def overwrite_styling(name):
   --vt-c-text-dark-1: var(--vt-c-white);
   --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
   
-/* semantic color variables for this project */
+  /* semantic color variables for this project */
 
   --color-background: var(--vt-c-white);
   --color-background-soft: var(--vt-c-white-soft);
@@ -94,8 +96,6 @@ body {
   margin:0px;
 }
 """
-    else:
-        raise Exception("main.css file not found!")
     filebase = "../output/"+name+"/src/assets/base.css"
     if os.path.isfile(filebase):
         f= open(filebase,"w")
@@ -656,7 +656,6 @@ def generateScrollCSS(projectname,pagename,cssclass,elem):
     cursor: grab;
     user-select: none;
   	display: grid;
-    overflow: auto;
     width: """+  str(elem.style.width) +"""px;
     height: """+  str(elem.style.height) +"""px;
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
@@ -676,7 +675,6 @@ def generateScrollCSS(projectname,pagename,cssclass,elem):
     white-space: nowrap;
     cursor: grab;
   	display: block;
-    overflow: auto;
     user-select: none;
     width: """+  str(elem.style.width) +"""px;
     height: """+  str(elem.style.height) +"""px;
@@ -727,7 +725,8 @@ def generateShapeCSS(projectname,pagename,cssclass,type,elem):
     clip-path: """+  str(clippath)+ """;
     """
   css+="""height: """+  str(elem.style.height) + """px;
-    width: """+  str(elem.style.width) + """px;"""
+    width: """+  str(elem.style.width) + """px;
+  """
 
   if(type=="LINE"):
     css ="""\n."""+ str(cssclass) + """ {
@@ -739,7 +738,7 @@ def generateShapeCSS(projectname,pagename,cssclass,type,elem):
     height: 1px;
     padding: 0;
     """
-  if(elem.style.getBackground()!=None): css+="background:"+elem.style.getBackground()+";\n\t"
+  if(elem.style.getBackground()!=None): css+="background:"+elem.style.getBackground()+"\n\t"
   if(elem.style.getBackgroundColor()!=None): css+="background-color:"+elem.style.getBackgroundColor()+";\n\t"
   if(elem.style.getborderRadius()!=None): css+="border-radius:"+elem.style.getborderRadius()+"px;\n\t"
   if(elem.style.transform!=None): css+="transform: rotate("+elem.style.getTransform()+");\n\t"
@@ -753,7 +752,7 @@ def generateShapeCSS(projectname,pagename,cssclass,type,elem):
     css+=f"display: block;"+'\n\t'
   if(elem.style.getOpacity() != None): css+=f"opacity: {elem.style.getOpacity()};"+'\n\t'
   if(elem.style.getBorderColor()!=None):
-    css+="    border: solid;\n"+'    '+ f"border-color: {elem.style.getBorderColor()};"+'    '+ f"border-radius: {elem.style.getborderRadius()}px;"+'    '+ f"border-width: {elem.style.getborderWidth()}px;"+'\n'
+    css+="    border: solid;\n"+'    '+ f"border-color: {elem.style.getBorderColor()};"+'\n    '+ f"border-width: {elem.style.getborderWidth()}px;"+'\n'
   else:
     css+="  border: 0;"
   css = css + "}"
@@ -1000,6 +999,12 @@ font_fallbacks = {
   "Jokerman": "fantasy",
   "Impact": "fantasy",
 }
+
+def StyleGenerator():
+  global font_imports, pageCssproperties, componentFonts 
+  font_imports = {}
+  pageCssproperties = {}
+  componentFonts = []
 
 def getFontFallback(font):
   global font_fallbacks
