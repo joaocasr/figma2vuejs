@@ -279,7 +279,8 @@ def insertSliderLogic(idSlider,hooks,elemBehaviour):
     sliderFunction = f"""slider{idSlider}"""+"""(newvalue,oldvalue){
             const toastStore = useToastStore();
             let message = "Slider value: "+newvalue            
-            toastStore.showInfo(message);   
+            /* Here we are displaying the value changed from the Slider component into the Toast from our toast pinia store.*/   
+            toastStore.showInfo(message);
         }
 """
     hooks.setdefault("watch", []).append((f"slider{idSlider}",sliderFunction))
@@ -300,6 +301,7 @@ def insertFormLogic(idform,inputs,hooks,elemBehaviour):
     function+=f"""
         const resolver{idform} = ("""+"{ values }) => {"+"""
             const errors = {};
+            /*Here you can adapt the code to check if the input text fulfills some criteria and show the error message. */
         """
     nr_input = 0
     for i in inputs:
@@ -318,11 +320,12 @@ def insertFormLogic(idform,inputs,hooks,elemBehaviour):
     toastFunction =f"""onFormSubmit{idform}(data)"""+""" {
         const toastStore = useToastStore();
         let message = ""
-        if(data.valid==true){
+        /*Here you can adapt the code to change the toast message or you can send data to the backend by doing a POST or PUT request. */
+        if(data.valid){
             message = "The form was successfully submited!"            
             toastStore.showSuccess(message);
         }
-        if(data.valid==false){
+        if(!data.valid){
             message = "Error in form submission!"            
             toastStore.showError(message);
         }

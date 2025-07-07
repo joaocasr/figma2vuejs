@@ -13,7 +13,7 @@ import math
 # key: page_name; value: list_of_font_imports -> list(string)
 font_imports = {}
 pageCssproperties = {}
-componentFonts = []
+componentFonts = {}
 
 def overwrite_styling(name):
     print("Updating global css properties...")
@@ -167,7 +167,8 @@ def generatePageStyle(name,page):
       f.writelines(lines)
 
 def generateComponentStyle(name,component):
-  global font_imports, componentFonts
+  global font_imports, componentFonts,pageCssproperties
+  if(getFormatedName(component.componentName.lower()) not in pageCssproperties): pageCssproperties[getFormatedName(component.componentName.lower())]= []
   idcomponent = getElemId(component.idComponent)
 
   width = component.style.width
@@ -215,22 +216,42 @@ def generateComponentStyle(name,component):
   newcsscontent=""
   if component.componentName in font_imports:
     for font in font_imports[component.componentName]:
-      newcsscontent += '@import url(' + '"' + font + '");\n'
+      if(getFormatedName(component.componentName) not in componentFonts): componentFonts[getFormatedName(component.componentName)] = [font]
+      if(font not in componentFonts[getFormatedName(component.componentName)]): componentFonts[getFormatedName(component.componentName)].append(font)
+      #if(font not in componentFonts[component.componentName]): newcsscontent += '@import url(' + '"' + font + '");\n'
   newcsscontent += css
   cssfile="../output/"+name+"/src/assets/"+getFormatedName(component.componentName.lower())+".css"
   if not os.path.isfile(cssfile):
-    with open(cssfile,"w") as f:
-      f.write(newcsscontent)
+    if(newcsscontent not in pageCssproperties[getFormatedName(component.componentName.lower())]):
+      with open(cssfile,"w") as f:
+        f.write(newcsscontent)
+      pageCssproperties[getFormatedName(component.componentName.lower())].append(newcsscontent)
   else:
-    with open(cssfile,"r+") as f:
-      lines = f.readlines()  
-      lines.insert(0, newcsscontent)
-      f.seek(0)   
-      f.writelines(lines)
+    if(newcsscontent not in pageCssproperties[getFormatedName(component.componentName.lower())]):
+      with open(cssfile,"r+") as f:
+        lines = f.readlines()  
+        lines.insert(0, newcsscontent)
+        f.seek(0)   
+        f.writelines(lines)
+      pageCssproperties[getFormatedName(component.componentName.lower())].append(newcsscontent)
 
+def insertComponentsFonts(projectname):
+  global componentFonts
+  for name in componentFonts:
+    fonts = ""
+    for font in componentFonts[name]:
+      fonts += '@import url(' + '"' + font + '");\n'
+    cssfile="../output/"+projectname+"/src/assets/"+getFormatedName(name.lower())+".css"
+    if os.path.isfile(cssfile):
+      with open(cssfile,"r+") as f:
+        lines = f.readlines()  
+        lines.insert(0, fonts)
+        f.seek(0)   
+        f.writelines(lines)
+    
 def generatePaginatorCssProperties(projectname,pagename,cssclass,elem):
   global pageCssproperties
-  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
+  if(getFormatedName(pagename.lower()) not in pageCssproperties): pageCssproperties[getFormatedName(pagename.lower())]= []
   css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
@@ -250,16 +271,16 @@ def generatePaginatorCssProperties(projectname,pagename,cssclass,elem):
   """
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if(css not in pageCssproperties[pagename]):
+  if(css not in pageCssproperties[getFormatedName(pagename.lower())]):
     if os.path.isfile(cssfile):
       mode = "a"
     with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
       f.write(css)
-    pageCssproperties[pagename].append(css)
+    pageCssproperties[getFormatedName(pagename.lower())].append(css)
 
 def generateFormCssProperties(projectname,pagename,cssclass,elem,formclass,inputclass,btnclass):
   global pageCssproperties
-  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
+  if(getFormatedName(pagename.lower()) not in pageCssproperties): pageCssproperties[getFormatedName(pagename.lower())]= []
   css ="""\n."""+ str(formclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
@@ -293,16 +314,16 @@ def generateFormCssProperties(projectname,pagename,cssclass,elem,formclass,input
 
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if(css not in pageCssproperties[pagename]):
+  if(css not in pageCssproperties[getFormatedName(pagename.lower())]):
     if os.path.isfile(cssfile):
       mode = "a"
     with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
       f.write(css)
-    pageCssproperties[pagename].append(css)
+    pageCssproperties[getFormatedName(pagename.lower())].append(css)
 
 def generateCheckboxCssProperties(projectname,pagename,cssclass,labelclass,elem):
   global pageCssproperties
-  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
+  if(getFormatedName(pagename.lower()) not in pageCssproperties): pageCssproperties[getFormatedName(pagename.lower())]= []
   css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
@@ -326,16 +347,16 @@ def generateCheckboxCssProperties(projectname,pagename,cssclass,labelclass,elem)
     
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if(css not in pageCssproperties[pagename]):
+  if(css not in pageCssproperties[getFormatedName(pagename.lower())]):
     if os.path.isfile(cssfile):
       mode = "a"
     with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
       f.write(css)
-    pageCssproperties[pagename].append(css)
+    pageCssproperties[getFormatedName(pagename.lower())].append(css)
 
 def updateZIndex(projectname,pagename,elem,zindex):
   global pageCssproperties
-  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
+  if(getFormatedName(pagename.lower()) not in pageCssproperties): pageCssproperties[getFormatedName(pagename.lower())]= []
   cssclass=""
   if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.idElement)
   else: cssclass = getElemId(elem.idComponent)
@@ -344,16 +365,16 @@ def updateZIndex(projectname,pagename,elem,zindex):
   }"""
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if(css not in pageCssproperties[pagename]):
+  if(css not in pageCssproperties[getFormatedName(pagename.lower())]):
     if os.path.isfile(cssfile):
       mode = "a"
     with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
       f.write(css)
-    pageCssproperties[pagename].append(css)
+    pageCssproperties[getFormatedName(pagename.lower())].append(css)
   
 def generateVideoCssProperties(projectname,pagename,cssclass,elem):
   global pageCssproperties
-  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
+  if(getFormatedName(pagename.lower()) not in pageCssproperties): pageCssproperties[getFormatedName(pagename.lower())]= []
   css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
@@ -363,16 +384,16 @@ def generateVideoCssProperties(projectname,pagename,cssclass,elem):
   """
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if(css not in pageCssproperties[pagename]):
+  if(css not in pageCssproperties[getFormatedName(pagename.lower())]):
     if os.path.isfile(cssfile):
       mode = "a"
     with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
       f.write(css)
-    pageCssproperties[pagename].append(css)
+    pageCssproperties[getFormatedName(pagename.lower())].append(css)
 
 def generateMenuCssProperties(projectname,pagename,cssclass,elem):
   global pageCssproperties
-  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
+  if(getFormatedName(pagename.lower()) not in pageCssproperties): pageCssproperties[getFormatedName(pagename.lower())]= []
   css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
@@ -384,16 +405,16 @@ def generateMenuCssProperties(projectname,pagename,cssclass,elem):
     css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if(css not in pageCssproperties[pagename]):
+  if(css not in pageCssproperties[getFormatedName(pagename.lower())]):
     if os.path.isfile(cssfile):
       mode = "a"
     with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
       f.write(css)
-    pageCssproperties[pagename].append(css)
+    pageCssproperties[getFormatedName(pagename.lower())].append(css)
 
 def setComponentPositionCSS(projectname,pagename,componentName,elem):
   global pageCssproperties
-  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
+  if(getFormatedName(pagename.lower()) not in pageCssproperties): pageCssproperties[getFormatedName(pagename.lower())]= []
   top="0%"
   left="0%"
   if(elem.style.gridrowStart>=2):
@@ -409,16 +430,16 @@ def setComponentPositionCSS(projectname,pagename,componentName,elem):
 """
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if(css not in pageCssproperties[pagename]):
+  if(css not in pageCssproperties[getFormatedName(pagename.lower())]):
     if os.path.isfile(cssfile):
       mode = "a"
     with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
       f.write(css)
-    pageCssproperties[pagename].append(css)
+    pageCssproperties[getFormatedName(pagename.lower())].append(css)
 
 def generateTransitionAnimation(projectname,pagename,cssclass,transition):
   global pageCssproperties
-  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
+  if(getFormatedName(pagename.lower()) not in pageCssproperties): pageCssproperties[getFormatedName(pagename.lower())]= []
   transform = ""
   if(transition.getDirection()=="RIGHT"):
     transform = "translateX(-100%);"
@@ -441,12 +462,12 @@ def generateTransitionAnimation(projectname,pagename,cssclass,transition):
   """
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if(css not in pageCssproperties[pagename]):
+  if(css not in pageCssproperties[getFormatedName(pagename.lower())]):
     if os.path.isfile(cssfile):
       mode = "a"
     with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
       f.write(css)
-    pageCssproperties[pagename].append(css)
+    pageCssproperties[getFormatedName(pagename.lower())].append(css)
 
 def getCurve(curve):
   function = ""
@@ -459,7 +480,7 @@ def getCurve(curve):
   
 def generateVueSelectCssProperties(projectname,pagename,cssclass,elem):
   global pageCssproperties
-  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
+  if(getFormatedName(pagename.lower()) not in pageCssproperties): pageCssproperties[getFormatedName(pagename.lower())]= []
   css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
@@ -487,16 +508,16 @@ div:deep(."""+ str(cssclass) + """ .v-field__outline) {
 
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if(css not in pageCssproperties[pagename]):
+  if(css not in pageCssproperties[getFormatedName(pagename.lower())]):
     if os.path.isfile(cssfile):
       mode = "a"
     with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
       f.write(css)
-    pageCssproperties[pagename].append(css)
+    pageCssproperties[getFormatedName(pagename.lower())].append(css)
 
 def generateInputSearchFilterCssProperties(projectname,pagename,cssclass,elem):
   global pageCssproperties
-  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
+  if(getFormatedName(pagename.lower()) not in pageCssproperties): pageCssproperties[getFormatedName(pagename.lower())]= []
   css ="""\n."""+ str(cssclass) + """ {
     position: relative;  
     display: flex;       
@@ -523,16 +544,16 @@ def generateInputSearchFilterCssProperties(projectname,pagename,cssclass,elem):
     css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if(css not in pageCssproperties[pagename]):
+  if(css not in pageCssproperties[getFormatedName(pagename.lower())]):
     if os.path.isfile(cssfile):
       mode = "a"
     with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
       f.write(css)
-    pageCssproperties[pagename].append(css)
+    pageCssproperties[getFormatedName(pagename.lower())].append(css)
 
 def generateSliderCssProperties(projectname,pagename,cssclass,elem):
   global pageCssproperties
-  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
+  if(getFormatedName(pagename.lower()) not in pageCssproperties): pageCssproperties[getFormatedName(pagename.lower())]= []
   css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
@@ -554,16 +575,16 @@ div:deep(."""+str(cssclass)+""" .p-slider-handle){
     css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if(css not in pageCssproperties[pagename]):
+  if(css not in pageCssproperties[getFormatedName(pagename.lower())]):
     if os.path.isfile(cssfile):
       mode = "a"
     with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
       f.write(css)
-    pageCssproperties[pagename].append(css)
+    pageCssproperties[getFormatedName(pagename.lower())].append(css)
 
 def generateTableCssProperties(projectname,pagename,cssclass,elem):
   global pageCssproperties
-  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []  
+  if(getFormatedName(pagename.lower()) not in pageCssproperties): pageCssproperties[getFormatedName(pagename.lower())]= []  
   css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
@@ -583,16 +604,16 @@ def generateTableCssProperties(projectname,pagename,cssclass,elem):
     css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if(css not in pageCssproperties[pagename]):
+  if(css not in pageCssproperties[getFormatedName(pagename.lower())]):
     if os.path.isfile(cssfile):
       mode = "a"
     with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
       f.write(css)
-    pageCssproperties[pagename].append(css)
+    pageCssproperties[getFormatedName(pagename.lower())].append(css)
 
 def generateRatingCssProperties(projectname,pagename,cssclass,elem):
   global pageCssproperties
-  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
+  if(getFormatedName(pagename.lower()) not in pageCssproperties): pageCssproperties[getFormatedName(pagename.lower())]= []
   css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
@@ -605,16 +626,16 @@ def generateRatingCssProperties(projectname,pagename,cssclass,elem):
   mode = "w"
   if(elem.style.getgridArea()!=None):
     css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
-  if(css not in pageCssproperties[pagename]):
+  if(css not in pageCssproperties[getFormatedName(pagename.lower())]):
     if os.path.isfile(cssfile):
       mode = "a"
     with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
       f.write(css)
-    pageCssproperties[pagename].append(css)
+    pageCssproperties[getFormatedName(pagename.lower())].append(css)
 
 def generateDatePickerCssProperties(projectname,pagename,cssclass,elem):
   global pageCssproperties
-  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
+  if(getFormatedName(pagename.lower()) not in pageCssproperties): pageCssproperties[getFormatedName(pagename.lower())]= []
   css ="""\n."""+ str(cssclass) + """ {
     grid-column-start: """+  str(elem.style.gridcolumnStart) +""";
     grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
@@ -638,16 +659,16 @@ def generateDatePickerCssProperties(projectname,pagename,cssclass,elem):
     css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if(css not in pageCssproperties[pagename]):
+  if(css not in pageCssproperties[getFormatedName(pagename.lower())]):
     if os.path.isfile(cssfile):
       mode = "a"
     with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
       f.write(css)
-    pageCssproperties[pagename].append(css)
+    pageCssproperties[getFormatedName(pagename.lower())].append(css)
 
 def generateScrollCSS(projectname,pagename,cssclass,elem):
   global pageCssproperties
-  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
+  if(getFormatedName(pagename.lower()) not in pageCssproperties): pageCssproperties[getFormatedName(pagename.lower())]= []
   if(elem.style.getOverflowDirection()=="HORIZONTAL"):
     css=""".scroll-wrapper"""+ str(cssclass) +""" {
     overflow-x: auto;
@@ -692,16 +713,16 @@ def generateScrollCSS(projectname,pagename,cssclass,elem):
     css += "#"+ str(cssclass)+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if(css not in pageCssproperties[pagename]):
+  if(css not in pageCssproperties[getFormatedName(pagename.lower())]):
     if os.path.isfile(cssfile):
       mode = "a"
     with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
       f.write(css)
-    pageCssproperties[pagename].append(css)
+    pageCssproperties[getFormatedName(pagename.lower())].append(css)
 
 def generateShapeCSS(projectname,pagename,cssclass,type,elem):
   global pageCssproperties
-  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
+  if(getFormatedName(pagename.lower()) not in pageCssproperties): pageCssproperties[getFormatedName(pagename.lower())]= []
   clippath=""
   if(type=="STAR"):
     clippath = "polygon(50% 0,79% 90%,2% 35%,98% 35%,21% 90%)"
@@ -758,12 +779,12 @@ def generateShapeCSS(projectname,pagename,cssclass,type,elem):
   css = css + "}"
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if(css not in pageCssproperties[pagename]):
+  if(css not in pageCssproperties[getFormatedName(pagename.lower())]):
     if os.path.isfile(cssfile):
       mode = "a"
     with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
       f.write(css)
-    pageCssproperties[pagename].append(css)
+    pageCssproperties[getFormatedName(pagename.lower())].append(css)
 
 def generateShapeShadowCSS(projectname,pagename,cssclass,elem):
   css ="""\n."""+ cssclass + """ {
@@ -776,16 +797,16 @@ def generateShapeShadowCSS(projectname,pagename,cssclass,elem):
   """
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if(css not in pageCssproperties[pagename]):
+  if(css not in pageCssproperties[getFormatedName(pagename.lower())]):
     if os.path.isfile(cssfile):
       mode = "a"
     with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
       f.write(css)
-    pageCssproperties[pagename].append(css)
+    pageCssproperties[getFormatedName(pagename.lower())].append(css)
 
 def generateElemCssProperties(projectname,pagename,cssclass,elem):
   global font_imports, pageCssproperties
-  if(pagename not in pageCssproperties): pageCssproperties[pagename]= []
+  if(getFormatedName(pagename.lower()) not in pageCssproperties): pageCssproperties[getFormatedName(pagename.lower())]= []
   csskeyvalues = ""
   css = ""
   newline = '\n\t'
@@ -893,13 +914,12 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
-  if(css not in pageCssproperties[pagename]):
+  if(css not in pageCssproperties[getFormatedName(pagename.lower())]):
     if os.path.isfile(cssfile):
       mode = "a"
     with open("../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css",mode) as f:
       f.write(css)
-    pageCssproperties[pagename].append(css)
-    
+    pageCssproperties[getFormatedName(pagename.lower())].append(css)
 
 
 def calculate_lineargradientDegree(points,colors):
@@ -1004,7 +1024,7 @@ def StyleGenerator():
   global font_imports, pageCssproperties, componentFonts 
   font_imports = {}
   pageCssproperties = {}
-  componentFonts = []
+  componentFonts = {}
 
 def getFontFallback(font):
   global font_fallbacks

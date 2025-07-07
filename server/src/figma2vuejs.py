@@ -7,7 +7,7 @@ from engine.componentgenerator import buildcomponent
 from parser.modelconverter import getFigmaData,extractImages,extractSVGs
 from parser.model.VariantComponent import VariantComponent
 from fastapi.middleware.cors import CORSMiddleware
-from engine.stylegenerator import StyleGenerator
+from engine.stylegenerator import StyleGenerator,insertComponentsFonts
 
 from typing import Optional
 from fastapi import FastAPI,HTTPException
@@ -104,6 +104,7 @@ def convert_prototype(testfile=None):
   buildDependenciesScript(project_name)
   updateMainJSfile(project_name)
   updatingPluginFiles(project_name)
+  insertComponentsFonts(project_name)
   return project_name
 
 load_variables()    
