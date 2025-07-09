@@ -22,6 +22,7 @@ class Mcomponent(object):
 		self.isVariant = False
 		self.variantName = None
 		self.isOverlay = False
+		self.topmostnode = None
 
 	def getIdComponent(self):
 		"""@ReturnType String"""
@@ -158,6 +159,12 @@ class Mcomponent(object):
 
 	def sethascondvisib(self, hascondvisib):
 		self.hasConditionalVisibility = hascondvisib
+
+	def gettopmostnode(self):
+		return self.topmostnode
+
+	def settopmostnode(self, topmostnode):
+		self.topmostnode = topmostnode
 
 	def getInteractions(self):
 		return self.interactions

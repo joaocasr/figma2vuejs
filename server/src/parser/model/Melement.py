@@ -18,6 +18,7 @@ class Melement(object):
 		self.hasAnimation = False
 		self.hasConditionalVisibility = False
 		self.typeElement = None
+		self.topmostnode = None
   
 	def getIdElement(self):
 		return self.idElement
@@ -63,6 +64,12 @@ class Melement(object):
 
 	def setzindex(self, zindex):
 		self.zindex = zindex
+
+	def gettopmostnode(self):
+		return self.topmostnode
+
+	def settopmostnode(self, topmostnode):
+		self.topmostnode = topmostnode
 
 	def gethasAnimation(self):
 		"""@ReturnType boolean"""

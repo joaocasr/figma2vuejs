@@ -162,6 +162,7 @@ def iterate_nestedElements(data):
         elements = []
         if((melement["type"]=="COMPONENT" or isComponentVariant(melement,variants)==True) and "children" in melement and melement["name"] not in assetComponents):
             pageWidth = melement["absoluteRenderBounds"]["width"]*1.2
+            interactions = []
             for element in melement["children"]:
                 component_width = melement["absoluteRenderBounds"]["width"]
                 component_height = melement["absoluteRenderBounds"]["height"]
@@ -172,10 +173,13 @@ def iterate_nestedElements(data):
                 if(p!=None): elements.append(p)
                 #except:
                 #    raise Exception("Error while converting "+element["name"]+". Correct your prototype!")
-
+            if(len(melement["interactions"])>0):
+                interactions = setLogic(melement,melement["name"],melement,None,melement,melement["absoluteRenderBounds"]["x"],melement["absoluteRenderBounds"]["y"],melement["absoluteRenderBounds"]["width"],melement["absoluteRenderBounds"]["height"],melement["absoluteRenderBounds"]["width"],melement["absoluteRenderBounds"]["height"],0,0,0,0,0,0,[])
             tag = getElementTag(melement)
             if(isComponentVariant(melement,variants)!=True):
-                allcomponents[melement["id"]] = Mcomponent(melement["id"],melement["name"],tag,"",elements)
+                comp=Mcomponent(melement["id"],melement["name"],tag,"",elements)
+                comp.addInteractionsList(interactions)
+                allcomponents[melement["id"]] = comp
             if(isComponentVariant(melement,variants)==True):
                 v = VariantComponent(melement["id"],tag,melement["name"],"",elements)
                 setVariantProperties(v,melement["componentPropertyDefinitions"])
@@ -654,7 +658,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
     element_interactions = setLogic(melement,pagename,data,parent_data,firstlevelelem,xielem,yielem,elementwidth,elementheight,page_width,page_height,pageX,pageY,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,element_interactions)
 
     if(melement!=None):
-        melement.setInteractions(element_interactions)
+        melement.addInteractionsList(element_interactions)
         if(firstlevelelem["type"]=="COMPONENT" or firstlevelelem["type"]=="INSTANCE"):
             melement.setupperIdComponent(firstlevelelem["id"])
 
@@ -1044,6 +1048,15 @@ def isAllImages(elem):
         if(ch["type"]!="VECTOR" or ch["type"]!="IMAGE"): allVectors=False
     return allVectors
 
+def hasCloseAction(interactions):
+    hasclose = False
+    for i in interactions:
+        for a in i.actions:
+            if(a.getActionType()=="CLOSE"):
+                hasclose=True
+                break
+    return hasclose
+
 def updateInnerChildren(elements,el):
     for element in elements:
         if(isinstance(element,ContainerElement) and element.getIdElement()==el):
@@ -1214,9 +1227,6 @@ def updateComponentPage(pagename,comp,allpages):
     if pagename in allpages:
         for (idx,c) in enumerate(allpages[pagename].components):
             if(c.getIdComponent()==comp.getIdComponent()):
-                for i in c.interactions:
-                    for a in i.actions:
-                        print(a)
                 allpages[pagename].components[idx] = comp
 
 def setLogic(melement,pagename,data,parent_data,firstlevelelem,xielem,yielem,elementwidth,elementheight,page_width,page_height,pageX,pageY,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,element_interactions):
@@ -1308,6 +1318,7 @@ def setLogic(melement,pagename,data,parent_data,firstlevelelem,xielem,yielem,ele
                         elid = getElemId(data["id"])
                         visibility = "true"
                         if(data["id"] in notPageElems): visibility = "false"
+                        melement.settopmostnode(pagename)
                         if(not pagename in allpages):
                             addComponentVariable(pagename,{"showswaped"+elid:visibility})
                         else:
@@ -1327,6 +1338,7 @@ def setLogic(melement,pagename,data,parent_data,firstlevelelem,xielem,yielem,ele
                     (vx,vy) = (px-compstyle.getX(),py-compstyle.getY())
                     compstyle.setOverlayVector(vx,vy)
                     if(action["navigation"]=="SWAP"): 
+                        melement.settopmostnode(pagename)
                         style = allcomponents[firstlevelelem["id"]].getComponentStyle()
                         compstyle.setGridcolumnStart(style.getGridcolumnStart())
                         compstyle.setGridcolumnEnd(style.getGridcolumnEnd())
@@ -1341,7 +1353,11 @@ def setLogic(melement,pagename,data,parent_data,firstlevelelem,xielem,yielem,ele
                     if(firstlevelelem!=None): topname = getTopLayer_pagename(firstlevelelem,data,parent_data,data["transitionNodeID"])
                     if(topname!="" and topname!=None): 
                         pagename=topname
-                    if(type=="ON_CLICK" and action["navigation"]=="SWAP"): pagename = getPageoftrigger(firstlevelelem["id"])
+                    if(type=="ON_CLICK" and action["navigation"]=="SWAP"): 
+                        pagename = getPageoftrigger(firstlevelelem["id"])
+                        closeaction=False
+                        if(data["transitionNodeID"] in allcomponents): closeaction = hasCloseAction(allcomponents[data["transitionNodeID"]].interactions)
+                        if(closeaction==True): allpages[pagename].addVariable({"show"+getElemId(data["transitionNodeID"]):"false"})
 
                     allcomponents[data["transitionNodeID"]].setComponentStyle(compstyle)
                     allcomponents[data["transitionNodeID"]].setTypeComponent("OVERLAY")

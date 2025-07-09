@@ -51,15 +51,14 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,all
                     elemBehaviour[1] = hooks
         else:
             for action in interaction.actions:
+                #print(elementid,action)
                 # SWAP ACTIONS
                 if(isinstance(action,SwapAction)):
                     print(getElemId(elementid))
                     destinationid = action.getDestinationID()
                     methodName = "swap"+getElemId(elementid)+getElemId(destinationid)
                     swapDestinationIds.append(destinationid)
-                    if(elem.getupperIdComponent()!=None):
-                        print("***")
-                        print(elem.getupperIdComponent())
+                    if(elem.getupperIdComponent()!=None and "#Page" not in elem.gettopmostnode()):
                         elemBehaviour[0].append(f'v-on:click="{methodName}"')                        
                         insertFunction("methods",hooks,methodName,swapTopmostOverlay(methodName,f'swapfrom{getElemId(elementid)}to{getElemId(destinationid)}'))
                         swapComponentTriggerIds.setdefault(getElemId(elem.getupperIdComponent()), []).append((getElemId(elementid),getElemId(destinationid)))
@@ -114,6 +113,13 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,all
                     originid = getElemId(elem.getIdElement())
                     # in order to capture the emit signals close-from222310-to22238
                     shareableEvents.setdefault(elem.getupperIdComponent(), []).append(("close-from"+str(originid)+"-to"+str(destinationid),"show"+destinationid+'=false','v-if="show'+destinationid+'"'))
+                    methodName = "close"+originid+destinationid
+                    insertFunction("methods",hooks,methodName,closeOverlay(methodName,"close-from"+str(originid)+"-to"+str(destinationid)))
+                    elemBehaviour[0].append('v-on:click="'+methodName+'()"')
+                    elemBehaviour[1] = hooks
+                elif(isinstance(action,CloseAction) and isinstance(elem,Mcomponent) and isPageRender==False):
+                    destinationid = getElemId(action.getDestinationID())
+                    originid = getElemId(elem.getIdComponent())
                     methodName = "close"+originid+destinationid
                     insertFunction("methods",hooks,methodName,closeOverlay(methodName,"close-from"+str(originid)+"-to"+str(destinationid)))
                     elemBehaviour[0].append('v-on:click="'+methodName+'()"')
@@ -574,9 +580,15 @@ def getOpenLinkFunction(methodName,action):
     return function
 
 def getSwapFunction(methodName,elementid,destinationid):
+    global alldata
+    changedestinationshow = ""
+    for x in alldata:
+        if("show"+getElemId(destinationid) in x):
+            changedestinationshow = "this.show"+getElemId(destinationid)+"= true"+"\n"
     function =f"        {methodName}"+"""(){
-            """+ f"""this.showswaped{getElemId(elementid)}=!this.showswaped{getElemId(elementid)}""" + """
-            """+ f"""this.showswaped{getElemId(destinationid)}=!this.showswaped{getElemId(destinationid)}"""
+            """+ f"""this.showswaped{getElemId(elementid)}=false""" + """
+            """+ f"""this.showswaped{getElemId(destinationid)}=true"""+f"""
+            {changedestinationshow}"""
     function += "\n        }"
     return function
 
@@ -593,6 +605,7 @@ def getTimeoutFunction(methodName,interaction):
             this.{methodName}()
         """+"""}, """+f"""{timeout})
         """
+    if(methodName==""): function=""
     return function    
 
 def handleVariants(elem,variants,hooks,elemBehaviour,allPagesInfo,beginElem=None):

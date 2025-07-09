@@ -180,14 +180,22 @@ def convertToRating(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,na
                     if(colorStar!=unselectedStarColor): break
     else:
         selected = 0
+        zerocolor = None
         if("componentProperties" in data and "Rating" in data["componentProperties"]):
             selected = int(data["componentProperties"]["Rating"]["value"])
         for i in range(0,len(data["children"])):        
             star = data["children"][i]["children"][0]["children"][0]
-            if(selected>=0 and len(star["fills"])>0):
+            if(selected>0 and len(star["fills"])>0):
                 color = star["fills"][0]["color"]
                 colorStar = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
                 break                
+            if(selected==0):
+                star = data["children"][0]["children"][0]["children"][0]
+                if("strokes" in star and len(star["strokes"])>0):
+                    color = star["strokes"][0]["color"]
+                    zerocolor = color
+                    colorStar = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
+                    unselectedStarColor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
         for i in range(0,len(data["children"])): 
             if(len(data["children"])>selected):       
                 star = data["children"][selected]["children"][0]["children"][0]
@@ -195,6 +203,10 @@ def convertToRating(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,na
                     unselectedcolor = star["fills"][0]["color"]
                     unselectedStarColor = "rgba("+str(unselectedcolor["r"] * 255)+","+str(unselectedcolor["g"] * 255)+","+str(unselectedcolor["b"] * 255)+","+str(unselectedcolor["a"])+")"
                     if(colorStar!=unselectedStarColor): break
+        if(selected==0 and zerocolor==None):
+            color = {"r":1,"g":0.745,"b":0.075,"a":1}
+            colorStar = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
+            unselectedStarColor = "rgba("+str(color["r"] * 255)+","+str(color["g"] * 255)+","+str(color["b"] * 255)+","+str(color["a"])+")"
     style = RatingStyle(colorStar,unselectedStarColor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
     (elementwidth,elementheight,xielem,yielem) = getDimensions(data)
     style.setHeight(elementheight)
