@@ -322,6 +322,7 @@ def processTemplate(html_string,name):
         if(tag=="Form"):
             processedTemplate = re.sub('<Form'+r" ([\s]*.*?)"+':initialvalues'+r'([\s]*.*?)'+':validateonblur'+r'([\s]*.*?)'+'>',"<Form"+r" \1 :initialValues\2 :validateOnBlur\3>",processedTemplate)
         finalHtml = processedTemplate
+    finalHtml = re.sub('&amp;&amp;','&&',finalHtml)
     return finalHtml
 
 def filterOverlapingElements(component,onstack):

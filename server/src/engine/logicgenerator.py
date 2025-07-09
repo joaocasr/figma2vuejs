@@ -17,11 +17,12 @@ import itertools
 shareableEvents = {}
 keyEvents = {}
 swapDestinationIds = []
+swapComponentTriggerIds = {}
 alldata = {}
 allEmissions = {}
 
 def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,allEmissionpaths):
-    global shareableEvents,keyEvents,swapDestinationIds, alldata, allEmissions
+    global shareableEvents,keyEvents,swapDestinationIds, alldata, allEmissions, swapComponentTriggerIds
     alldata = data
     allEmissions = allEmissionpaths
     hooks = {}
@@ -43,7 +44,7 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,all
                     elemBehaviour[0].extend(['@mouseenter="'+methodName+'"','@mouseleave="'+methodName+'"'])
                     if(isinstance(elem,Melement) and isfromInstance(elem.getIdElement()) and elem.getupperIdComponent()!=None):
                         shareableEvents.setdefault(elem.getupperIdComponent(), []).append(("show-from"+getElemId(elem.getIdElement())+"-to"+getElemId(action.getDestinationID()),"show"+getElemId(action.getDestinationID())+'=true',''))
-                        shareableEvents.setdefault(action.getDestinationID(), []).append((None,None,'v-if="show'+getElemId(action.getDestinationID())+'==true"'))
+                        shareableEvents.setdefault(action.getDestinationID(), []).append((None,None,'v-if="show'+getElemId(action.getDestinationID())+'"'))
                         insertFunction("methods",hooks,methodName,showOverlayonHover(methodName,"show"+destinationid))
                         elemBehaviour[1] = hooks
                     
@@ -52,13 +53,22 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,all
             for action in interaction.actions:
                 # SWAP ACTIONS
                 if(isinstance(action,SwapAction)):
-                    methodName = "swap"+getElemId(elementid)
+                    print(getElemId(elementid))
                     destinationid = action.getDestinationID()
+                    methodName = "swap"+getElemId(elementid)+getElemId(destinationid)
                     swapDestinationIds.append(destinationid)
-                    insertFunction("methods",hooks,methodName,getSwapFunction(methodName,elementid,destinationid))
-                    elemBehaviour[0].append(f'v-if="showswaped{getElemId(elementid)}" '+'v-on:click="'+methodName+'()"')
+                    if(elem.getupperIdComponent()!=None):
+                        print("***")
+                        print(elem.getupperIdComponent())
+                        elemBehaviour[0].append(f'v-on:click="{methodName}"')                        
+                        insertFunction("methods",hooks,methodName,swapTopmostOverlay(methodName,f'swapfrom{getElemId(elementid)}to{getElemId(destinationid)}'))
+                        swapComponentTriggerIds.setdefault(getElemId(elem.getupperIdComponent()), []).append((getElemId(elementid),getElemId(destinationid)))
+                    if(isinstance(elem,Melement) and elem.gettypeElement()=="OVERLAY"):
+                        pass
+                    else:
+                        pass
                     elemBehaviour[1] = hooks
-                # CLICK-NAVIGATION ACTIONS
+                # NAVIGATION ACTIONS
                 if(isinstance(action,NavigationAction)):
                     destination = getPageById(action.getDestinationID(),allPagesInfo) 
                     methodName = "goto"+destination
@@ -103,7 +113,7 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,all
                     destinationid = getElemId(action.getDestinationID())
                     originid = getElemId(elem.getIdElement())
                     # in order to capture the emit signals close-from222310-to22238
-                    shareableEvents.setdefault(elem.getupperIdComponent(), []).append(("close-from"+str(originid)+"-to"+str(destinationid),"show"+destinationid+'=false','v-if="show'+destinationid+'==true"'))
+                    shareableEvents.setdefault(elem.getupperIdComponent(), []).append(("close-from"+str(originid)+"-to"+str(destinationid),"show"+destinationid+'=false','v-if="show'+destinationid+'"'))
                     methodName = "close"+originid+destinationid
                     insertFunction("methods",hooks,methodName,closeOverlay(methodName,"close-from"+str(originid)+"-to"+str(destinationid)))
                     elemBehaviour[0].append('v-on:click="'+methodName+'()"')
@@ -195,9 +205,18 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,all
             for event in shareableEvents[elem.getIdComponent()]:
                 elemBehaviour[0].append(event[2])
                 if(event[0]!=None and event[1]!=None): elemBehaviour[0].append('@'+event[0]+'="'+event[1]+'"')
-        if(elem.getisComponentInstance()==False):
-            elemBehaviour[0].append('v-if="show'+getElemId(elem.getIdComponent())+'"')
+        #if(elem.getisComponentInstance()==False and elem.getIdComponent() not in swapDestinationIds):
+        #    elemBehaviour[0].append('v-if="show'+getElemId(elem.getIdComponent())+'"')
+        if(elem.getisComponentInstance()==False and elem.getIdComponent() in swapDestinationIds):
+            elemBehaviour[0].append('v-if="showswaped'+getElemId(elem.getIdComponent())+'"')
+        if(getElemId(elem.getIdComponent()) in swapComponentTriggerIds and elem.getTypeComponent()=="OVERLAY"):
+            for (originid,destinationid) in swapComponentTriggerIds[getElemId(elem.getIdComponent())]:
+                methodName = "swap"+getElemId(elem.getIdComponent())+destinationid
+                insertFunction("methods",hooks,methodName,getSwapFunction(methodName,getElemId(elem.getIdComponent()),destinationid))
+                elemBehaviour[0].append(f'v-if="showswaped{getElemId(elem.getIdComponent())}"')
+                elemBehaviour[0].append(f'@swapfrom{originid}to{destinationid}="{methodName}"')
         elemBehaviour[1] = hooks
+    processVifs(elemBehaviour[0])
     return elemBehaviour
 
 # METHOD TO CHECK IF ELEMENTS INVOLVED ARE IN THE SAME PAGE
@@ -240,6 +259,12 @@ def getChangeVisibilityFunction(name,variable,elementid,elemAnimation):
     function = """\t\t""" + name + "(){" + """
             this.""" + variable +  """ = true;"""+f"""
             {changeswaped}{setanimationvar}"""+"""
+        }""" 
+    return function
+
+def swapTopmostOverlay(name,event):
+    function = """\t\t""" + name + "(){" + """
+            this.$emit('""" + event +  """');
         }""" 
     return function
 
@@ -665,6 +690,17 @@ def checkIDinEventspath(id):
                 if(idx-1>=0 and "#Page"in allEmissions[pair][idx-1][0]): isOnPageLevel=True
                 return (getElemId(pair[0]),getElemId(pair[1]),isOnPageLevel)
     return None    
+
+def processVifs(lista):
+    conditions = []
+    for (idx,v) in enumerate(lista):
+        if("v-if" in v):
+            var = v.replace('"',"")
+            cond = var.split("=")[1]
+            if(cond not in conditions): conditions.append(cond) 
+            lista.pop(idx)
+    if(len(conditions)>0):
+        lista.append('v-if="'+r' && '.join(x for x in conditions)+'"')
 
 def getAnimationVarFunction():
     function = """        setAnimationName(name){

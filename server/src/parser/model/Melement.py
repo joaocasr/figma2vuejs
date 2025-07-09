@@ -17,6 +17,7 @@ class Melement(object):
 		self.initialOpacity = None
 		self.hasAnimation = False
 		self.hasConditionalVisibility = False
+		self.typeElement = None
   
 	def getIdElement(self):
 		return self.idElement
@@ -71,6 +72,12 @@ class Melement(object):
 		"""@ParamType type boolean
 		@ReturnType void"""
 		self.hasAnimation = hasAnimation
+  
+	def gettypeElement(self):
+		return self.typeElement
+
+	def settypeElement(self,typelem):
+		self.typeElement=typelem
 
 	def gethascondvisib(self):
 		return self.hasConditionalVisibility
@@ -80,6 +87,9 @@ class Melement(object):
 
 	def setInteractions(self, interactions):
 		self.interactions = interactions
+
+	def addInteractionsList(self,interactions):
+		self.interactions.extend(interactions)
 
 	def __str__(self):
 		return "(id: " + str(self.idElement) + "; tag: " + str(self.tag) + "; children : ["+ ''.join(str(c) for c in self.children) + "]" + "; interactions : ["+ ''.join(str(c) for c in self.interactions) + "])"

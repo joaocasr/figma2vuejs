@@ -21,6 +21,7 @@ class Mcomponent(object):
 		self.hasConditionalVisibility = False
 		self.isVariant = False
 		self.variantName = None
+		self.isOverlay = False
 
 	def getIdComponent(self):
 		"""@ReturnType String"""
@@ -163,6 +164,9 @@ class Mcomponent(object):
 
 	def setInteractions(self, interactions):
 		self.interactions = interactions
+
+	def addInteractionsList(self,interactions):
+		self.interactions.extend(interactions)
 
 	def __str__(self):
 		return "(id: " + str(self.idComponent) + ",name: "+  str(self.componentName) + ",type: "+  str(self.type) + ",tag: "+  str(self.tag) + "; interactions: ["+ ";".join(str(val) for val in self.interactions)  +"]" + ", children: [" + ";".join(str(val) for val in self.children) + "],"+ "data: ["+ ";".join(str(val) for val in self.data)  +"])" 
