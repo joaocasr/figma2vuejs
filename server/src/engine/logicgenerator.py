@@ -51,10 +51,8 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,all
                     elemBehaviour[1] = hooks
         else:
             for action in interaction.actions:
-                #print(elementid,action)
                 # SWAP ACTIONS
                 if(isinstance(action,SwapAction)):
-                    print(getElemId(elementid))
                     destinationid = action.getDestinationID()
                     methodName = "swap"+getElemId(elementid)+getElemId(destinationid)
                     swapDestinationIds.append(destinationid)
@@ -70,7 +68,7 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,all
                 # NAVIGATION ACTIONS
                 if(isinstance(action,NavigationAction)):
                     destination = getPageById(action.getDestinationID(),allPagesInfo) 
-                    methodName = "goto"+destination
+                    methodName = "goto"+destination+getElemId(elementid)
                     insertFunction("methods",hooks,methodName,getNavigationFunction(methodName,destination))
                     elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                     elemBehaviour[1] = hooks
@@ -635,7 +633,7 @@ def handleVariants(elem,variants,hooks,elemBehaviour,allPagesInfo,beginElem=None
                 elemBehaviour[1] = hooks
             if(isinstance(a,NavigationAction) and i.getInteractionType()==InteractionElement.Interaction.ONCLICK):
                 destination = getPageById(a.getDestinationID(),allPagesInfo) 
-                methodName = "goto"+destination
+                methodName = "goto"+destination+getElemId(elem.idComponent)
                 insertFunction("methods",hooks,methodName,getVariantNavigationFunction(methodName,beginElem,elem,destination))
                 elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                 elemBehaviour[1] = hooks
@@ -746,3 +744,12 @@ def getFormatedName(name):
     pattern = "[\s\.\-;#,=:]"
     name = re.sub(pattern,"",name)
     return name
+
+def LogicGenerator():
+    global shareableEvents,keyEvents,swapDestinationIds, alldata, allEmissions, swapComponentTriggerIds
+    shareableEvents = {}
+    keyEvents = {}
+    swapDestinationIds = []
+    swapComponentTriggerIds = {}
+    alldata = {}
+    allEmissions = {}

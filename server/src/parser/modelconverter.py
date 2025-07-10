@@ -85,7 +85,8 @@ def getFigmaData(data):
                 updateOverlayPosition(c,c.style.getOverlayVector()[0],c.style.getOverlayVector()[1],allpages[p].style.getWidth(),allpages[p].style.getHeight())
                 allpages[p].addElement(c)
             elif(c.getTypeComponent()=="OVERLAY" and p not in allpages):
-                print(c.getIdComponent())
+                pass
+                #print(c.getIdComponent())
             if(c.getIdComponent() in overlayInsideInstances):
                 for i in overlayInsideInstances[c.getIdComponent()]:
                     if(i[0]==c.getIdComponent()):

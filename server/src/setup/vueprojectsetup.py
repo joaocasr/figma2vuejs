@@ -3,8 +3,14 @@ import subprocess
 import os
 
 allDependencies = {}
-primevuecomponents = False
-vuetifycomponents = False
+vuetifydependencies = {}
+primevuedependencies = {}
+
+def VueSetup():
+  global allDependencies,vuetifydependencies,primevuedependencies
+  allDependencies = {}
+  vuetifydependencies = {}
+  primevuedependencies = {}
 
 def setup_project(name):
   global allDependencies
@@ -15,7 +21,6 @@ def setup_project(name):
   remove_boilercomponents(name,0)
   updateAppVue(name)
   viteconfig(name)
-  createPluginFiles(name)
     
 def create_project(name):
     destination = '../output/'+name
@@ -39,8 +44,6 @@ def create_project(name):
         viteconfig(name)
         print("Overwrite global styling.")
         overwrite_styling(name)
-        print("updating plugin files")
-        createPluginFiles(name)
         print("Create toast store...")
         createToastStorefile(name)
 
@@ -99,10 +102,10 @@ def remove_pluginfiles(name,n):
       raise Exception("Error while removing plugin files!")    
 
 def updatingPluginFiles(name):
-  global primevuecomponents,vuetifycomponents
+  global primevuedependencies,vuetifydependencies
   primevueplugin = '../output/'+name+'/src/plugins/primevue.js'
   vuetifyplugin = '../output/'+name+'/src/plugins/vuetify.js'
-  if(primevuecomponents==False):
+  if(len(primevuedependencies)==0):
     rm = subprocess.run(['sh',
                               '-c',
                               'rm '+ primevueplugin],
@@ -110,7 +113,7 @@ def updatingPluginFiles(name):
     if rm.returncode != 0:
       raise Exception("Error while removing primevue plugin files!")    
 
-  if(vuetifycomponents==False):
+  if(len(vuetifydependencies)==0):
     rm = subprocess.run(['sh',
                               '-c',
                               'rm '+ vuetifyplugin],
@@ -173,15 +176,15 @@ export default defineConfig({
     else: raise Exception("vite.config.js file not found!")
 
 def updateMainJSfile(name):
-  global primevuecomponents, vuetifycomponents
+  global primevuedependencies,vuetifydependencies
   importvuetify = "import vuetify from './plugins/vuetify';"
   importprimevue = "import usePrimeVue from './plugins/primevue';"
   usevuetify = "app.use(vuetify)"
   useprimevue = "usePrimeVue(app)"
-  if(primevuecomponents==False): 
+  if(len(primevuedependencies)==0): 
     importprimevue = ""
     useprimevue = ""
-  if(vuetifycomponents==False):
+  if(len(vuetifydependencies)==0):
     importvuetify = ""
     usevuetify = ""
   content =f"""import './assets/main.css'
@@ -246,13 +249,28 @@ export const useToastStore = defineStore('toast', {
   with open(toaststore,"w") as f:
     f.write(toaststorecontent)
 
-def createPluginFiles(name):
-  print("creating plugin files...")
-  primevue="""import PrimeVue from 'primevue/config';
+def injectPluginComponents(name):
+  global primevuedependencies,vuetifydependencies
+  primevueimports = ""
+  useprimevuecompoents = ""
+  vuetifyimports = "import { "
+  usevuetifycompoents = ""
+  for d in primevuedependencies:
+    if(d=="Form"): primevueimports+="import { Form } from '@primevue/forms';\n"
+    else: primevueimports+="import "+ d +" from 'primevue/"+d.lower()+"';\n"
+    useprimevuecompoents+=f"app.component('{d}',{d})"+"\n"
+  for d in vuetifydependencies:
+    vuetifyimports+=d+","
+    usevuetifycompoents+="  "+d+",\n"
+  if(len(vuetifyimports)==9): vuetifyimports=""
+  if(len(vuetifyimports)>=2): vuetifyimports=vuetifyimports[:-1]
+  if(len(vuetifyimports)>9): vuetifyimports+="} from 'vuetify/components';"
+  if(len(usevuetifycompoents)>=3): usevuetifycompoents=usevuetifycompoents[:-2]
+  primevue=f"""import PrimeVue from 'primevue/config';
 import Material from '@primevue/themes/material';
 import 'primeicons/primeicons.css';
-
-
+{primevueimports}
+"""+"""
 export default function usePrimeVue(app){
     
     app.use(PrimeVue, {
@@ -260,15 +278,17 @@ export default function usePrimeVue(app){
         preset: Material
     }
     });
-  
+  """+f"""
+{useprimevuecompoents}"""+"""
 }
 """
   vuetify="""import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
-import '@mdi/font/css/materialdesignicons.css';
-
+import '@mdi/font/css/materialdesignicons.css';"""+f"""
+{vuetifyimports}
+"""+"""
 const vuetify = createVuetify({
-    components: {},
+    components: {"""+usevuetifycompoents+"""},
     icons: {
         defaultSet: 'mdi',
     }
@@ -287,310 +307,103 @@ export default vuetify;
     f.write(vuetify)
 
 def useSelectVuetifyPlugin(name):
-  global allDependencies
-  content =""
-  filevuetify = "../output/"+name+"/src/plugins/vuetify.js"
-  if("vselect" not in allDependencies):
-    selectimport = "import { VSelect } from 'vuetify/components';\n"
-    componentname ="\tVSelect"
-    f = open(filevuetify, "r")
-    for l in f.readlines():
-      l = l.strip()
-      content+=l+"\n"
-      if(l=="import '@mdi/font/css/materialdesignicons.css';"):
-        content+=selectimport
-      if(l=="components: {},"):
-        content=content[:-3] +"\n"+ componentname + "\n},\n"
-      if(l=="components: {"):
-        content+= componentname + ",\n"
-    f.close()
-    f= open(filevuetify,"w")
-    f.write(content)
-    f.close()
-    allDependencies["vselect"]=True
+  global vuetifydependencies
+  if("VSelect" not in vuetifydependencies):
+    vuetifydependencies["VSelect"]=True
 
 def useRatingVuetifyPlugin(name):
-  global allDependencies
-  content =""
-  filevuetify = "../output/"+name+"/src/plugins/vuetify.js"
-  if("vrating" not in allDependencies):
-    ratingimport = "import { VRating } from 'vuetify/components';\n"
-    componentname ="\tVRating"
-    f = open(filevuetify, "r")
-    for l in f.readlines():
-      l = l.strip()
-      content+=l+"\n"
-      if(l=="import '@mdi/font/css/materialdesignicons.css';"):
-        content+=ratingimport
-      if(l=="components: {},"):
-        content=content[:-3] +"\n"+ componentname + "\n},\n"
-      if(l=="components: {"):
-        content+= componentname + ",\n"
-    f.close()
-    f= open(filevuetify,"w")
-    f.write(content)
-    f.close()
-    allDependencies["vrating"]=True
+  global vuetifydependencies
+  if("VRating" not in vuetifydependencies):
+    vuetifydependencies["VRating"]=True
 
 def usePaginatorVuetifyPlugin(name):
-  global allDependencies
-  content =""
-  filevuetify = "../output/"+name+"/src/plugins/vuetify.js"
-  if("vpagination" not in allDependencies):
-    selectimport = "import { VPagination } from 'vuetify/components';\n"
-    componentname ="\tVPagination"
-    f = open(filevuetify, "r")
-    for l in f.readlines():
-      l = l.strip()
-      content+=l+"\n"
-      if(l=="import '@mdi/font/css/materialdesignicons.css';"):
-        content+=selectimport
-      if(l=="components: {},"):
-        content=content[:-3] +"\n"+ componentname + "\n},\n"
-      if(l=="components: {"):
-        content+= componentname + ",\n"
-    f.close()
-    f= open(filevuetify,"w")
-    f.write(content)
-    f.close()
-    allDependencies["vpagination"]=True
+  global vuetifydependencies
+  if("VPagination" not in vuetifydependencies):
+    vuetifydependencies["VPagination"]=True
 
 def useMenuVuetifyPlugin(name):
-  global allDependencies
-  content =""
-  filevuetify = "../output/"+name+"/src/plugins/vuetify.js"
-  if("vmenu" not in allDependencies or "vlist" not in allDependencies or "vlistitem" not in allDependencies):
-    vuetifyimport = ""
-    vuetifycomponent = ""
-    components = []
-    if("vmenu" not in allDependencies): 
-      vuetifyimport+="""import { VMenu } from 'vuetify/components';\n"""
-      components.append("VMenu")
-    if("vlist" not in allDependencies):
-      vuetifyimport+="""import { VList } from 'vuetify/components';\n"""
-      components.append("VList")
-    if("vlistitem" not in allDependencies):
-      vuetifyimport+="""import { VListItem } from 'vuetify/components';\n"""
-      components.append("VListItem")
-
-    vuetifycomponents = ',\n\t'.join(components)
-    f = open(filevuetify, "r")
-    for l in f.readlines():
-      l = l.strip()
-      content+=l+"\n"
-      if(l=="import '@mdi/font/css/materialdesignicons.css';"):
-        content+=vuetifyimport
-      if(l=="components: {},"):
-        content=content[:-3] +"\n"+ vuetifycomponents + "\n},\n"
-      if(l=="components: {"):
-        content+= vuetifycomponents + ",\n"
-    f.close()
-    f= open(filevuetify,"w")
-    f.write(content)
-    f.close()
-    allDependencies["vmenu"]=True
-    allDependencies["vlist"]=True
-    allDependencies["vlistitem"]=True
+  global vuetifydependencies
+  if("VMenu" not in vuetifydependencies): 
+    vuetifydependencies["VMenu"]=True
+  if("VList" not in vuetifydependencies):
+    vuetifydependencies["VList"]=True
+  if("VListItem" not in vuetifydependencies):
+    vuetifydependencies["VListItem"]=True
 
 def useFormPrimeVuePlugin(name):
-  global allDependencies
-  content =""
-  if("form" not in allDependencies or "inputtext" not in allDependencies or "message" not in allDependencies==False):
-    filemain = "../output/"+name+"/src/plugins/primevue.js"
-    primeimport = ""
-    primecomponent = ""
-    if("form" not in allDependencies): 
-      primeimport+="""import { Form } from '@primevue/forms';\n"""
-      primecomponent+="""app.component('Form',Form)\n"""
-    if("inputtext" not in allDependencies):
-      primeimport+="""import InputText from 'primevue/inputtext';\n"""
-      primecomponent+="""app.component('InputText',InputText)\n"""
-    if("message" not in allDependencies):
-      primeimport+="""import Message from 'primevue/message';\n"""
-      primecomponent+="""app.component('Message',Message)\n"""
-    f = open(filemain, "r")
-    for l in f.readlines():
-      l = l.strip()
-      content+=l+"\n"
-      if(l=="import 'primeicons/primeicons.css';"):
-        content+=primeimport
-      if(l=="});"):
-        content+=primecomponent
-    f.close()
-    f= open(filemain,"w")
-    f.write(content)
-    f.close()
-    allDependencies["form"]=True
-    allDependencies["inputtext"]=True
-    allDependencies["message"]=True
+  global primevuedependencies
+  if("Form" not in primevuedependencies): 
+    primevuedependencies["Form"]=True
+  if("InputText" not in primevuedependencies):
+    primevuedependencies["InputText"]=True
+  if("Message" not in primevuedependencies):
+    primevuedependencies["Message"]=True
 
 def useCheckboxPrimeVuePlugin(name):
-  global allDependencies
-  content =""
-  if("checkbox" not in allDependencies):
-    filemain = "../output/"+name+"/src/plugins/primevue.js"
-    primeimport = ""
-    primecomponent = ""
-    if("checkbox" not in allDependencies): 
-      primeimport+="""import Checkbox from 'primevue/checkbox';\n"""
-      primecomponent+="""app.component('Checkbox',Checkbox)\n"""
-    f = open(filemain, "r")
-    for l in f.readlines():
-      l = l.strip()
-      content+=l+"\n"
-      if(l=="import 'primeicons/primeicons.css';"):
-        content+=primeimport
-      if(l=="});"):
-        content+=primecomponent
-    f.close()
-    f= open(filemain,"w")
-    f.write(content)
-    f.close()
-    allDependencies["checkbox"]=True
+  global primevuedependencies
+  if("Checkbox" not in primevuedependencies):
+    allDependencies["Checkbox"]=True
 
 def useIconFieldPrimevuePlugin(name):
-  global allDependencies
-  content =""
-  if("inputtext" not in allDependencies or "inputicon" not in allDependencies or "iconfield" not in allDependencies==False):
-    filemain = "../output/"+name+"/src/plugins/primevue.js"
-    primeimport = ""
-    primecomponent = ""
-    if("inputtext" not in allDependencies): 
-      primeimport+="""import InputText from 'primevue/inputtext';\n"""
-      primecomponent+="""app.component('InputText',InputText)\n"""
-    if("inputicon" not in allDependencies):
-      primeimport+="""import InputIcon from 'primevue/inputicon';\n"""
-      primecomponent+="""app.component('InputIcon',InputIcon)\n"""
-    if("iconfield" not in allDependencies):
-      primeimport+="""import IconField from 'primevue/iconfield';\n"""      
-      primecomponent+="""app.component('IconField',IconField)\n"""
-    f = open(filemain, "r")
-    for l in f.readlines():
-      l = l.strip()
-      content+=l+"\n"
-      if(l=="import 'primeicons/primeicons.css';"):
-        content+=primeimport
-      if(l=="});"):
-        content+=primecomponent
-    f.close()
-    f= open(filemain,"w")
-    f.write(content)
-    f.close()
-    allDependencies["inputtext"]=True
-    allDependencies["inputicon"]=True
-    allDependencies["iconfield"]=True
+  global primevuedependencies
+  if("InputText" not in primevuedependencies): 
+    allDependencies["InputText"]=True
+  if("InputIcon" not in allDependencies):
+    allDependencies["InputIcon"]=True
+  if("IconField" not in allDependencies):
+    allDependencies["IconField"]=True
 
 def useDatePickerPrimevuePlugin(name):
-  global allDependencies
-  content =""
-  if("datepicker" not in allDependencies):
-    filemain = "../output/"+name+"/src/plugins/primevue.js"
-    primeimport = """import DatePicker from 'primevue/datepicker';
-"""
-    primecomponent = """app.component('DatePicker',DatePicker)
-"""
-    f = open(filemain, "r")
-    for l in f.readlines():
-      l = l.strip()
-      content+=l+"\n"
-      if(l=="import 'primeicons/primeicons.css';"):
-        content+=primeimport
-      if(l=="});"):
-        content+=primecomponent
-    f.close()
-    f= open(filemain,"w")
-    f.write(content)
-    f.close()
-    allDependencies["datepicker"]=True
+  global primevuedependencies
+  if("DatePicker" not in primevuedependencies):
+    primevuedependencies["DatePicker"]=True
 
 
 def useSliderPrimevuePlugin(name):
   global allDependencies
-  content =""
-  if("slider" not in allDependencies):
-    filemain = "../output/"+name+"/src/plugins/primevue.js"
-    primeimport = """import Slider from 'primevue/slider';
-"""
-    primecomponent = """app.component('Slider',Slider)
-"""
-    f = open(filemain, "r")
-    for l in f.readlines():
-      l = l.strip()
-      content+=l+"\n"
-      if(l=="import 'primeicons/primeicons.css';"):
-        content+=primeimport
-      if(l=="});"):
-        content+=primecomponent
-    f.close()
-    f= open(filemain,"w")
-    f.write(content)
-    f.close()
-    allDependencies["slider"]=True
+  if("Slider" not in primevuedependencies):
+    primevuedependencies["Slider"]=True
 
 def useDataTablePrimevuePlugin(name):
-  global allDependencies
-  content =""
-  if("datatable" not in allDependencies or "column" not in allDependencies):
-    filemain = "../output/"+name+"/src/plugins/primevue.js"
-    primeimport = ""
-    primecomponent = ""
-    if("datatable" not in allDependencies): 
-      primeimport+="""import DataTable from 'primevue/datatable';\n"""
-      primecomponent+="""app.component('DataTable',DataTable)\n"""
-    if("column" not in allDependencies):
-      primeimport+="""import Column from 'primevue/column';\n"""
-      primecomponent+="""app.component('Column',Column)\n"""
-    f = open(filemain, "r")
-    for l in f.readlines():
-      l = l.strip()
-      content+=l+"\n"
-      if(l=="import 'primeicons/primeicons.css';"):
-        content+=primeimport
-      if(l=="});"):
-        content+=primecomponent
-    f.close()
-    f= open(filemain,"w")
-    f.write(content)
-    f.close()
-    allDependencies["datatable"]=True
-    allDependencies["column"]=True
+  global primevuedependencies
+  if("DataTable" not in primevuedependencies): 
+    primevuedependencies["DataTable"]=True
+  if("Column" not in primevuedependencies):
+    primevuedependencies["Column"]=True
 
 def useToastPrimeVuePlugin(name):
-  global allDependencies
-  content =""
-  if("toast" not in allDependencies):
-    filemain = "../output/"+name+"/src/plugins/primevue.js"
-    primeimport="""import Toast from 'primevue/toast';\n"""
-    primecomponent="""app.component('Toast',Toast);\n"""
-    f = open(filemain, "r")
-    for l in f.readlines():
-      l = l.strip()
-      content+=l+"\n"
-      if(l=="import 'primeicons/primeicons.css';"):
-        content+=primeimport
-      if(l=="});"):
-        content+=primecomponent
-    f.close()
-    f= open(filemain,"w")
+  global primevuedependencies
+  if("Toast" not in primevuedependencies):
+    primevuedependencies["Toast"]=True
+
+def rewriteIndexHTML(name):
+  content = f"""<!DOCTYPE html>
+<html lang="en" xml:lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{name}</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
+"""
+  fileindex = "../output/"+name+"/index.html"
+  with open(fileindex,"w") as f:
     f.write(content)
-    f.close()
-    allDependencies["toast"]=True
 
 def buildDependenciesScript(name):
-  global allDependencies, primevuecomponents, vuetifycomponents
+  global primevuedependencies,vuetifydependencies
   setup = "npm install"
-  if("vselect" in allDependencies or "vrating" in allDependencies or "vpagination" in allDependencies or
-     "vpagination" in allDependencies or "vmenu" in allDependencies or "vlist" in allDependencies or "vlistitem" in allDependencies):
+  if(len(vuetifydependencies)>0):
     setup = "npm install vuetify\nnpm install @mdi/font\n" + setup
-    vuetifycomponents = True
-  if("form" in allDependencies):
+  if("form" in primevuedependencies):
     setup = "npm install @primevue/forms\n" + setup
-    primevuecomponents = True
-  if("toast" in allDependencies or "datatable" in allDependencies or "column" in allDependencies or "slider" in allDependencies or "datepicker" in allDependencies
-     or "inputtext" in allDependencies or "inputicon" in allDependencies or "iconfield" in allDependencies or "checkbox" in allDependencies or
-    "message" in allDependencies):
+  if(len(primevuedependencies)>0):
     setup = "npm install primevue\nnpm install primeicons\nnpm install @primevue/themes\nnpm install @primevue/themes\n" + setup
-    primevuecomponents = True
   scriptsetup = "../output/"+name+"/"+name+".sh"
   setup = "# Install project dependencies packages\n" + setup
   setup+="\n\n#Run Vue project\nnpm run build\nnpm run preview"
