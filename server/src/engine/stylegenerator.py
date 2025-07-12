@@ -745,9 +745,9 @@ def generateShapeCSS(projectname,pagename,cssclass,type,elem):
     aspect-ratio: 1;
     clip-path: """+  str(clippath)+ """;
     """
-  css+="""height: """+  str(elem.style.height) + """px;
-    width: """+  str(elem.style.width) + """px;
-  """
+  #css+="""height: """+  str(elem.style.height) + """px;
+  #  width: """+  str(elem.style.width) + """px;
+  #"""
 
   if(type=="LINE"):
     css ="""\n."""+ str(cssclass) + """ {

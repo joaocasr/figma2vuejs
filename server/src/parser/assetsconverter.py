@@ -260,7 +260,6 @@ def convertToForm(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name
     formname=data["name"]
     placeholder = ""
     label={"for":"","text":""}
-    data["children"].reverse()
     for i in data["children"]:
         if(i["name"]!="submitbtn"):
             for j in i["children"]:

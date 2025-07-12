@@ -242,10 +242,9 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
 
     if(parent_data==None and nr_columnend==64):
         nrcolumn = nr_columnend
-        nr_columnend = " span "+ str(nrcolumn)
     if(parent_data==None and nr_rowend==128):
         nrrow = nr_rowend
-        nr_rowend = " span "+ str(nrrow)
+        if(data["type"]=="INSTANCE"): nr_rowend= 129
 
     tag = getElementTag(data)
     scrollBehaviour = None
