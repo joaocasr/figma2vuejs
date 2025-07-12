@@ -21,7 +21,7 @@ swapComponentTriggerIds = {}
 alldata = {}
 allEmissions = {}
 
-def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,allEmissionpaths):
+def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,allEmissionpaths,allclosePaths):
     global shareableEvents,keyEvents,swapDestinationIds, alldata, allEmissions, swapComponentTriggerIds
     alldata = data
     allEmissions = allEmissionpaths
@@ -106,22 +106,17 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,all
                         elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                     elemBehaviour[1] = hooks
                 # CLOSE ACTIONS
-                if(isinstance(action,CloseAction) and isPageRender==False and elem.getupperIdComponent()!=None):#verificar se o elemento tem uma acao close e se pertence a um elemento filho de um componente 
-                    destinationid = getElemId(action.getDestinationID())
-                    originid = getElemId(elem.getIdElement())
-                    # in order to capture the emit signals close-from222310-to22238
-                    shareableEvents.setdefault(elem.getupperIdComponent(), []).append(("close-from"+str(originid)+"-to"+str(destinationid),"show"+destinationid+'=false','v-if="show'+destinationid+'"'))
-                    methodName = "close"+originid+destinationid
-                    insertFunction("methods",hooks,methodName,closeOverlay(methodName,"close-from"+str(originid)+"-to"+str(destinationid)))
-                    elemBehaviour[0].append('v-on:click="'+methodName+'()"')
-                    elemBehaviour[1] = hooks
-                elif(isinstance(action,CloseAction) and isinstance(elem,Mcomponent) and isPageRender==False):
-                    destinationid = getElemId(action.getDestinationID())
-                    originid = getElemId(elem.getIdComponent())
-                    methodName = "close"+originid+destinationid
-                    insertFunction("methods",hooks,methodName,closeOverlay(methodName,"close-from"+str(originid)+"-to"+str(destinationid)))
-                    elemBehaviour[0].append('v-on:click="'+methodName+'()"')
-                    elemBehaviour[1] = hooks
+                if(isinstance(action,CloseAction)):
+                    #check if it's inside a component
+                    insidecomponent = checkcloseinsideComponent(elementid,allclosePaths)
+                    if(insidecomponent[0]==True):
+                        originid = getElemId(insidecomponent[1][0])
+                        destinationid = getElemId(insidecomponent[1][1])
+                        methodName = "close"+originid+destinationid
+                        if(isPageRender==False): insertFunction("methods",hooks,methodName,closeOverlay(methodName,"close-from"+str(originid)+"-to"+str(destinationid)))
+                        else: insertFunction("methods",hooks,methodName,getCloseFunction(methodName,"show"+destinationid,destinationid))
+                        elemBehaviour[0].append('@click="'+methodName+'"')
+                        elemBehaviour[1] = hooks
                 if(interaction.getInteractionType()==InteractionElement.Interaction.ONMOUSEDOWN):
                     if(len(elemBehaviour[0])>0): elemBehaviour[0].pop()
                     if(interaction.getTimeout()>0):
@@ -151,8 +146,8 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,all
                     elemBehaviour[0].append('v-on:mouseleave="'+methodName+'()"')                    
                     elemBehaviour[1] = hooks
                 if(interaction.getInteractionType()==InteractionElement.Interaction.AFTERTIMEOUT):
-                    insertFunction("created",hooks,methodName,getTimeoutFunction(methodName,interaction))
                     if(len(elemBehaviour[0])>0): elemBehaviour[0].pop()
+                    insertFunction("created",hooks,methodName,getTimeoutFunction(methodName,interaction))
                     elemBehaviour[1] = hooks                    
                 if(interaction.getInteractionType()==InteractionElement.Interaction.ONDRAG):
                     if(len(elemBehaviour[0])>0): elemBehaviour[0].pop()
@@ -195,6 +190,23 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,all
         elemBehaviour[0].append('v-show="show'+getElemId(elem.getIdElement())+'==true"')
     # SHOW CONDITIONAL ELEMENTS | from page
     if(isinstance(elem,Mcomponent) and isPageRender==True):
+        idclosepath = checkIDinClosepath(elem.getIdComponent(), allclosePaths)
+        if(idclosepath[0]==True and idclosepath[2]==True):
+            originid = getElemId(idclosepath[1][0])
+            destinationid = getElemId(idclosepath[1][1])
+            methodName = "closefrom"+originid+"to"+destinationid
+            insertFunction("methods",hooks,methodName,getCloseFunction(methodName,"show"+destinationid,destinationid))
+            elemBehaviour[0].append('v-if="show'+destinationid+'"')
+            elemBehaviour[0].append('@close-from'+originid+'-to'+destinationid+'="'+methodName+'"')
+            elemBehaviour[1] = hooks
+        if(idclosepath[0]==True and idclosepath[2]==False):
+            originid = getElemId(idclosepath[1][0])
+            destinationid = getElemId(idclosepath[1][1])
+            methodName = "closefrom"+originid+"to"+destinationid
+            insertFunction("methods",hooks,methodName,getCloseFunction(methodName,"show"+destinationid,destinationid))
+            elemBehaviour[0].append('v-if="show'+destinationid+'"')
+            elemBehaviour[0].append('@close-from'+originid+'-to'+destinationid+'="'+methodName+'"')
+            elemBehaviour[1] = hooks
         if(checkIDinEventspath(elem.getIdComponent())!=None): 
             pair = checkIDinEventspath(elem.getIdComponent())
             methodName = "openOverlay"+getElemId(pair[0])+"_"+getElemId(pair[1])
@@ -275,6 +287,18 @@ def swapTopmostOverlay(name,event):
 def openTopOverlay(name,event):
     function = """\t\t""" + name + "(){" + """
             this.$emit('""" + event +  """');
+        }""" 
+    return function
+
+def getCloseFunction(name,variable,elementid):
+    global alldata
+    changeswaped = ""
+    for x in alldata:
+        if("showswaped"+getElemId(elementid) in x):
+            changeswaped = "this.showswaped"+getElemId(elementid)+"= false"+"\n"
+    function = """\t\t""" + name + "(){" + """
+            this.""" + variable +  """ = false;"""+f"""
+            {changeswaped}"""+"""
         }""" 
     return function
 
@@ -678,6 +702,34 @@ def isAllFrame(l):
         if(el[2]!="FRAME"): allframe = False
     if(len(l)==0): return False
     return allframe
+
+
+def checkcloseinsideComponent(elemenid,allclosePaths):
+    inside = False
+    r = None
+    for pair in allclosePaths:
+        if(int(getElemId(pair[0]))+1==int(getElemId(elemenid)) and len(allclosePaths[pair])==1 and allclosePaths[pair][0][2]=="COMPONENT"):
+            inside = True
+            r= (pair[0],pair[1])
+            break
+        if((getElemId(pair[0])==getElemId(elemenid) or getElemId(pair[1])==getElemId(elemenid)) and allclosePaths[pair][0][2]=="COMPONENT"):
+            inside = True
+            r= (pair[0],pair[1])
+            break
+    return (inside,r)
+    
+def checkIDinClosepath(id,allclosePaths):
+    catchemitevent = False
+    pagelevel = False
+    r = None
+    for pair in allclosePaths:
+        for p in allclosePaths[pair]:
+            if(getElemId(p[1])==getElemId(id) and p[2]=="COMPONENT"):
+                catchemitevent = True   
+                if(len(allclosePaths[pair])>=2 and getElemId(allclosePaths[pair][0][0])==getElemId(id) or getElemId(allclosePaths[pair][0][1])==getElemId(id)):
+                    pagelevel = True 
+                r = (pair[0],pair[1])
+    return (catchemitevent,r,pagelevel)    
 
 def checkOverlayTrigger(id):
     global allEmissions

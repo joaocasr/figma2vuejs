@@ -47,6 +47,7 @@ pageWidth = -1
 tags = ["nav","footer","main","section","aside","article","p","header","h1","h2","h3","h4","h5","h6","ul","li"]
 notPageElems = {}
 overlayInsideInstances = {}
+closeIds = []
 pageOverlays = {}
 event_EmissionPaths = {}
 overlayTriggers = []
@@ -58,7 +59,7 @@ batchi=0
 batchf=50
 
 def getFigmaData(data):
-    global allpages, allcomponents,pageComponents, figmadata, refs, overlayInsideInstances, pageOverlays, overlayTriggers, variants, scrollElements, allimages, allsvgs, event_EmissionPaths, logicDependentComponents
+    global allpages, allcomponents,pageComponents, figmadata, refs, overlayInsideInstances, pageOverlays, overlayTriggers, variants, scrollElements, allimages, allsvgs, event_EmissionPaths, closeIds, logicDependentComponents
     if(data!=None):
         figmadata=data
     figmadata["name"] = getFormatedName(figmadata["name"])
@@ -74,6 +75,7 @@ def getFigmaData(data):
     transition_nodeIds = []
     event_EmissionPaths = {}
     variants = []
+    closeIds = []
     allimages = []
     allsvgs = []
     parsePageEntities(figmadata)
@@ -136,7 +138,9 @@ def getFigmaData(data):
                     updateElement(c,el["data"]["id"],interactions)
                     updateComponentPage(p,c,allpages)
 
-    return (project_name, allpages, orphanComponents, refs, variants, transition_nodeIds, event_EmissionPaths)
+    closePaths = getClosePaths(closeIds,event_EmissionPaths)
+
+    return (project_name, allpages, orphanComponents, refs, variants, transition_nodeIds, event_EmissionPaths, closePaths)
 
 def parsePageEntities(data):
     global allpages
@@ -1093,7 +1097,31 @@ def updateElement(c,elemid,interactions):
     else:
         for ch in c.children:
             updateElement(ch,elemid,interactions)
-            
+
+
+def belongsToElem(elem,id):
+    if(elem and elem["id"]==id):
+        return True
+    if("children" in elem):
+        for ch in elem["children"]:
+            r = belongsToElem(ch,id)
+            if r:
+                return True
+    return False
+     
+def getClosePaths(closeIds,event_EmissionPaths):
+    closePaths = {}
+    for pair in closeIds:
+        for ee in event_EmissionPaths:
+            if(pair[1]==ee[1]): 
+                if((pair[0],pair[1],getElemId(ee[0])) in closePaths and len(event_EmissionPaths[ee])>0 or
+                   not (pair[0],pair[1],getElemId(ee[0])) in closePaths and len(event_EmissionPaths[ee])>=0): 
+                    l = list(filter(lambda x: "#Page" in x[0] or x[2]=="INSTANCE",event_EmissionPaths[ee]))
+                    l.append(pair)
+                    l.reverse()
+                    closePaths[(pair[0],pair[1],getElemId(ee[0]))] = l
+    return closePaths
+                
 def getCompTopPath(elem,ids,path=None):
     if path is None:
         path = []
@@ -1230,7 +1258,7 @@ def updateComponentPage(pagename,comp,allpages):
                 allpages[pagename].components[idx] = comp
 
 def setLogic(melement,pagename,data,parent_data,firstlevelelem,xielem,yielem,elementwidth,elementheight,page_width,page_height,pageX,pageY,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,element_interactions):
-    global allpages, allcomponents,pageComponents, logicDependentComponents, refs, overlayInsideInstances, pageOverlays, overlayTriggers, variants, scrollElements, allimages, allsvgs, event_EmissionPaths
+    global allpages, allcomponents,pageComponents, logicDependentComponents, refs, overlayInsideInstances, pageOverlays, overlayTriggers, variants, scrollElements, allimages, allsvgs, event_EmissionPaths, closeIds
     for interaction in data["interactions"]:
         type = interaction["trigger"]["type"]
         interactionelement = InteractionElement()
@@ -1391,6 +1419,7 @@ def setLogic(melement,pagename,data,parent_data,firstlevelelem,xielem,yielem,ele
             if(action!=None and action["type"]=="CLOSE"):
                 closeAction = CloseAction(firstlevelelem["id"],transition)
                 interactionelement.addAction(closeAction)
+                closeIds.append((data["id"],firstlevelelem["id"],firstlevelelem["type"],firstlevelelem["id"]))
 
         element_interactions.append(interactionelement)
     return element_interactions

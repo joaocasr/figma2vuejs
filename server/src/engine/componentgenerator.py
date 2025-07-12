@@ -23,14 +23,15 @@ allvariants = []
 componentMethods = {}
 alltransitionodes = []
 allEmissionpaths = {}
+allclosePaths = {}
 allProps = {}
 auxiliarImports = dict()
 pagename=""
 globalprojectname=""
 componentData = {}
 
-def buildcomponent(component,projectname,pagesInfo,refs,variants,transition_nodeIds,event_EmissionPaths):
-    global pagename,globalprojectname,allhooks,allpagesInfo,allrefs,nestedComponents,allvariants,allProps,componentData,alltransitionodes,allEmissionpaths
+def buildcomponent(component,projectname,pagesInfo,refs,variants,transition_nodeIds,event_EmissionPaths,closePaths):
+    global pagename,globalprojectname,allhooks,allpagesInfo,allrefs,nestedComponents,allvariants,allProps,componentData,alltransitionodes,allEmissionpaths,allclosePaths
     name = component.componentName
     allhooks[name] = {}
     auxiliarImports[name] = set()
@@ -40,6 +41,7 @@ def buildcomponent(component,projectname,pagesInfo,refs,variants,transition_node
     allProps = component.getProps()
     componentData = component.getData()
     allEmissionpaths = event_EmissionPaths
+    allclosePaths = closePaths 
     # build elements from the component  
     allpagesInfo = pagesInfo
     output = ""
@@ -83,7 +85,7 @@ def processChildren(data,projectname,name,idcomponent):
         return output
 
 def applytransformation(elem,projectname,pagename,idcomponent):
-    global allhooks, allpagesInfo, allrefs, nestedComponents, allvariants, allProps, componentData, allEmissionpaths
+    global allhooks, allpagesInfo, allrefs, nestedComponents, allvariants, allProps, componentData, allEmissionpaths, allclosePaths
     cssclass = ""
     if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.idElement)
     else: cssclass = getElemId(elem.idComponent)
@@ -93,7 +95,7 @@ def applytransformation(elem,projectname,pagename,idcomponent):
         ref = f' ref="ref{cssclass}" '
     if(elem.style.getgridArea()!=None):
         id = ' id="'+elem.style.getgridArea()+'"'
-    directives, hooks = handleBehaviour(elem,allpagesInfo,pagename,False,allvariants,componentData,allEmissionpaths)
+    directives, hooks = handleBehaviour(elem,allpagesInfo,pagename,False,allvariants,componentData,allEmissionpaths,allclosePaths)
     if(hooks!=None): 
         for hook in hooks:
             allhooks[pagename].setdefault(hook, []).extend(hooks[hook])
@@ -276,7 +278,7 @@ def writeVueComponent(name,project_name,content,component,pagesInfo):
         pagehooks=pagehooks[:-2]+"\n\t},"
     pagehooks = pagehooks[:-1]
     if(len(pagehooks)>0): pagehooks = ",\n    "+pagehooks
-    template = '<div>' + content + '</div>' #'<div class="grid-item-'+idcomponent+' component'+ idcomponent +'"'+ ">"+ content + '</div>'
+    template = '<div>'+ content + '</div>' #'<div class="grid-item-'+idcomponent+' component'+ idcomponent +'"'+ ">"+ content + '</div>'
     props =""
     if(component.getProps()!={}):
         props = """\n    props:{

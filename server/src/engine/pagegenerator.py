@@ -26,12 +26,13 @@ pageMethods = {}
 allvariants = []
 alltransitionodes = []
 allEmissionpaths = {}
+allclosePaths = {}
 dataEntities = {}
 pagename = ""
 projectname = ""
 
-def buildpage(name,page,pagesInfo,refs,variants,transition_nodeIds,event_EmissionPaths):
-    global pagename,projectname,allhooks,imports,components,allPagesInfo,allrefs,allvariants,dataEntities,alltransitionodes,allEmissionpaths
+def buildpage(name,page,pagesInfo,refs,variants,transition_nodeIds,event_EmissionPaths,closePaths):
+    global pagename,projectname,allhooks,imports,components,allPagesInfo,allrefs,allvariants,dataEntities,alltransitionodes,allEmissionpaths,allclosePaths
     #setup a page
     allhooks[page.pagename] = {}
     imports[page.pagename] = []
@@ -45,6 +46,7 @@ def buildpage(name,page,pagesInfo,refs,variants,transition_nodeIds,event_Emissio
     allvariants = variants
     alltransitionodes = transition_nodeIds
     allEmissionpaths = event_EmissionPaths
+    allclosePaths = closePaths
     pagename = page.pagename
     projectname = name
     if(hasAnimationVar(page.getData())):
@@ -74,7 +76,7 @@ def processChildren(data,projectname,page):
 
 # Do a better handling of the tags
 def applytransformation(elem,projectname,page):
-    global allPagesInfo, allhooks, components, componentAssets, allrefs, allvariants, dataEntities, allEmissionpaths
+    global allPagesInfo, allhooks, components, componentAssets, allrefs, allvariants, dataEntities, allEmissionpaths, allclosePaths
     pagename = page.pagename
     cssclass = ""
     if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.idElement)
@@ -83,7 +85,7 @@ def applytransformation(elem,projectname,page):
     if(pagename in allrefs and cssclass in allrefs[pagename]):
         ref = f' ref="ref{cssclass}" '
     # insert directives and functions if there is some behaviour
-    directives, hooks = handleBehaviour(elem,allPagesInfo,pagename,True,allvariants,page.getData(),allEmissionpaths)
+    directives, hooks = handleBehaviour(elem,allPagesInfo,pagename,True,allvariants,page.getData(),allEmissionpaths,allclosePaths)
     if(hooks!=None): 
         for hook in hooks:
             allhooks[pagename].setdefault(hook, []).extend(hooks[hook])
