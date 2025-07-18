@@ -528,7 +528,7 @@ def generateInputSearchFilterCssProperties(projectname,pagename,cssclass,elem):
 }
 ."""+ str(cssclass) + """ .p-inputtext{
    --p-inputtext-background: rgba("""+  str(elem.style.getbackgroundcolor())+""");
-   --p-inputtext-color: rgba("""+  str(elem.style.getcolor())+""");
+   --p-inputtext-color: """+  str(elem.style.getcolor())+""";
    --p-inputtext-border-radius:"""+  str(elem.style.getborderradius())+"""px;
     padding-left: 35px; 
 }

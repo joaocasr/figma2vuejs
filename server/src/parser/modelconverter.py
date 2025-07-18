@@ -144,12 +144,15 @@ def getFigmaData(data):
 
 def parsePageEntities(data):
     global allpages
-    pages = []
     for page in data["document"]["children"][0]["children"]:
         if(page["type"]=="FRAME" and "#Page" in page["name"]):
             pagina = Mpage(page["name"],page["name"],page["id"])
-            pages.append(pagina)
-            allpages[pagina.getPagename()] = pagina
+            if(pagina.getPagename() not in allpages):
+                allpages[pagina.getPagename()] = pagina
+            else:
+                page["name"] = page["name"]+getElemId(page["id"])
+                pagina = Mpage(page["name"],page["name"],page["id"])
+                allpages[pagina.getPagename()] = pagina                
     iterate_nestedElements(data)
     return allpages
 
@@ -387,7 +390,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         return melement
     elif(data["name"]=="Menu" and data["type"]=="INSTANCE"):
         melement = convertToMenu(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,data["id"],data["name"])
-        allimages.extend([melement.iconImage])
+        if(melement.iconImage!=None): allimages.extend([melement.iconImage])
         menuid = getElemId(data["id"])
         if(not pagename in allpages):
             addComponentVariable(pagename,{f"menuoptions{menuid}":melement.options})

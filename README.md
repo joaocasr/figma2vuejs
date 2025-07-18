@@ -1,6 +1,6 @@
 # figma2vuejs
 
-![Status](https://img.shields.io/badge/status-Development_Phase-orange) ![Stability](https://img.shields.io/badge/stability-Stable-green)
+![Status](https://img.shields.io/badge/status-development_phase-orange) ![Stability](https://img.shields.io/badge/stability-incomplete%20coverage-yellow)
 
 figma2vuejs is a MBUID tool that let's you convert figma prototypes into fully functional Vue.js projects.
 

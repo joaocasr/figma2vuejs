@@ -40,10 +40,11 @@ def getVuetifyMenu(elem,menuid,idcomponent=None):
       <template v-slot:activator="'''+"{ props }"+'''">
         <div v-bind="props">
         '''
-    template+=f'''<img alt="{getFormatedName(elem.iconImage["name"])+getElemId(elem.iconImage["id"])}"
-            src="/{getFormatedName(elem.iconImage["name"])+getElemId(elem.iconImage["id"])}.png"
-          />
-          '''
+    if(elem.iconImage!=None):
+      template+=f'''<img alt="{getFormatedName(elem.iconImage["name"])+getElemId(elem.iconImage["id"])}"
+              src="/{getFormatedName(elem.iconImage["name"])+getElemId(elem.iconImage["id"])}.png"
+            />
+            '''
     template+=f'''   </div>
       </template>
       <v-list>

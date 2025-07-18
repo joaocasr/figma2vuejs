@@ -2,19 +2,15 @@ from engine.stylegenerator import overwrite_styling
 import subprocess
 import os
 
-allDependencies = {}
 vuetifydependencies = {}
 primevuedependencies = {}
 
 def VueSetup():
-  global allDependencies,vuetifydependencies,primevuedependencies
-  allDependencies = {}
+  global vuetifydependencies,primevuedependencies
   vuetifydependencies = {}
   primevuedependencies = {}
 
 def setup_project(name):
-  global allDependencies
-  allDependencies = {}
   create_project(name)
   overwrite_styling(name)
   remove_boilerview(name)
@@ -342,16 +338,16 @@ def useFormPrimeVuePlugin(name):
 def useCheckboxPrimeVuePlugin(name):
   global primevuedependencies
   if("Checkbox" not in primevuedependencies):
-    allDependencies["Checkbox"]=True
+    primevuedependencies["Checkbox"]=True
 
 def useIconFieldPrimevuePlugin(name):
   global primevuedependencies
   if("InputText" not in primevuedependencies): 
-    allDependencies["InputText"]=True
-  if("InputIcon" not in allDependencies):
-    allDependencies["InputIcon"]=True
-  if("IconField" not in allDependencies):
-    allDependencies["IconField"]=True
+    primevuedependencies["InputText"]=True
+  if("InputIcon" not in primevuedependencies):
+    primevuedependencies["InputIcon"]=True
+  if("IconField" not in primevuedependencies):
+    primevuedependencies["IconField"]=True
 
 def useDatePickerPrimevuePlugin(name):
   global primevuedependencies
@@ -360,7 +356,7 @@ def useDatePickerPrimevuePlugin(name):
 
 
 def useSliderPrimevuePlugin(name):
-  global allDependencies
+  global primevuedependencies
   if("Slider" not in primevuedependencies):
     primevuedependencies["Slider"]=True
 

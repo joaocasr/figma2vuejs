@@ -395,10 +395,10 @@ def getMenuFunction(elem,allPagesInfo,functionname):
     for option in elem.options:
         if("destination" in option):
             destination = getPageById(option["destination"],allPagesInfo) 
-            bodyfunction += f'this.$router.push('+'{path:"/' + destination.lower() + '"});\n'
-            function =f"""        {functionname}()"""+"{"+f"""
-               {bodyfunction}"""+"""
-            }"""
+            if(destination!="" and destination!=None):
+                bodyfunction += f'    if (item.option == "{option["option"]}") ' + '{ ' + f'this.$router.push({{ path: "/{destination.lower()}" }});' + '}\n'
+    function =f"""        {functionname}(item)"""+"{"+f"""
+        {bodyfunction}"""+"""        }"""
     return function
 
 def showOverlayonHover(name,variable):
