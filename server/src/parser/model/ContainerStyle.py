@@ -20,6 +20,7 @@ class ContainerStyle(object):
 		self.borderColor = None
 		self.borderWidth = None
 		self.borderStyle = None
+		self.individualStrokeweights = None
 		self.borderRadius = None
 		self.gridcolumnStart = None
 		self.gridcolumnEnd = None
@@ -190,6 +191,15 @@ class ContainerStyle(object):
 		"""@ParamType borderWidth String
 		@ReturnType void"""
 		self.borderWidth = borderWidth
+
+	def getIndividualStrokeWeights(self):
+		"""@ReturnType dict"""
+		return self.individualStrokeweights
+
+	def setIndividualStrokeWeights(self, individualStrokeweights):
+		"""@ParamType individualStrokeweights dict
+		@ReturnType void"""
+		self.individualStrokeweights = individualStrokeweights
 
 	def getBorderStyle(self):
 		"""@ReturnType String"""

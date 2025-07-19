@@ -101,24 +101,24 @@ def applytransformation(elem,projectname,pagename,idcomponent):
             allhooks[pagename].setdefault(hook, []).extend(hooks[hook])
     generateActionsAnimationStyle(projectname,pagename,cssclass,elem)
     if(isinstance(elem, TextElement)):
-        if(elem.tag==""):
-            elem.tag = "p"
+        if(elem.gettag()==""):
+            elem.settag("p")
         txtContent = elem.text
         href = getTextDestination(elem,allpagesInfo)
         if(href!=None):
-            elem.tag = "a"
+            elem.settag("a")
             href = 'href="/'+href+'" '
         else: href = ""
         generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
         if("atr"+cssclass in allProps.keys()):
             txtContent = "{{"+ f"atributes.atr{cssclass}" +"}}"
-        return ("<"+elem.tag+f" {href}{ref}class="+'"grid-item-'+ idcomponent +' text'+ cssclass +'" '+' '.join(d for d in directives)+'>'+txtContent, "</"+elem.tag+">")
+        return ("<"+elem.gettag()+f" {href}{ref}class="+'"grid-item-'+ idcomponent +' text'+ cssclass +'" '+' '.join(d for d in directives)+'>'+txtContent, "</"+elem.gettag()+">")
     if(isinstance(elem, ContainerElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
-        if(elem.tag==""):
-            elem.tag = "div"
-        html = "<"+elem.tag+f" {ref}class="+'"grid-item-'+ idcomponent +' container'+ cssclass + '" '+ ' '.join(d for d in directives) +">"
-        return (html, "</"+elem.tag+">")
+        if(elem.gettag()==""):
+            elem.settag("div")
+        html = "<"+elem.gettag()+f" {ref}class="+'"grid-item-'+ idcomponent +' container'+ cssclass + '" '+ ' '.join(d for d in directives) +">"
+        return (html, "</"+elem.gettag()+">")
     if(isinstance(elem, ShapeElement)):
         cssclassifier = ""
         cssclassifier = elem.getType().lower() + str(cssclass)
@@ -128,18 +128,18 @@ def applytransformation(elem,projectname,pagename,idcomponent):
         return (html, "</div>")
     if(isinstance(elem, ImageElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
-        if(elem.tag==""):
-            elem.tag = "img"
+        if(elem.gettag()==""):
+            elem.settag("img")
         imgPath = 'src="'+elem.getimgpath()+'"'
         if("atr"+cssclass in allProps.keys()):
             imgPath = ':src="'+ f"atributes.atr{cssclass}" +'"'
         doesImageExist(elem.getimgpath(),elem,projectname)
-        return ("<"+elem.tag +f" {ref}class="+'"grid-item-'+ idcomponent + ' container'+ cssclass + '" ' + imgPath +f' alt="container{cssclass}" '+ ' '.join(d for d in directives) , "/>")
+        return ("<"+elem.gettag() +f" {ref}class="+'"grid-item-'+ idcomponent + ' container'+ cssclass + '" ' + imgPath +f' alt="container{cssclass}" '+ ' '.join(d for d in directives) , "/>")
     
     if(isinstance(elem, VectorElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         doesImageExist(elem.getsvgpath(),elem,projectname)
-        return ("<"+elem.tag +f" {ref}class="+'"grid-item-'+idcomponent+' container'+ cssclass + '" '+ 'src="' + elem.getsvgpath() + '"' +f' alt="container{cssclass}" '+ ' '.join(d for d in directives) , "/>")
+        return ("<"+elem.gettag() +f" {ref}class="+'"grid-item-'+idcomponent+' container'+ cssclass + '" '+ 'src="' + elem.getsvgpath() + '"' +f' alt="container{cssclass}" '+ ' '.join(d for d in directives) , "/>")
 
     if(isinstance(elem, Mcomponent) and (elem.getNameComponent()=="ReadOnlyRating" or elem.getNameComponent()=="InteractiveRating")):
         useRatingVuetifyPlugin(projectname)

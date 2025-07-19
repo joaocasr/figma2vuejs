@@ -199,24 +199,24 @@ def applytransformation(elem,projectname,page):
         compend = f"""</{component}>"""
         return (compbegin,compend)
     if(isinstance(elem, TextElement)):
-        if(elem.tag==""):
-            elem.tag = "p"
+        if(elem.gettag()==""):
+            elem.settag("p")
         txt = re.sub(r"\n", "<br/>",elem.text)
         href = getTextDestination(elem,allPagesInfo)
         if(href!=None):
-            elem.tag = "a"
+            elem.settag("a")
             href = 'href="/'+href+'" '
         else: href = ""
         generateElemCssProperties(projectname,pagename,'text'+ cssclass,elem)
         if(belongstoDataObject(cssclass,page)[1]==True):
             txt = "{{"+f'{belongstoDataObject(cssclass,page)[0]}.atr{cssclass}'+"}}"   
-        return ("<"+ elem.tag + id + ref +f" {href}class="+'"grid-item text'+ cssclass  + '" '+ ' '.join(d for d in directives)+ f"{atributeProps}"+">"+txt, "</"+elem.tag+">")
+        return ("<"+ elem.gettag() + id + ref +f" {href}class="+'"grid-item text'+ cssclass  + '" '+ ' '.join(d for d in directives)+ f"{atributeProps}"+">"+txt, "</"+elem.gettag()+">")
     if(isinstance(elem, ContainerElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
-        if(elem.tag==""):
-            elem.tag = "div"
-        bgtag = "<"+elem.tag + id + ref +" class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) + f"{atributeProps}"+">"
-        edtag = "</"+elem.tag+">"
+        if(elem.gettag()==""):
+            elem.settag("div")
+        bgtag = "<"+elem.gettag() + id + ref +" class="+'"grid-item container'+ cssclass + '" '+ ' '.join(d for d in directives) + f"{atributeProps}"+">"
+        edtag = "</"+elem.gettag()+">"
         if(elem.style.getOverflowDirection()!=None):
             generateScrollCSS(projectname,pagename, cssclass,elem)
             style = ''' :style="{
@@ -232,17 +232,17 @@ def applytransformation(elem,projectname,page):
         return (bgtag,edtag)
     if(isinstance(elem, ImageElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
-        if(elem.tag==""):
-            elem.tag = "img"
+        if(elem.gettag()==""):
+            elem.settag("img")
         doesImageExist(elem.getimgpath(),elem,projectname)
         imagepath = 'src="' + elem.getimgpath()  + '"'
         if(belongstoDataObject(cssclass,page)[1]==True):
             imagepath =  ':src="' + f'{belongstoDataObject(cssclass,page)[0]}.atr{cssclass}'+'"'
-        return ("<"+elem.tag+ id + ref +f' alt="container{cssclass}"'+" class="+'"grid-item container'+ cssclass + '" '+ imagepath + ' '.join(d for d in directives) + f"{atributeProps}", "/>")
+        return ("<"+elem.gettag()+ id + ref +f' alt="container{cssclass}"'+" class="+'"grid-item container'+ cssclass + '" '+ imagepath + ' '.join(d for d in directives) + f"{atributeProps}", "/>")
     if(isinstance(elem, VectorElement)):
         generateElemCssProperties(projectname,pagename,'container'+ cssclass,elem)
         doesImageExist(elem.getsvgpath(),elem,projectname)
-        return ("<"+elem.tag+ id + ref +f' alt="container{cssclass}"'+" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getsvgpath() + '"' + ' '.join(d for d in directives) + f"{atributeProps}", "/>")
+        return ("<"+elem.gettag()+ id + ref +f' alt="container{cssclass}"'+" class="+'"grid-item container'+ cssclass + '" '+ 'src="' + elem.getsvgpath() + '"' + ' '.join(d for d in directives) + f"{atributeProps}", "/>")
     if(isinstance(elem, VideoElement)):
         cssclass= "svideo" + cssclass
         generateVideoCssProperties(projectname,pagename,cssclass,elem)
@@ -255,7 +255,7 @@ def applytransformation(elem,projectname,page):
 
         begintag = "<div"+ id + ref +" class="+'"grid-item '+ cssclassifier + '" '+ ' '.join(d for d in directives) + f"{atributeProps}"+">"
         endtag = "</div>"
-        if(elem.style.boxShadow!=None): 
+        if(elem.style.boxShadow!=None or elem.style.individualStrokeweights!=None): 
             wrapperclass = "wrapper" + cssclassifier
             begintag = "<div class="+'"grid-item '+ wrapperclass + '" ' +">"+begintag
             endtag = "</div>" + endtag

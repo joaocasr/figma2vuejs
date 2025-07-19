@@ -10,18 +10,14 @@ class Melement(PageItem):
 			ename = name.split("#")[0]
 		else:
 			ename = name
-		#self.idElement = id
-		#self.tag = tag
-		#self.children:List[PageItem] = []
 		self.interactions = []
 		self.upperIdComponent = None
 		self.zindex = 0
 		self.initialOpacity = None
 		self.hasAnimation = False
 		self.hasConditionalVisibility = False
-		self.typeElement = None
 		self.topmostnode = None
-		super().__init__(id,ename,tag,self.typeElement,[]) 
+		super().__init__(id,ename,tag,None,[]) 
 
 	def getIdElement(self):
 		return super().getId()
@@ -36,7 +32,7 @@ class Melement(PageItem):
 		self.initialOpacity = initialOpacity
 
 	def gettag(self):
-		return super.gettag()
+		return super().gettag()
 
 	def settag(self, tag):
 		super().settag(tag)
@@ -105,5 +101,5 @@ class Melement(PageItem):
 		self.interactions.extend(interactions)
 
 	def __str__(self):
-		return "(id: " + str(self.idElement) + "; tag: " + str(self.tag) + "; children : ["+ ''.join(str(c) for c in self.getChildren()) + "]" + "; interactions : ["+ ''.join(str(c) for c in self.interactions) + "])"
+		return "(id: " + str(self.idElement) + "; tag: " + str(self.gettag()) + "; children : ["+ ''.join(str(c) for c in self.getChildren()) + "]" + "; interactions : ["+ ''.join(str(c) for c in self.interactions) + "])"
 

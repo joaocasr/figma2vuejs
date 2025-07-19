@@ -516,7 +516,8 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                     rgbaborder = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , a)
                     shapestyle.setBorderColor("rgba("+','.join(str(val) for val in rgbaborder)+")")
         if("strokeWeight" in data): shapestyle.setborderWidth(str(data["strokeWeight"]))
-        if("cornerRadius" in data): shapestyle.setborderRadius(str(data["cornerRadius"]))
+        if("strokeWeight" in data): shapestyle.setborderWidth(str(data["strokeWeight"]))
+        if("individualStrokeWeights" in data): shapestyle.setIndividualStrokeWeights(data["individualStrokeWeights"])
 
         if(data["type"]=="RECTANGLE" and "rectangleCornerRadii" in data): setCornerRadius(shapestyle,data["rectangleCornerRadii"])
         if("visible" in data and data["visible"]==False): shapestyle.setDisplay("none")
@@ -659,6 +660,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
 
             borderstyle = strokeWeight + stroketype + " rgba("+','.join(str(val) for val in rgba_stroke)+")"
             style.setBorderStyle(borderstyle)
+        if("individualStrokeWeights" in data): style.setIndividualStrokeWeights(data["individualStrokeWeights"])
         melement = ContainerElement(data["id"],tag,data["name"],style)
 
     element_interactions = []

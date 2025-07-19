@@ -792,9 +792,14 @@ def generateShapeShadowCSS(projectname,pagename,cssclass,elem):
   grid-column-end: """+  str(elem.style.gridcolumnEnd)+""";
   grid-row-start: """+  str(elem.style.gridrowStart)+""";
   grid-row-end: """+  str(elem.style.gridrowEnd)+""";
-  filter: drop-shadow("""+  str(elem.style.getBoxShadow())+""");
-}
   """
+  if(elem.style.getBoxShadow()!=None):
+    css+="""  filter: drop-shadow("""+  str(elem.style.getBoxShadow())+""");\n"""
+  if(elem.style.getIndividualStrokeWeights()!=None and "top" in elem.style.getIndividualStrokeWeights() and
+     "left" in elem.style.getIndividualStrokeWeights() and "right" in elem.style.getIndividualStrokeWeights() and 
+     "bottom" in elem.style.getIndividualStrokeWeights()):
+    css+="""  border-width:"""+  str(elem.style.getIndividualStrokeWeights()["top"])+"px "+str(elem.style.getIndividualStrokeWeights()["right"])+"px "+str(elem.style.getIndividualStrokeWeights()["bottom"])+"px "+str(elem.style.getIndividualStrokeWeights()["left"])+"px " +"""\n;"""
+  css+="  }"
   cssfile = "../output/"+projectname+"/src/assets/"+getFormatedName(pagename.lower())+".css"
   mode = "w"
   if(css not in pageCssproperties[getFormatedName(pagename.lower())]):
@@ -828,7 +833,7 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     else:
       csskeyvalues+=f"display: flex;{newline}"
     csskeyvalues+=f"overflow-wrap: break-word;{newline}" #word-break: break-word;{newline}
-    if(elem.tag=="a"):
+    if(elem.gettag()=="a"):
       csskeyvalues+=f"text-decoration: none;{newline}"
     if(elem.style.textAutoResize == "WIDTH_AND_HEIGHT"):
       csskeyvalues+=f"white-space: normal;{newline}"
@@ -881,8 +886,11 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     if elem.style.backgroundColor != None: csskeyvalues+=f"background-color: {elem.style.backgroundColor};{newline}"
     if elem.style.background != None: csskeyvalues+=f"background: {elem.style.background};{newline}"
     if elem.style.boxShadow != None: csskeyvalues+=f"box-shadow: {elem.style.boxShadow};{newline}"
+    if(elem.style.getIndividualStrokeWeights()!=None and "top" in elem.style.getIndividualStrokeWeights() and "left" in elem.style.getIndividualStrokeWeights() and "right" in elem.style.getIndividualStrokeWeights() and 
+     "bottom" in elem.style.getIndividualStrokeWeights()): csskeyvalues+=f"border-width: "+str(elem.style.getIndividualStrokeWeights()["top"])+"px "+str(elem.style.getIndividualStrokeWeights()["right"])+"px "+str(elem.style.getIndividualStrokeWeights()["bottom"])+"px "+str(elem.style.getIndividualStrokeWeights()["left"])+f"px;{newline}"
     if elem.style.margin != None: csskeyvalues+=f"margin: {elem.style.margin};{newline}"
-    if elem.style.borderStyle != None: csskeyvalues+=f"border: {elem.style.borderStyle};{newline}"
+    if elem.style.borderStyle != None and elem.style.getIndividualStrokeWeights()==None: csskeyvalues+=f"border: {elem.style.borderStyle};{newline}"
+    if elem.style.borderStyle != None and elem.style.getIndividualStrokeWeights()!=None: csskeyvalues+=f'border-style: {elem.style.borderStyle.split(" ")[1]};{newline}border-color: {elem.style.borderStyle.split(" ")[2]};{newline}'
     if elem.style.borderRadius != None: csskeyvalues+=f"border-radius: {elem.style.borderRadius}px;{newline}"
     if elem.style.gridcolumnStart != None: csskeyvalues+=f"grid-column-start: {str(elem.style.gridcolumnStart)};{newline}"
     if elem.style.gridcolumnEnd != None: csskeyvalues+=f"grid-column-end: {str(elem.style.gridcolumnEnd)};{newline}"

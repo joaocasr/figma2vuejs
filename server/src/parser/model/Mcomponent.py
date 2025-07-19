@@ -1,15 +1,9 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-from typing import List
 from  parser.model.PageItem import PageItem
 
 class Mcomponent(PageItem):
 	def __init__(self,id,name,tag,type,elementos=[]):
-		#self.idComponent = id
-		#self.componentName = name
-		#self.children:List[PageItem] = elementos
-		#self.tag = tag
-		#self.type = type
 		self.style = None
 		self.interactions = []
 		self.data = []
@@ -47,7 +41,7 @@ class Mcomponent(PageItem):
 
 	def gettag(self):
 		"""@ReturnType String"""
-		return super.gettag()
+		return super().gettag()
 
 	def setTagComponent(self, tag):
 		"""@ParamType tag String
@@ -182,4 +176,4 @@ class Mcomponent(PageItem):
 		self.interactions.extend(interactions)
 
 	def __str__(self):
-		return "(id: " + str(self.idComponent) + ",name: "+  str(self.componentName) + ",type: "+  str(self.type) + ",tag: "+  str(self.tag) + "; interactions: ["+ ";".join(str(val) for val in self.interactions)  +"]" + ", children: [" + ";".join(str(val) for val in self.getChildren()) + "],"+ "data: ["+ ";".join(str(val) for val in self.data)  +"])" 
+		return "(id: " + str(self.idComponent) + ",name: "+  str(self.componentName) + ",type: "+  str(self.type) + ",tag: "+  str(self.gettag()) + "; interactions: ["+ ";".join(str(val) for val in self.interactions)  +"]" + ", children: [" + ";".join(str(val) for val in self.getChildren()) + "],"+ "data: ["+ ";".join(str(val) for val in self.data)  +"])" 

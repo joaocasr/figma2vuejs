@@ -16,6 +16,7 @@ class ShapeStyle(object):
 		self.transform = None
 		self.gridArea = None
 		self.boxShadow = None
+		self.individualStrokeweights = None
 		self.display = None
 		self.gridtemplatecolumns = None
 		self.gridtemplaterows = None
@@ -164,6 +165,15 @@ class ShapeStyle(object):
 		"""@ParamType borderRadius String
 		@ReturnType void"""
 		self.borderRadius = borderRadius
+
+	def getIndividualStrokeWeights(self):
+		"""@ReturnType dict"""
+		return self.individualStrokeweights
+
+	def setIndividualStrokeWeights(self, individualStrokeweights):
+		"""@ParamType individualStrokeweights dict
+		@ReturnType void"""
+		self.individualStrokeweights = individualStrokeweights
 
 	def getOpacity(self):
 		return self.opacity
