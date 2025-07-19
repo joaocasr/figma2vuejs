@@ -59,11 +59,11 @@ def buildpage(name,page,pagesInfo,refs,variants,transition_nodeIds,event_Emissio
 
 def processChildren(data,projectname,page):
     if(data==None): return ""
-    if(len(data.children)>0):
+    if(len(data.getChildren())>0):
         content=""
         output, endtag = applytransformation(data,projectname,page)
         output, endtag = insertTransitionComponent(data,output, endtag)
-        for element in data.children:
+        for element in data.getChildren():
             content += processChildren(element,projectname,page)
 
         return output + content + endtag
@@ -79,8 +79,8 @@ def applytransformation(elem,projectname,page):
     global allPagesInfo, allhooks, components, componentAssets, allrefs, allvariants, dataEntities, allEmissionpaths, allclosePaths
     pagename = page.pagename
     cssclass = ""
-    if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.idElement)
-    else: cssclass = getElemId(elem.idComponent)
+    if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.getIdElement())
+    else: cssclass = getElemId(elem.getIdComponent())
     ref=""
     if(pagename in allrefs and cssclass in allrefs[pagename]):
         ref = f' ref="ref{cssclass}" '
@@ -100,9 +100,9 @@ def applytransformation(elem,projectname,page):
         atributeProps = ' :atributes="getProps(dataObjects)"'
         addPropsFunction(allhooks,pagename)
     if(isObjectDataList(cssclass,page)==True):
-        for e in elem.children:
-            if(isinstance(e,Melement) and belongstoDataList(getElemId(e.idElement),page)==True): dataEntities[pagename].append((Melement,getFormatedName(e.name.lower())))
-            if(isinstance(e,Mcomponent) and belongstoDataList(getElemId(e.idComponent),page)==True): dataEntities[pagename].append((Mcomponent,getFormatedName(e.componentName.lower())))
+        for e in elem.getChildren():
+            if(isinstance(e,Melement) and belongstoDataList(getElemId(e.getIdElement()),page)==True): dataEntities[pagename].append((Melement,getFormatedName(e.getName().lower())))
+            if(isinstance(e,Mcomponent) and belongstoDataList(getElemId(e.getIdComponent()),page)==True): dataEntities[pagename].append((Mcomponent,getFormatedName(e.getNameComponent().lower())))
         
         addPropsFunction(allhooks,pagename)
         if(len(page.getobjectDL()[f'list{cssclass}'])>0):
@@ -263,13 +263,13 @@ def applytransformation(elem,projectname,page):
 
         return (begintag,endtag)
     if(isinstance(elem, Mcomponent)):
-        componentName = getFormatedName(elem.componentName.capitalize())
-        classname = ' class="'+"grid-item-"+getElemId(elem.idComponent)+' component'+ getElemId(elem.idComponent)     
+        componentName = getFormatedName(elem.getNameComponent().capitalize())
+        classname = ' class="'+"grid-item-"+getElemId(elem.getIdComponent())+' component'+ getElemId(elem.getIdComponent())     
         if(elem.style.getPosition()!=None):
             classname += " pos"+componentName.lower()
             setComponentPositionCSS(projectname,pagename,"pos"+componentName.lower(),elem)
         if(isComponentInstance(elem.getIdComponent())!=True):
-            components.setdefault(pagename, {}).add(getFormatedName(elem.componentName.lower()))
+            components.setdefault(pagename, {}).add(getFormatedName(elem.getNameComponent().lower()))
         if(componentName=="Form"):
             auxiliarImports[pagename].add("import { ref } from 'vue'")
             auxiliarImports[pagename].add('import { useToastStore } from "@/stores/toast";')
@@ -385,7 +385,7 @@ def handleClipPathOverlaping(elementos):
                     updatePosition(elem1)
                     if(isinstance(elem1, Mcomponent) and elem1.getisVariant()==True):
                         updateZIndex(projectname,pagename,elem1,1)
-                    elem2.children.append(elem1)
+                    elem2.getChildren().append(elem1)
                     elem2.style.setDisplay("grid")
                     repeatedElements.append(j)
 
@@ -393,8 +393,8 @@ def handleClipPathOverlaping(elementos):
         del elementos[index]
 
     for c in elementos:
-        if(len(c.children)>0):
-            handleClipPathOverlaping(c.children)
+        if(len(c.getChildren())>0):
+            handleClipPathOverlaping(c.getChildren())
 
 def getValue(value):
     if(value==None): return 0
@@ -407,8 +407,8 @@ def getValue(value):
 def flatTree(elementos):
     for node in elementos:
         yield node
-        if node.children:
-            yield from flatTree(node.children)
+        if node.getChildren():
+            yield from flatTree(node.getChildren())
 
 def anyShapes(elementos):
     allShapes = list(filter(lambda x: (isinstance(x,ShapeElement)),list(flatTree(elementos))))

@@ -1,5 +1,8 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
+from typing import List
+from parser.model.PageItem import PageItem
+from parser.model.Mcomponent import Mcomponent
 from utils.tools import getId
 
 class Mpage(object):
@@ -8,8 +11,8 @@ class Mpage(object):
 		self.pagename = name
 		self.pagepath = path
 		self.idpage = id
-		self.elements = []
-		self.components = []
+		self.elements:List[PageItem] = []
+		self.components:List[Mcomponent] = []
 		self.data = []
 		self.objectDL = {}
 		self.props = []

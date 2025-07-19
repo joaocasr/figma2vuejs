@@ -93,7 +93,7 @@ def getFigmaData(data):
                 for i in overlayInsideInstances[c.getIdComponent()]:
                     if(i[0]==c.getIdComponent()):
                         c.addChildren(i[1])
-                    manipulateComponentDom(c.children,i)
+                    manipulateComponentDom(c.getChildren(),i)
     # insert overlay frame elements on page
     for p in pageOverlays:
         for el in pageOverlays[p]:
@@ -984,9 +984,9 @@ def assignComponentDataById(id):
 
 def manipulateComponentDom(elems,i):
     for el in elems:
-        if(isinstance(el,Melement) and i[0]==el.idElement):
+        if(isinstance(el,Melement) and i[0]==el.getIdElement()):
             el.addChildren(i[1])
-        manipulateComponentDom(el.children,i)
+        manipulateComponentDom(el.getChildren(),i)
 
 def resolveNameConflit(componentelement,style,pagename):
     global pageComponents
@@ -1028,8 +1028,8 @@ def insertVariantComponents(elements,variants):
         for el in elements:
             if(isinstance(el,Melement) and el.getIdElement()==variant[0]):
                 el.addChildren(variant[1])
-            if(len(el.children)>0):
-                insertVariantComponents(el.children,variants)
+            if(len(el.getChildren())>0):
+                insertVariantComponents(el.getChildren(),variants)
     
 def getVariantElement(id,data):
     if(data["id"]==id):
@@ -1067,7 +1067,7 @@ def hasCloseAction(interactions):
 def updateInnerChildren(elements,el):
     for element in elements:
         if(isinstance(element,ContainerElement) and element.getIdElement()==el):
-            for innerchildren in element.children:
+            for innerchildren in element.getChildren():
                 innerchildren.style.setGridcolumnEnd(None)
                 innerchildren.style.setGridcolumnStart(None)
                 innerchildren.style.setGridrowStart(None)
@@ -1075,7 +1075,7 @@ def updateInnerChildren(elements,el):
                 innerchildren.style.setMinHeight(innerchildren.style.getHeight())
                 innerchildren.style.setMinWidth(innerchildren.style.getWidth())
                 innerchildren.style.setMargin("1em")
-        if(len(element.children)>0): updateInnerChildren(element.children,el)
+        if(len(element.getChildren())>0): updateInnerChildren(element.getChildren(),el)
         
 def setVariantProperties(component,properties):
     cproperties = {}
@@ -1098,7 +1098,7 @@ def updateElement(c,elemid,interactions):
     if(isinstance(c,Mcomponent) and elemid==c.getIdComponent()):
         c.addInteractionsList(interactions)
     else:
-        for ch in c.children:
+        for ch in c.getChildren():
             updateElement(ch,elemid,interactions)
 
 

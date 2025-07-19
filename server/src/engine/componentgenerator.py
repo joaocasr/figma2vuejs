@@ -32,7 +32,7 @@ componentData = {}
 
 def buildcomponent(component,projectname,pagesInfo,refs,variants,transition_nodeIds,event_EmissionPaths,closePaths):
     global pagename,globalprojectname,allhooks,allpagesInfo,allrefs,nestedComponents,allvariants,allProps,componentData,alltransitionodes,allEmissionpaths,allclosePaths
-    name = component.componentName
+    name = component.getNameComponent()
     allhooks[name] = {}
     auxiliarImports[name] = set()
     componentAssets[name] = []
@@ -45,7 +45,7 @@ def buildcomponent(component,projectname,pagesInfo,refs,variants,transition_node
     # build elements from the component  
     allpagesInfo = pagesInfo
     output = ""
-    idcomponent = getElemId(component.idComponent)
+    idcomponent = getElemId(component.getIdComponent())
     pagename=name
     globalprojectname=projectname
     # the position of the variants will be the same as their default variant instance
@@ -59,9 +59,9 @@ def buildcomponent(component,projectname,pagesInfo,refs,variants,transition_node
     if(hasAnimationVar(component.getData())):
         componentAssets[name].extend([" Transition"])
         addSetAnimationVarFunction(allhooks,pagename)
-    if(anyShapes(component.children)==True): handleClipPathOverlaping(component.children)
-    if(len(component.interactions)>0 and len(component.children)>0): component.children[0].interactions.extend(component.interactions)
-    for element in component.children:
+    if(anyShapes(component.getChildren())==True): handleClipPathOverlaping(component.getChildren())
+    if(len(component.interactions)>0 and len(component.getChildren())>0): component.getChildren()[0].interactions.extend(component.interactions)
+    for element in component.getChildren():
         output += processChildren(element,projectname,name,idcomponent)
 
     writeVueComponent(name,projectname,output,component,pagesInfo)
@@ -69,11 +69,11 @@ def buildcomponent(component,projectname,pagesInfo,refs,variants,transition_node
 
 def processChildren(data,projectname,name,idcomponent):
     if(data==None): return ""
-    if(len(data.children)>0):
+    if(len(data.getChildren())>0):
         content=""
         output, endtag = applytransformation(data,projectname,name,idcomponent)
         output, endtag = insertTransitionComponent(data,output, endtag)
-        for element in data.children:
+        for element in data.getChildren():
             content += processChildren(element,projectname,name,idcomponent)
 
         return output + content + endtag
@@ -87,8 +87,8 @@ def processChildren(data,projectname,name,idcomponent):
 def applytransformation(elem,projectname,pagename,idcomponent):
     global allhooks, allpagesInfo, allrefs, nestedComponents, allvariants, allProps, componentData, allEmissionpaths, allclosePaths
     cssclass = ""
-    if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.idElement)
-    else: cssclass = getElemId(elem.idComponent)
+    if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.getIdElement())
+    else: cssclass = getElemId(elem.getIdComponent())
     ref=""
     id=""
     if(pagename in allrefs and cssclass in allrefs[pagename]):
@@ -231,12 +231,12 @@ def applytransformation(elem,projectname,pagename,idcomponent):
         compend = f"""</{component}>"""
         return (compbegin,compend)
     if(isinstance(elem, Mcomponent)):
-        componentName = getFormatedName(elem.componentName.capitalize())
-        classname = ' class="'+"grid-item-"+getElemId(elem.idComponent)+' component'+ getElemId(elem.idComponent)    
+        componentName = getFormatedName(elem.getNameComponent().capitalize())
+        classname = ' class="'+"grid-item-"+getElemId(elem.getIdComponent())+' component'+ getElemId(elem.getIdComponent())    
         if(elem.style.getPosition()!=None):
             classname += " pos"+componentName.lower()
             setComponentPositionCSS(projectname,pagename,"pos"+componentName.lower(),elem)
-        nestedComponents.setdefault(pagename, {}).add(getFormatedName(elem.componentName.lower()))
+        nestedComponents.setdefault(pagename, {}).add(getFormatedName(elem.getNameComponent().lower()))
         return ("<"+componentName+f"{ref}{classname}"+'" '+ ' '.join(d for d in directives) + ">","</"+componentName+">")
 
     return ("","")
@@ -328,14 +328,14 @@ def processTemplate(html_string,name):
     return finalHtml
 
 def filterOverlapingElements(component,onstack):
-    elements = component.children
+    elements = component.getChildren()
     alllevelShapes = getShapes(elements)
     idel=-1
     idsh=-1
     if(len(alllevelShapes)>0):
         for s in alllevelShapes:
             idsh+=1
-            for i in component.children:
+            for i in component.getChildren():
                 idel+=1
                 if(i!=s and idsh<idel and getValue(i.style.gridcolumnStart)>=getValue(s.style.gridcolumnStart) and
                     getValue(i.style.gridcolumnEnd)<=getValue(s.style.gridcolumnEnd) and
@@ -343,8 +343,8 @@ def filterOverlapingElements(component,onstack):
                     getValue(i.style.gridrowEnd)<=getValue(s.style.gridrowEnd) and
                     (isinstance(s,ShapeElement))):
                         onstack.append((i,s))
-                for c in i.children:
-                    if(len(c.children)>0): filterOverlapingElements(c,onstack)
+                for c in i.getChildren():
+                    if(len(c.getChildren())>0): filterOverlapingElements(c,onstack)
     return onstack
 
 def getShapes(elementos):
@@ -370,7 +370,7 @@ def handleClipPathOverlaping(elementos):
                     elem1.style.setGridcolumnStart(1)
                     elem1.style.setGridcolumnEnd(64)                    
 
-                    elem2.children.append(elem1)
+                    elem2.getChildren().append(elem1)
                     elem2.style.setDisplay("grid")
                     repeatedElements.append(j)
 
@@ -378,14 +378,14 @@ def handleClipPathOverlaping(elementos):
         del elementos[index]
 
     for c in elementos:
-        if(len(c.children)>0):
-            handleClipPathOverlaping(c.children)
+        if(len(c.getChildren())>0):
+            handleClipPathOverlaping(c.getChildren())
     
 def flatTree(elementos):
     for node in elementos:
         yield node
-        if node.children:
-            yield from flatTree(node.children)
+        if node.getChildren():
+            yield from flatTree(node.getChildren())
 
 def anyShapes(elementos):
     allShapes = list(filter(lambda x: (isinstance(x,ShapeElement)),list(flatTree(elementos))))

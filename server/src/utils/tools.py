@@ -27,13 +27,13 @@ def doesImageExist(pathname,elem,projectname):
         
 def getName(e):
     if isinstance(e,Melement):
-        name = getFormatedName(e.getName()) + getElemId(e.idElement)
+        name = getFormatedName(e.getName()) + getElemId(e.getIdElement())
     elif(isinstance(e,Mcomponent)):
-        name = getFormatedName(e.getNameComponent()) + getElemId(e.idComponent)
+        name = getFormatedName(e.getNameComponent()) + getElemId(e.getIdComponent())
     return name
 
 def getId(e):
     if(isinstance(e,Melement)):
-        return e.idElement
+        return e.getIdElement()
     elif(isinstance(e,Mcomponent)):
-        return e.idComponent
+        return e.getIdComponent()

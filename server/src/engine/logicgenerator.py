@@ -28,7 +28,7 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,all
     hooks = {}
     if(pagename not in keyEvents): keyEvents[pagename] = {}
     elemBehaviour = [[],None]
-    elementid = elem.idElement if isinstance(elem,Melement) else elem.idComponent
+    elementid = elem.getIdElement() if isinstance(elem,Melement) else elem.getIdComponent()
     methodName = ""
     # SWAP ACTIONS
     if(elementid in swapDestinationIds):
@@ -175,16 +175,16 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,all
         elemBehaviour = insertTableLogic(elem,allPagesInfo,hooks,elemBehaviour)
     # POPULATE DROPDOWN
     if(isinstance(elem,Mcomponent) and elem.getNameComponent()=="Dropdown"):
-        elemBehaviour = insertDropdownLogic(getElemId(elem.idComponent),hooks,elemBehaviour)
+        elemBehaviour = insertDropdownLogic(getElemId(elem.getIdComponent()),hooks,elemBehaviour)
     # HANDLE CHECKBOX LOGIC
     if(isinstance(elem,Mcomponent) and elem.getNameComponent()=="Checkbox"):
-        elemBehaviour = insertCheckboxLogic(getElemId(elem.idComponent),hooks,elemBehaviour)
+        elemBehaviour = insertCheckboxLogic(getElemId(elem.getIdComponent()),hooks,elemBehaviour)
     # HANDLE FORM LOGIC
     if(isinstance(elem,Mcomponent) and elem.getNameComponent()=="Form"):
-        elemBehaviour = insertFormLogic(getElemId(elem.idComponent),elem.inputs,hooks,elemBehaviour)
+        elemBehaviour = insertFormLogic(getElemId(elem.getIdComponent()),elem.inputs,hooks,elemBehaviour)
     # HANDLE SLIDER LOGIC
     if(isinstance(elem,Mcomponent) and elem.getNameComponent()=="Slider"):
-        elemBehaviour = insertSliderLogic(getElemId(elem.idComponent),hooks,elemBehaviour)
+        elemBehaviour = insertSliderLogic(getElemId(elem.getIdComponent()),hooks,elemBehaviour)
     # HANDLE CONDITIONAL VISIBLE ELEMENTS
     if(elem.gethascondvisib()==True):
         elemBehaviour[0].append('v-show="show'+getElemId(elem.getIdElement())+'==true"')
@@ -428,36 +428,36 @@ def insertScrollBehaviour(elem,action,hooks,elemBehaviour):
     return elemBehaviour
 
 def insertMenuLogic(elem,allPagesInfo,hooks,elemBehaviour):
-    hooks.setdefault("methods", []).append((f"selectedItem{getElemId(elem.idComponent)}",getMenuFunction(elem,allPagesInfo,f"selectedItem{getElemId(elem.idComponent)}")))
+    hooks.setdefault("methods", []).append((f"selectedItem{getElemId(elem.getIdComponent())}",getMenuFunction(elem,allPagesInfo,f"selectedItem{getElemId(elem.getIdComponent())}")))
     elemBehaviour[1] = hooks
     return elemBehaviour
 
 def handleScrollBehaviour(elem,hooks,elemBehaviour):
-    mountedFunction = f'          window.addEventListener("mouseup", this.onMouseUp{getElemId(elem.idElement)});'
-    destroyedFunction = f'          window.removeEventListener("mouseup", this.onMouseUp{getElemId(elem.idElement)});'
+    mountedFunction = f'          window.addEventListener("mouseup", this.onMouseUp{getElemId(elem.getIdElement())});'
+    destroyedFunction = f'          window.removeEventListener("mouseup", this.onMouseUp{getElemId(elem.getIdElement())});'
 
-    hooks.setdefault("mounted", []).append((f"getMountedFunction{getElemId(elem.idElement)}",mountedFunction))
-    hooks.setdefault("destroyed", []).append((f"getDestroyedFunction{getElemId(elem.idElement)}",destroyedFunction))
+    hooks.setdefault("mounted", []).append((f"getMountedFunction{getElemId(elem.getIdElement())}",mountedFunction))
+    hooks.setdefault("destroyed", []).append((f"getDestroyedFunction{getElemId(elem.getIdElement())}",destroyedFunction))
     
-    mousedownFunction = f'''        onMouseDown{getElemId(elem.idElement)}(ev)'''+'''{
+    mousedownFunction = f'''        onMouseDown{getElemId(elem.getIdElement())}(ev)'''+'''{
             this.cursorPos = [ev.pageX, ev.pageY];
             this.isDragging = true;
 
-            '''+f'window.addEventListener("mousemove", this.onMouseHold{getElemId(elem.idElement)});'+'''
+            '''+f'window.addEventListener("mousemove", this.onMouseHold{getElemId(elem.getIdElement())});'+'''
         }'''
-    hooks.setdefault("methods", []).append((f"onMouseDown{getElemId(elem.idElement)}",mousedownFunction))
+    hooks.setdefault("methods", []).append((f"onMouseDown{getElemId(elem.getIdElement())}",mousedownFunction))
     
-    mouseupFunction = f'''        onMouseUp{getElemId(elem.idElement)}(ev)'''+'''{
-            '''+f'window.removeEventListener("mousemove", this.onMouseHold{getElemId(elem.idElement)});'+f'''
+    mouseupFunction = f'''        onMouseUp{getElemId(elem.getIdElement())}(ev)'''+'''{
+            '''+f'window.removeEventListener("mousemove", this.onMouseHold{getElemId(elem.getIdElement())});'+f'''
             this.isDragging = false;'''+'''
         }'''
-    hooks.setdefault("methods", []).append((f"onMouseUp{getElemId(elem.idElement)}",mouseupFunction))
+    hooks.setdefault("methods", []).append((f"onMouseUp{getElemId(elem.getIdElement())}",mouseupFunction))
     transition = ""
     if(elem.style.getOverflowDirection()=="HORIZONTAL"):
         transition = "left: -delta[0]"
     else:
         transition = "top: -delta[1]"        
-    mouseholdFunction = f'''        onMouseHold{getElemId(elem.idElement)}(ev)'''+'''{
+    mouseholdFunction = f'''        onMouseHold{getElemId(elem.getIdElement())}(ev)'''+'''{
             ev.preventDefault();
 
             requestAnimationFrame(() => {
@@ -465,12 +465,12 @@ def handleScrollBehaviour(elem,hooks,elemBehaviour):
 
                     this.cursorPos = [ev.pageX, ev.pageY];
 
-                    '''+f'''if (!this.$refs.ref{getElemId(elem.idElement)}) return;
-                    this.$refs.ref{getElemId(elem.idElement)}.scrollBy('''+'''{
+                    '''+f'''if (!this.$refs.ref{getElemId(elem.getIdElement())}) return;
+                    this.$refs.ref{getElemId(elem.getIdElement())}.scrollBy('''+'''{
                     '''+transition+'''});
             });
         }'''
-    hooks.setdefault("methods", []).append((f"onMouseHold{getElemId(elem.idElement)}",mouseholdFunction))
+    hooks.setdefault("methods", []).append((f"onMouseHold{getElemId(elem.getIdElement())}",mouseholdFunction))
     elemBehaviour[1] = hooks
     return elemBehaviour
 
@@ -481,8 +481,8 @@ def getDatatableValuesFunction(tableid,values):
     return function
 
 def insertTableLogic(elem,allPagesInfo,hooks,elemBehaviour):
-    hooks.setdefault("methods", []).append((f'getDatatableValues{getElemId(elem.idComponent)}',getDatatableValuesFunction(getElemId(elem.idComponent),elem.values)))
-    hooks.setdefault("mounted", []).append((f'getDatatableValues{getElemId(elem.idComponent)}',f"          this.getDatatableValues{getElemId(elem.idComponent)}();"))
+    hooks.setdefault("methods", []).append((f'getDatatableValues{getElemId(elem.getIdComponent())}',getDatatableValuesFunction(getElemId(elem.getIdComponent()),elem.values)))
+    hooks.setdefault("mounted", []).append((f'getDatatableValues{getElemId(elem.getIdComponent())}',f"          this.getDatatableValues{getElemId(elem.getIdComponent())}();"))
     elemBehaviour[1] = hooks
     return elemBehaviour
 
@@ -523,43 +523,43 @@ def getVariantVariables(elem,id):
           this.currentVariant{id} = '{getFormatedName(elem.getNameComponent()).lower()}';"""
     
 def declareMountedVariables(elem,hooks,elemBehaviour):
-    hooks.setdefault("mounted", []).append((f'getVariantVariables{getElemId(elem.idComponent)}',getVariantVariables(elem,getElemId(elem.idComponent))))
+    hooks.setdefault("mounted", []).append((f'getVariantVariables{getElemId(elem.getIdComponent())}',getVariantVariables(elem,getElemId(elem.getIdComponent()))))
     elemBehaviour[1] = hooks
     return elemBehaviour
     
 def getComponentVariant(id,variants):
     for v in variants:
         for c in v.variantComponents:
-            if(id==c.idComponent):
+            if(id==c.getIdComponent()):
                 return c
     return None
 
 def changeToHoveredFunction(elem,destelem):
     function = ""
     if(destelem!=None):
-        function = """\t\t""" + f"changeToHovered{getElemId(elem.idComponent)}()"+"{" + f"""
-                this.selectedClass{getElemId(elem.idComponent)}=this.componentclass{getElemId(destelem.idComponent)};
-                this.currentVariant{getElemId(elem.idComponent)}= '{getFormatedName(destelem.getNameComponent()).lower()}'
+        function = """\t\t""" + f"changeToHovered{getElemId(elem.getIdComponent())}()"+"{" + f"""
+                this.selectedClass{getElemId(elem.getIdComponent())}=this.componentclass{getElemId(destelem.getIdComponent())};
+                this.currentVariant{getElemId(elem.getIdComponent())}= '{getFormatedName(destelem.getNameComponent()).lower()}'
     """+"\t\t}"
     return function
 
 def changeToDefaultFunction(elem,destelem):
-    function = """\t\t""" + f"changeToDefault{getElemId(elem.idComponent)}()"+"{" + f"""
-            this.selectedClass{getElemId(elem.idComponent)}=this.componentclass{getElemId(elem.idComponent)};
-            this.currentVariant{getElemId(elem.idComponent)}= '{getFormatedName(elem.getNameComponent()).lower()}'
+    function = """\t\t""" + f"changeToDefault{getElemId(elem.getIdComponent())}()"+"{" + f"""
+            this.selectedClass{getElemId(elem.getIdComponent())}=this.componentclass{getElemId(elem.getIdComponent())};
+            this.currentVariant{getElemId(elem.getIdComponent())}= '{getFormatedName(elem.getNameComponent()).lower()}'
 """+"\t\t}"
     return function
 
 def changeVariantFunction(elem,destinations):
     elsecond = False
     elsecondst = "if"
-    function = """\t\t""" + f"changeVariant{getElemId(elem.idComponent)}()"+"{" 
+    function = """\t\t""" + f"changeVariant{getElemId(elem.getIdComponent())}()"+"{" 
     for variant in destinations: 
         if(elsecond==True): elsecondst = "else if"      
         function+=f"""
-        {elsecondst}(this.selectedClass{getElemId(elem.idComponent)}==this.componentclass{getElemId(variant[0].idComponent)})"""+"{"+f"""
-                this.selectedClass{getElemId(elem.idComponent)}=this.componentclass{getElemId(variant[1].idComponent)};
-                this.currentVariant{getElemId(elem.idComponent)}= '{getFormatedName(variant[1].getNameComponent()).lower()}'
+        {elsecondst}(this.selectedClass{getElemId(elem.getIdComponent())}==this.componentclass{getElemId(variant[0].getIdComponent())})"""+"{"+f"""
+                this.selectedClass{getElemId(elem.getIdComponent())}=this.componentclass{getElemId(variant[1].getIdComponent())};
+                this.currentVariant{getElemId(elem.getIdComponent())}= '{getFormatedName(variant[1].getNameComponent()).lower()}'
 """+"""\t\t}"""
         elsecond = True
     function+="}"
@@ -573,13 +573,13 @@ def getDestinations(beginid,elem,variants,destinations):
                 destelem = getComponentVariant(a.destinationID,variants)
                 if(destelem!=None): 
                     destinations.append((elem,destelem))
-                    if(destelem.idComponent==beginid): return destinations
+                    if(destelem.getIdComponent()==beginid): return destinations
                     return getDestinations(beginid,destelem,variants,destinations)
                 
 def getVariantNavigationFunction(methodName,beginElem,currentElem,destination):
     if(beginElem==None and currentElem!=None): beginElem = currentElem  
     function = """\t\t""" + methodName + "(){" + f"""
-            if(this.selectedClass{getElemId(beginElem.idComponent)}==this.componentclass{getElemId(currentElem.idComponent)})"""+"{"+"""
+            if(this.selectedClass{getElemId(beginElem.getIdComponent())}==this.componentclass{getElemId(currentElem.getIdComponent())})"""+"{"+"""
                 this.$router.push({path:"/""" + destination.lower() + """"});
             }
     \t}""" 
@@ -644,20 +644,20 @@ def handleVariants(elem,variants,hooks,elemBehaviour,allPagesInfo,beginElem=None
          for a in i.actions:
             destelem = getComponentVariant(a.destinationID,variants)
             if(isinstance(a,ChangeAction) and i.getInteractionType()==InteractionElement.Interaction.ONHOVER):
-                elemBehaviour[0].extend([f'@mouseover="changeToHovered{getElemId(elem.idComponent)}"',f'@mouseleave="changeToDefault{getElemId(elem.idComponent)}"'])
-                hooks.setdefault("methods", []).append((f'changeToHovered{getElemId(elem.idComponent)}',changeToHoveredFunction(elem,destelem)))
-                hooks.setdefault("methods", []).append((f'changeToDefault{getElemId(elem.idComponent)}',changeToDefaultFunction(elem,destelem)))
+                elemBehaviour[0].extend([f'@mouseover="changeToHovered{getElemId(elem.getIdComponent())}"',f'@mouseleave="changeToDefault{getElemId(elem.getIdComponent())}"'])
+                hooks.setdefault("methods", []).append((f'changeToHovered{getElemId(elem.getIdComponent())}',changeToHoveredFunction(elem,destelem)))
+                hooks.setdefault("methods", []).append((f'changeToDefault{getElemId(elem.getIdComponent())}',changeToDefaultFunction(elem,destelem)))
                 if(destelem!=None and len(destelem.interactions)>0):
                     handleVariants(destelem,variants,hooks,elemBehaviour,allPagesInfo,elem)
                 elemBehaviour[1] = hooks
             if(isinstance(a,ChangeAction) and i.getInteractionType()==InteractionElement.Interaction.ONCLICK and len(destelem.interactions)>=0):
-                destinations = getDestinations(elem.idComponent,elem,variants,[])
-                elemBehaviour[0].append(f'@click="changeVariant{getElemId(elem.idComponent)}"')
-                hooks.setdefault("methods", []).append((f'changeVariant{getElemId(elem.idComponent)}',changeVariantFunction(elem,destinations)))
+                destinations = getDestinations(elem.getIdComponent(),elem,variants,[])
+                elemBehaviour[0].append(f'@click="changeVariant{getElemId(elem.getIdComponent())}"')
+                hooks.setdefault("methods", []).append((f'changeVariant{getElemId(elem.getIdComponent())}',changeVariantFunction(elem,destinations)))
                 elemBehaviour[1] = hooks
             if(isinstance(a,NavigationAction) and i.getInteractionType()==InteractionElement.Interaction.ONCLICK):
                 destination = getPageById(a.getDestinationID(),allPagesInfo) 
-                methodName = "goto"+destination+getElemId(elem.idComponent)
+                methodName = "goto"+destination+getElemId(elem.getIdComponent())
                 insertFunction("methods",hooks,methodName,getVariantNavigationFunction(methodName,beginElem,elem,destination))
                 elemBehaviour[0].append('v-on:click="'+methodName+'()"')
                 elemBehaviour[1] = hooks

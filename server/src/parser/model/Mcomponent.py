@@ -1,13 +1,15 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
+from typing import List
+from  parser.model.PageItem import PageItem
 
-class Mcomponent(object):
+class Mcomponent(PageItem):
 	def __init__(self,id,name,tag,type,elementos=[]):
-		self.idComponent = id
-		self.componentName = name
-		self.children = elementos
-		self.tag = tag
-		self.type = type
+		#self.idComponent = id
+		#self.componentName = name
+		#self.children:List[PageItem] = elementos
+		#self.tag = tag
+		#self.type = type
 		self.style = None
 		self.interactions = []
 		self.data = []
@@ -23,42 +25,43 @@ class Mcomponent(object):
 		self.variantName = None
 		self.isOverlay = False
 		self.topmostnode = None
+		super().__init__(id,name,tag,type,elementos) 
 
 	def getIdComponent(self):
 		"""@ReturnType String"""
-		return self.idComponent
+		return super().getId()
 
 	def setIdComponent(self, idComponent):
 		"""@ParamType idComponent String
 		@ReturnType void"""
-		self.idComponent = idComponent
+		super().setId(idComponent)
 
 	def getNameComponent(self):
 		"""@ReturnType String"""
-		return self.componentName
+		return super().getname()
 
 	def setNameComponent(self, name):
 		"""@ParamType componentName String
 		@ReturnType void"""
-		self.componentName = name
+		super().setname(name)
 
-	def getTagComponent(self):
+	def gettag(self):
 		"""@ReturnType String"""
-		return self.tag
+		return super.gettag()
 
 	def setTagComponent(self, tag):
 		"""@ParamType tag String
 		@ReturnType void"""
-		self.tag = tag
+		super().settag(tag)
 
 	def getTypeComponent(self):
 		"""@ReturnType String"""
-		return self.type
+		return super().gettype()
 
 	def setTypeComponent(self, type):
 		"""@ParamType type String
 		@ReturnType void"""
-		self.type = type
+		super().settype(type)
 
 	def gethasAnimation(self):
 		"""@ReturnType boolean"""
@@ -127,12 +130,15 @@ class Mcomponent(object):
 	def setHasCloseAction(self, hasCloseAction):
 		self.hasCloseAction = hasCloseAction
 
+	def getChildren(self):
+		return super().getChildren()
+  
+	def setChildren(self, nchildren):
+		super().setChildren(nchildren)
+
 	def addChildren(self,elem):
-		self.children.append(elem)
-
-	def setChildren(self,children):
-		self.children = children
-
+		super().addChildren(elem)
+  
 	def getzindex(self):
 		return self.zindex
 
@@ -176,4 +182,4 @@ class Mcomponent(object):
 		self.interactions.extend(interactions)
 
 	def __str__(self):
-		return "(id: " + str(self.idComponent) + ",name: "+  str(self.componentName) + ",type: "+  str(self.type) + ",tag: "+  str(self.tag) + "; interactions: ["+ ";".join(str(val) for val in self.interactions)  +"]" + ", children: [" + ";".join(str(val) for val in self.children) + "],"+ "data: ["+ ";".join(str(val) for val in self.data)  +"])" 
+		return "(id: " + str(self.idComponent) + ",name: "+  str(self.componentName) + ",type: "+  str(self.type) + ",tag: "+  str(self.tag) + "; interactions: ["+ ";".join(str(val) for val in self.interactions)  +"]" + ", children: [" + ";".join(str(val) for val in self.getChildren()) + "],"+ "data: ["+ ";".join(str(val) for val in self.data)  +"])" 

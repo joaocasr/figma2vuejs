@@ -1,16 +1,18 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
+from parser.model.PageItem import PageItem
 
-class Melement(object):
+class Melement(PageItem):
 
 	def __init__(self,id,tag,name):
+		ename  = ""
 		if("#" in name):
-			self.name = name.split("#")[0]
+			ename = name.split("#")[0]
 		else:
-			self.name = name
-		self.idElement = id
-		self.tag = tag
-		self.children = []
+			ename = name
+		#self.idElement = id
+		#self.tag = tag
+		#self.children:List[PageItem] = []
 		self.interactions = []
 		self.upperIdComponent = None
 		self.zindex = 0
@@ -19,12 +21,13 @@ class Melement(object):
 		self.hasConditionalVisibility = False
 		self.typeElement = None
 		self.topmostnode = None
-  
+		super().__init__(id,ename,tag,self.typeElement,[]) 
+
 	def getIdElement(self):
-		return self.idElement
+		return super().getId()
 
 	def setIdElement(self, idElement):
-		self.idElement = idElement
+		super().setId(idElement)
 	
 	def getinitialOpacity(self):
 		return self.initialOpacity
@@ -32,23 +35,26 @@ class Melement(object):
 	def setinitialOpacity(self, initialOpacity):
 		self.initialOpacity = initialOpacity
 
-	def getTag(self):
-		return self.tag
+	def gettag(self):
+		return super.gettag()
 
-	def setTag(self, tag):
-		self.tag = tag
+	def settag(self, tag):
+		super().settag(tag)
 
 	def getName(self):
-		return self.name
+		return super().getname()
 
 	def setName(self, name):
-		self.name = name
+		super().setname(name)
 
+	def getChildren(self):
+		return super().getChildren()
+  
 	def setChildren(self, nchildren):
-		self.children = nchildren
+		super().setChildren(nchildren)
 
 	def addChildren(self,elem):
-		self.children.append(elem)
+		super().addChildren(elem)
 
 	def getupperIdComponent(self):
 		return self.upperIdComponent
@@ -81,10 +87,10 @@ class Melement(object):
 		self.hasAnimation = hasAnimation
   
 	def gettypeElement(self):
-		return self.typeElement
+		return super().gettype()
 
 	def settypeElement(self,typelem):
-		self.typeElement=typelem
+		super().settype(typelem)
 
 	def gethascondvisib(self):
 		return self.hasConditionalVisibility
@@ -99,5 +105,5 @@ class Melement(object):
 		self.interactions.extend(interactions)
 
 	def __str__(self):
-		return "(id: " + str(self.idElement) + "; tag: " + str(self.tag) + "; children : ["+ ''.join(str(c) for c in self.children) + "]" + "; interactions : ["+ ''.join(str(c) for c in self.interactions) + "])"
+		return "(id: " + str(self.idElement) + "; tag: " + str(self.tag) + "; children : ["+ ''.join(str(c) for c in self.getChildren()) + "]" + "; interactions : ["+ ''.join(str(c) for c in self.interactions) + "])"
 

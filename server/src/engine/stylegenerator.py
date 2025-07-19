@@ -168,8 +168,8 @@ def generatePageStyle(name,page):
 
 def generateComponentStyle(name,component):
   global font_imports, componentFonts,pageCssproperties
-  if(getFormatedName(component.componentName.lower()) not in pageCssproperties): pageCssproperties[getFormatedName(component.componentName.lower())]= []
-  idcomponent = getElemId(component.idComponent)
+  if(getFormatedName(component.getNameComponent().lower()) not in pageCssproperties): pageCssproperties[getFormatedName(component.getNameComponent().lower())]= []
+  idcomponent = getElemId(component.getIdComponent())
 
   width = component.style.width
   height = component.style.height
@@ -214,26 +214,26 @@ def generateComponentStyle(name,component):
     css += "#component"+ idcomponent+" {\n\t"+ "grid-area:"+getName(component)+";\n}\n\n"
 
   newcsscontent=""
-  if component.componentName in font_imports:
-    for font in font_imports[component.componentName]:
-      if(getFormatedName(component.componentName) not in componentFonts): componentFonts[getFormatedName(component.componentName)] = [font]
-      if(font not in componentFonts[getFormatedName(component.componentName)]): componentFonts[getFormatedName(component.componentName)].append(font)
-      #if(font not in componentFonts[component.componentName]): newcsscontent += '@import url(' + '"' + font + '");\n'
+  if component.getNameComponent() in font_imports:
+    for font in font_imports[component.getNameComponent()]:
+      if(getFormatedName(component.getNameComponent()) not in componentFonts): componentFonts[getFormatedName(component.getNameComponent())] = [font]
+      if(font not in componentFonts[getFormatedName(component.getNameComponent())]): componentFonts[getFormatedName(component.getNameComponent())].append(font)
+      #if(font not in componentFonts[component.getNameComponent()]): newcsscontent += '@import url(' + '"' + font + '");\n'
   newcsscontent += css
-  cssfile="../output/"+name+"/src/assets/"+getFormatedName(component.componentName.lower())+".css"
+  cssfile="../output/"+name+"/src/assets/"+getFormatedName(component.getNameComponent().lower())+".css"
   if not os.path.isfile(cssfile):
-    if(newcsscontent not in pageCssproperties[getFormatedName(component.componentName.lower())]):
+    if(newcsscontent not in pageCssproperties[getFormatedName(component.getNameComponent().lower())]):
       with open(cssfile,"w") as f:
         f.write(newcsscontent)
-      pageCssproperties[getFormatedName(component.componentName.lower())].append(newcsscontent)
+      pageCssproperties[getFormatedName(component.getNameComponent().lower())].append(newcsscontent)
   else:
-    if(newcsscontent not in pageCssproperties[getFormatedName(component.componentName.lower())]):
+    if(newcsscontent not in pageCssproperties[getFormatedName(component.getNameComponent().lower())]):
       with open(cssfile,"r+") as f:
         lines = f.readlines()  
         lines.insert(0, newcsscontent)
         f.seek(0)   
         f.writelines(lines)
-      pageCssproperties[getFormatedName(component.componentName.lower())].append(newcsscontent)
+      pageCssproperties[getFormatedName(component.getNameComponent().lower())].append(newcsscontent)
 
 def insertComponentsFonts(projectname):
   global componentFonts
@@ -358,8 +358,8 @@ def updateZIndex(projectname,pagename,elem,zindex):
   global pageCssproperties
   if(getFormatedName(pagename.lower()) not in pageCssproperties): pageCssproperties[getFormatedName(pagename.lower())]= []
   cssclass=""
-  if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.idElement)
-  else: cssclass = getElemId(elem.idComponent)
+  if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.getIdElement())
+  else: cssclass = getElemId(elem.getIdComponent())
   css="""."""+str(cssclass) + """ {
     z-index: """+str(zindex)+""";
   }"""
