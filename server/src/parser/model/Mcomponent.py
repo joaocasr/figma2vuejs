@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 from  parser.model.PageItem import PageItem
+from typing import List
 
 class Mcomponent(PageItem):
 	def __init__(self,id,name,tag,type,elementos=[]):
@@ -8,6 +9,7 @@ class Mcomponent(PageItem):
 		self.interactions = []
 		self.data = []
 		self.props = {}
+		self.nestedComponents:List[Mcomponent] = []
 		self.hasCloseAction = False
 		self.upperIdComponent = None
 		self.zindex = 0
@@ -129,6 +131,11 @@ class Mcomponent(PageItem):
   
 	def setChildren(self, nchildren):
 		super().setChildren(nchildren)
+
+	def addNestedComponent(self,comp):
+		for c in self.nestedComponents:
+			if(c.getNameComponent()==comp.getNameComponent()): return None
+		self.nestedComponents.append(comp)
 
 	def addChildren(self,elem):
 		super().addChildren(elem)

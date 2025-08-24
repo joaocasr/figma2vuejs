@@ -18,7 +18,7 @@ allhooks = dict()
 allpagesInfo = {}
 componentAssets = dict()
 allrefs = {}
-nestedComponents = {}
+currentComponent = None
 allvariants = []
 componentMethods = {}
 alltransitionodes = []
@@ -31,12 +31,12 @@ globalprojectname=""
 componentData = {}
 
 def buildcomponent(component,projectname,pagesInfo,refs,variants,transition_nodeIds,event_EmissionPaths,closePaths):
-    global pagename,globalprojectname,allhooks,allpagesInfo,allrefs,nestedComponents,allvariants,allProps,componentData,alltransitionodes,allEmissionpaths,allclosePaths
+    global pagename,globalprojectname,allhooks,allpagesInfo,allrefs,currentComponent,allvariants,allProps,componentData,alltransitionodes,allEmissionpaths,allclosePaths
     name = component.getNameComponent()
     allhooks[name] = {}
     auxiliarImports[name] = set()
     componentAssets[name] = []
-    nestedComponents[name] = set()
+    currentComponent = component
     allrefs = refs
     allProps = component.getProps()
     componentData = component.getData()
@@ -85,7 +85,7 @@ def processChildren(data,projectname,name,idcomponent):
         return output
 
 def applytransformation(elem,projectname,pagename,idcomponent):
-    global allhooks, allpagesInfo, allrefs, nestedComponents, allvariants, allProps, componentData, allEmissionpaths, allclosePaths
+    global allhooks, allpagesInfo, allrefs, currentComponent, allvariants, allProps, componentData, allEmissionpaths, allclosePaths
     cssclass = ""
     if(not isinstance(elem,Mcomponent)): cssclass = getElemId(elem.getIdElement())
     else: cssclass = getElemId(elem.getIdComponent())
@@ -226,7 +226,8 @@ def applytransformation(elem,projectname,pagename,idcomponent):
         return checkbox
     if(isinstance(elem, Mcomponent) and elem.getisVariant()==True):
         component = getFormatedName("Variant"+elem.getVariantName().lower().capitalize())
-        nestedComponents.setdefault(pagename, {}).add(component)
+        elem.setNameComponent(component)
+        currentComponent.addNestedComponent(elem)
         compbegin = f"""<{component} """+' '.join(d for d in directives) + f''' :variant="currentVariant{cssclass}"'''+f''' :componentprops="'''+f"selectedClass{cssclass}"+ '">'
         compend = f"""</{component}>"""
         return (compbegin,compend)
@@ -236,23 +237,24 @@ def applytransformation(elem,projectname,pagename,idcomponent):
         if(elem.style.getPosition()!=None):
             classname += " pos"+componentName.lower()
             setComponentPositionCSS(projectname,pagename,"pos"+componentName.lower(),elem)
-        nestedComponents.setdefault(pagename, {}).add(getFormatedName(elem.getNameComponent().lower()))
+        elem.setNameComponent(getFormatedName(elem.getNameComponent().lower()))
+        currentComponent.addNestedComponent(elem)
         return ("<"+componentName+f"{ref}{classname}"+'" '+ ' '.join(d for d in directives) + ">","</"+componentName+">")
 
     return ("","")
 
 def writeVueComponent(name,project_name,content,component,pagesInfo):
-    global allhooks, componentMethods
+    global allhooks, componentMethods,currentComponent
     componentMethods[name] = []
     componentsimports="\n"
-    for comp in nestedComponents[name]:
-        componentsimports += "import "+getFormatedName(str(comp).capitalize())+" from '@/components/"+getFormatedName(str(comp).capitalize())+".vue';\n" 
+    for comp in currentComponent.nestedComponents:
+        componentsimports += "import "+getFormatedName(str(comp.getNameComponent()).capitalize())+" from '@/components/"+getFormatedName(str(comp.getNameComponent()).capitalize())+".vue';\n" 
     for auximports in auxiliarImports[name]:
         componentsimports += auximports+";\n"
     cssimport = "@import '../assets/"+getFormatedName(name.lower())+".css';"
     pagehooks=""
     pagecomponents = "\n"
-    allcomponents = (x.capitalize() for x in nestedComponents[name])
+    allcomponents = (x.getNameComponent().capitalize() for x in currentComponent.nestedComponents)
     allcomponents = list(allcomponents)
     if(len(allcomponents)>0): pagecomponents="""\n    components:{\n        """+ ',\n        '.join(allcomponents) +"""\n    },"""
     for hook in allhooks[name]:
@@ -304,11 +306,12 @@ def writeVueComponent(name,project_name,content,component,pagesInfo):
 
 
 def processTemplate(html_string,name):
+    global currentComponent
     soup = BeautifulSoup(html_string, "html.parser")
     finalHtml = soup.prettify()
-    for c in nestedComponents[name]:
-        pattern = "<"+c.lower()+r" ([\s]*.*?)"+">"+r"((\n|.)*?)"+r"<\/"+c.lower()+">"
-        processedTemplate = re.sub(pattern,"<"+c.capitalize()+ r' \1' +">"+"</"+c.capitalize()+">",finalHtml)
+    for c in currentComponent.nestedComponents:
+        pattern = "<"+c.getNameComponent().lower()+r" ([\s]*.*?)"+">"+r"((\n|.)*?)"+r"<\/"+c.getNameComponent().lower()+">"
+        processedTemplate = re.sub(pattern,"<"+c.getNameComponent().capitalize()+ r' \1' +">"+"</"+c.getNameComponent().capitalize()+">",finalHtml)
         finalHtml = processedTemplate
     for c in componentAssets[name]:
         tag = c.split(" ")[1]
