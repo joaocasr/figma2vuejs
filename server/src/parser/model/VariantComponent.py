@@ -9,6 +9,8 @@ class VariantComponent(Mcomponent):
 		self.variantComponents = componentsInvolved
 		self.variantProperties = {}
 		self.defaultComponent = None
+		self.defaultInsideComponent = None
+		self.parentName = None
 
 	def getVariantProperties(self):
 		return self.variantProperties
@@ -24,4 +26,15 @@ class VariantComponent(Mcomponent):
 
 	def setDefaultComponent(self, defaultComponent):
 		self.defaultComponent = defaultComponent
+  
+	def getDefaultInsideComponent(self):
+		return self.defaultInsideComponent
 
+	def setDefaultInsideComponent(self, defaultInsideComponent):
+		self.defaultInsideComponent = defaultInsideComponent
+
+	def getParentName(self):
+		return self.parentName
+
+	def setParentName(self, parentName):
+		self.parentName = parentName

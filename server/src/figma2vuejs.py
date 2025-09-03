@@ -8,7 +8,8 @@ from parser.modelconverter import getFigmaData,extractImages,extractSVGs
 from parser.model.VariantComponent import VariantComponent
 from fastapi.middleware.cors import CORSMiddleware
 from engine.stylegenerator import StyleGenerator,insertComponentsFonts
-from engine.logicgenerator import LogicGenerator
+from engine.logicgenerator import LogicGenerator,replaceDefault
+from utils.tools import getFormatedName,getElemId,doesImageExist
 
 from typing import Optional
 from fastapi import FastAPI,HTTPException
@@ -89,20 +90,27 @@ def convert_prototype(testfile=None):
       for x in pagesInfo[page]["components"]:
         if(not any(x==c for c in allcomponents)):
           allcomponents.append(x)
-   
+      
     for component in allcomponents:
       buildcomponent(component,project_name,pagesInfo,refs,variants,transition_nodeIds,event_EmissionPaths,closePaths)
 
     for orphan in orphanComponents:
-      if(not isinstance(orphan,VariantComponent) and not orphan.getisVariant()==True):
-        buildcomponent(orphan,project_name,pagesInfo,refs,variants,transition_nodeIds,event_EmissionPaths,closePaths)
-          
-    for v in variants:
-      writeVariantComponent(v.getNameComponent(),project_name,v.variantComponents)    
+      #if(not isinstance(orphan,VariantComponent) and not orphan.getisVariant()==True):
+      buildcomponent(orphan,project_name,pagesInfo,refs,variants,transition_nodeIds,event_EmissionPaths,closePaths)
           
     # build each page (elements within, styling and components)
     for page in mypages:
       buildpage(project_name,mypages[page],pagesInfo,refs,variants,transition_nodeIds,event_EmissionPaths,closePaths)
+    
+    for v in variants:
+      priorDefaultId, linger = writeVariantComponent(v,v.getNameComponent(),project_name,v.variantComponents) 
+      for c in linger:
+        buildcomponent(c,project_name,pagesInfo,refs,variants,transition_nodeIds,event_EmissionPaths,closePaths)
+        for ac in allcomponents:
+          if ac.getNameComponent()==v.getParentName():
+            ac.overwriteVariable("componentclass"+getElemId(priorDefaultId),{f"componentclass{getElemId(priorDefaultId)}":f'"grid-item-{getElemId(c.getIdComponent())} component{getElemId(c.getIdComponent())}"'})
+            replaceDefault(ac,priorDefaultId,c.getNameComponent())
+            buildcomponent(ac,project_name,pagesInfo,refs,variants,transition_nodeIds,event_EmissionPaths,closePaths)
 
   rewriteIndexHTML(project_name)
   injectPluginComponents(project_name)

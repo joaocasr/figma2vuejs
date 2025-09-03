@@ -264,7 +264,7 @@ class ComponentStyle(object):
 		return self.overlayVector
 
 	def __str__(self):
-		return "position:"+ str(self.getPosition())+"\nwidth:" + str(self.width) +",\n"+"height:" + str(self.height) +",\n"+ "backgroundColor:" + str(self.backgroundColor) +",\n"+ "display:" + str(self.display) +",\n"+ "gridtemplatecolumns:" + str(self.gridtemplatecolumns) +",\n"+ "gridtemplaterows:" + str(self.gridtemplaterows) +",\n"+ "margin:" + str(self.margin) +",\n"+ "margin:" + str(self.margin) +",\n"+ "padding:" + str(self.padding)
+		return "column-start:"+ str(self.getGridcolumnStart())+"\nwidth:" + str(self.width) +",\n"+"height:" + str(self.height) +",\n"+ "backgroundColor:" + str(self.backgroundColor) +",\n"+ "display:" + str(self.display) +",\n"+ "gridtemplatecolumns:" + str(self.gridtemplatecolumns) +",\n"+ "gridtemplaterows:" + str(self.gridtemplaterows) +",\n"+ "margin:" + str(self.margin) +",\n"+ "margin:" + str(self.margin) +",\n"+ "padding:" + str(self.padding)
 
 
 

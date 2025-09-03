@@ -244,7 +244,7 @@ def applytransformation(elem,projectname,pagename,idcomponent):
     return ("","")
 
 def writeVueComponent(name,project_name,content,component,pagesInfo):
-    global allhooks, componentMethods,currentComponent
+    global allhooks, componentMethods,currentComponent,allvariants
     componentMethods[name] = []
     componentsimports="\n"
     for comp in currentComponent.nestedComponents:
@@ -302,7 +302,7 @@ def writeVueComponent(name,project_name,content,component,pagesInfo):
 </style>"""
     with open("../output/"+project_name+"/src/components/"+getFormatedName(name.capitalize())+".vue","w") as f:
         f.write(componentpage)
-    generateComponentStyle(project_name,component)
+    generateComponentStyle(project_name,component,allvariants)
 
 
 def processTemplate(html_string,name):

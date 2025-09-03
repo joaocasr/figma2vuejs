@@ -286,6 +286,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         style = setComponentStyle(data)
         allcomponents[data["id"]] = Mcomponent(data["id"],data["name"],tag,"",elements)
         allcomponents[data["id"]].setComponentStyle(style)
+                
         melement = allcomponents[data["id"]]
     # handling assets from components created
     if(data["name"]=="Dropdown" and data["type"]=="INSTANCE"):
@@ -689,7 +690,13 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             if(c.getIdComponent()==melement.getIdComponent()): pageComponents[pagename][index]=melement 
     if(data["type"]=="INSTANCE" and isComponentVariant(data,variants)):
         #update the default variant instances
-        updateDefaultVariants(data,melement,data["componentId"],variants)
+        #idp="None"
+        #idf="None"
+        #if(parent_data!=None): idp=parent_data["name"]+"**"+parent_data["type"]+"**"+parent_data["id"]
+        #if(firstlevelelem!=None): idf=firstlevelelem["name"]+"**"+firstlevelelem["type"]+"**"+firstlevelelem["id"]
+        #print(data["id"]+"---"+idp+"---"+idf)
+        #print(data["name"])
+        updateDefaultVariants(data,firstlevelelem,melement,data["componentId"],variants)      
         if(pagename in allpages):
             for v in variants:
                 for (index,c) in enumerate(v.variantComponents):
@@ -1212,8 +1219,8 @@ def getPageoftrigger(id):
             if(r==True):
                 return el["name"]
             
-def updateDefaultVariants(data,melement,componentId,variants):
-    global figmadata
+def updateDefaultVariants(data,firstlevelelem,melement,componentId,variants):
+    global figmadata,allpages
     found = False
     for v in variants:
         for (index,c) in enumerate(v.variantComponents):
@@ -1222,6 +1229,11 @@ def updateDefaultVariants(data,melement,componentId,variants):
                 melement.setNameComponent(c.getNameComponent())
                 v.variantComponents[index] = melement
                 v.setDefaultComponent(getFormatedName(melement.getNameComponent()))
+                style = melement.getComponentStyle()
+                c.setComponentStyle(style)
+                v.setDefaultInsideComponent(c)
+                if(firstlevelelem!=None): 
+                    v.setParentName(firstlevelelem["name"])
     if(found==False):
         id = data["componentId"]
         componentsetid=""

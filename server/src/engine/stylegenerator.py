@@ -166,7 +166,7 @@ def generatePageStyle(name,page):
       f.seek(0)   
       f.writelines(lines)
 
-def generateComponentStyle(name,component):
+def generateComponentStyle(name,component,variants):
   global font_imports, componentFonts,pageCssproperties
   if(getFormatedName(component.getNameComponent().lower()) not in pageCssproperties): pageCssproperties[getFormatedName(component.getNameComponent().lower())]= []
   idcomponent = getElemId(component.getIdComponent())
@@ -188,6 +188,22 @@ def generateComponentStyle(name,component):
   if(component.style.borderStyle) != None: border ="\n  "+f"border: {component.style.borderStyle};"
   if(component.style.borderRadius) != None: borderRadius ="\n  "+f"border-radius: {component.style.borderRadius}px;"
   if(component.getzindex()>0): zindex = "\n  "+f"z-index: "+str(component.getzindex())
+
+  cs = ce = rs = re = 0
+  if(component.style.gridcolumnStart==None and component.style.gridcolumnEnd==None and
+     component.style.gridrowStart==None and component.style.gridrowEnd==None):
+    for v in variants:
+      for c in v.variantComponents:      
+        if(c.style.getGridcolumnStart()!=None and c.style.getGridcolumnEnd()!=None and c.style.getGridrowStart()!=None and c.style.getGridrowEnd()!=None):
+          cs=c.style.getGridcolumnStart()
+          ce=c.style.getGridcolumnEnd()
+          rs=c.style.getGridrowStart()
+          re=c.style.getGridrowEnd()
+          
+  if(component.style.gridcolumnStart==None): component.style.gridcolumnStart=cs
+  if(component.style.gridcolumnEnd==None): component.style.gridcolumnEnd=ce
+  if(component.style.gridrowStart==None): component.style.gridrowStart=rs
+  if(component.style.gridrowEnd==None): component.style.gridrowEnd=re
 
   css = """\n.component"""+ idcomponent +""" {
   display:"""+ component.style.display+ """;

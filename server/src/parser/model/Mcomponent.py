@@ -120,6 +120,11 @@ class Mcomponent(PageItem):
 		if(exists==False):
 			self.data.append(var)
 
+	def overwriteVariable(self,key, var):
+		for (id,d) in enumerate(self.data):
+			if(key in d.keys()): 
+				self.data[id]=var
+
 	def getHasCloseAction(self):
 		return self.hasCloseAction
 
@@ -183,4 +188,4 @@ class Mcomponent(PageItem):
 		self.interactions.extend(interactions)
 
 	def __str__(self):
-		return "(id: " + str(self.idComponent) + ",name: "+  str(self.componentName) + ",type: "+  str(self.type) + ",tag: "+  str(self.gettag()) + "; interactions: ["+ ";".join(str(val) for val in self.interactions)  +"]" + ", children: [" + ";".join(str(val) for val in self.getChildren()) + "],"+ "data: ["+ ";".join(str(val) for val in self.data)  +"])" 
+		return "(id: " + str(self.getIdComponent()) + ",name: "+  str(self.componentName) + ",type: "+  str(self.type) + ",tag: "+  str(self.gettag()) + "; interactions: ["+ ";".join(str(val) for val in self.interactions)  +"]" + ", children: [" + ";".join(str(val) for val in self.getChildren()) + "],"+ "data: ["+ ";".join(str(val) for val in self.data)  +"])" 

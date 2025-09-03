@@ -1,6 +1,13 @@
 from utils.tools import getFormatedName,getElemId,doesImageExist
 
-def writeVariantComponent(name,project_name,variants):
+def writeVariantComponent(variantcomponent,name,project_name,variants):
+    linger = []
+    priorDefaultId = ""
+    for (index,c) in enumerate(variants):
+      if(getFormatedName(str(c.getNameComponent()).lower())=="variant"+getFormatedName(str(name).lower())): 
+        priorDefaultId = c.getIdComponent()
+        variants[index]=variantcomponent.getDefaultInsideComponent()
+        linger.append(variantcomponent.getDefaultInsideComponent())
     template = """<template >
     <component :is="selectedComponent" :class="componentprops" :key="variant"></component>
 </template>
@@ -57,3 +64,4 @@ const componentsMap = {
     """
     with open("../output/"+project_name+"/src/components/Variant"+getFormatedName(name.lower())+".vue","w") as f:
         f.write(template)
+    return priorDefaultId,linger

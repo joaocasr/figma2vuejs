@@ -630,6 +630,16 @@ def getTimeoutFunction(methodName,interaction):
     if(methodName==""): function=""
     return function    
 
+def replaceDefault(comp,originid,destname):
+    if hasattr(comp, 'getIdComponent'): 
+        if(getElemId(comp.getIdComponent())==getElemId(originid)):
+            comp.setNameComponent(destname)
+    if hasattr(comp, 'getIdElement'): 
+        if(getElemId(comp.getIdElement())==getElemId(originid)):
+            comp.setName(destname)
+    for ch in comp.children:
+        replaceDefault(ch,originid,destname)
+
 def handleVariants(elem,variants,hooks,elemBehaviour,allPagesInfo,beginElem=None):
     if(checkIDinEventspath(getElemId(elem.getIdComponent()))!=None): 
         pair = checkIDinEventspath(getElemId(elem.getIdComponent()))
