@@ -45,7 +45,7 @@ Finnaly, insert those credentials in the Figma2Vuejs webpage and press generate.
 
 <img src="tool-overview/figma2vuejs.png" width="500" />
 
-## Analysis
+## Tool Validation (Visual Fidelity)
 
 To objectively measure similarity, a ResNet model was used as a feature extractor. The features derived from the Prototype images and the Generated UI images were compared using two key metrics:
 
@@ -98,4 +98,4 @@ For an in-depth analysis of the evaluation, including metrics visualizations, im
 
 ## Publication 
 
->*João Castro and José Creissac Campos* (October, 2025). **Automating code generation from User Interface prototypes**. In 2025. International Conference on Graphics and Interaction (ICGI) (pp. 1-8). IEEE.
+>*João Castro and José Creissac Campos* (October, 2025). **Automating Code Generation from User Interface Prototypes**. In 2025. International Conference on Graphics and Interaction (ICGI) (pp. 1-8). IEEE.

@@ -70,19 +70,19 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,all
                     destination = getPageById(action.getDestinationID(),allPagesInfo) 
                     methodName = "goto"+destination+getElemId(elementid)
                     insertFunction("methods",hooks,methodName,getNavigationFunction(methodName,destination))
-                    elemBehaviour[0].append('v-on:click="'+methodName+'()"')
+                    elemBehaviour[0].append(getEventHandler(interaction,methodName))
                     elemBehaviour[1] = hooks
                 # OPEN LINK ACTIONS
                 if(isinstance(action,OpenLinkAction)):
                     methodName = "openLink"+getElemId(elementid)
                     insertFunction("methods",hooks,methodName,getOpenLinkFunction(methodName,action))
-                    elemBehaviour[0].append('v-on:click="'+methodName+'()"')
+                    elemBehaviour[0].append(getEventHandler(interaction,methodName))
                     elemBehaviour[1] = hooks
                 # BACK ACTIONS
                 if(isinstance(action,BackAction)):
                     methodName = "goBack"+getElemId(elementid)
                     insertFunction("methods",hooks,methodName,getBackFunction(methodName))
-                    elemBehaviour[0].append('v-on:click="'+methodName+'()"')
+                    elemBehaviour[0].append(getEventHandler(interaction,methodName))
                     elemBehaviour[1] = hooks
                 # SCROLL ACTIONS
                 if(isinstance(action,ScrollAction)):
@@ -97,13 +97,13 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,all
                         if(pair[2]==True):
                             methodName = "changeVisibility"+getElemId(pair[1])
                             insertFunction("methods",hooks,methodName,getChangeVisibilityFunction(methodName,"show"+getElemId(pair[1]),getElemId(pair[0]),elemAnimation))
-                            elemBehaviour[0].append('v-on:click="'+methodName+'()"')
+                            elemBehaviour[0].append(getEventHandler(interaction,methodName))
                         else:
                             insertFunction("methods",hooks,methodName,openTopOverlay(methodName,"openoverlay"+getElemId(pair[0])+getElemId(pair[1])))
-                            elemBehaviour[0].append("@click"+'="'+methodName+'"')
+                            elemBehaviour[0].append(getEventHandler(interaction,methodName))
                     else:
                         insertFunction("methods",hooks,methodName,getChangeVisibilityFunction(methodName,"show"+destinationid,elementid,elemAnimation))
-                        elemBehaviour[0].append('v-on:click="'+methodName+'()"')
+                        elemBehaviour[0].append(getEventHandler(interaction,methodName))
                     elemBehaviour[1] = hooks
                 # CLOSE ACTIONS
                 if(isinstance(action,CloseAction)):
@@ -115,7 +115,7 @@ def handleBehaviour(elem,allPagesInfo,pagename,isPageRender,allvariants,data,all
                         methodName = "close"+originid+destinationid
                         if(isPageRender==False): insertFunction("methods",hooks,methodName,closeOverlay(methodName,"close-from"+str(originid)+"-to"+str(destinationid)))
                         else: insertFunction("methods",hooks,methodName,getCloseFunction(methodName,"show"+destinationid,destinationid))
-                        elemBehaviour[0].append('@click="'+methodName+'"')
+                        elemBehaviour[0].append(getEventHandler(interaction,methodName))
                         elemBehaviour[1] = hooks
                 if(interaction.getInteractionType()==InteractionElement.Interaction.ONMOUSEDOWN):
                     if(len(elemBehaviour[0])>0): elemBehaviour[0].pop()
@@ -774,6 +774,17 @@ def processVifs(lista):
             lista.pop(idx)
     if(len(conditions)>0):
         lista.append('v-if="'+r' && '.join(x for x in conditions)+'"')
+
+
+def getEventHandler(interaction,methodName):
+    eventhandler=""
+    if(interaction.getInteractionType()==InteractionElement.Interaction.ONCLICK): eventhandler='v-on:click="'+methodName+'()"'
+    if(interaction.getInteractionType()==InteractionElement.Interaction.ONDRAG): eventhandler='draggable="true" @dragstart="'+methodName+'()"'
+    if(interaction.getInteractionType()==InteractionElement.Interaction.ONMOUSEUP): eventhandler='v-on:mouseup="'+methodName+'()"'
+    if(interaction.getInteractionType()==InteractionElement.Interaction.ONMOUSEDOWN): eventhandler='v-on:mousedown="'+methodName+'()"'
+    if(interaction.getInteractionType()==InteractionElement.Interaction.ONMOUSELEAVE): eventhandler='v-on:mouseleave="'+methodName+'()"'
+    if(interaction.getInteractionType()==InteractionElement.Interaction.ONMOUSEENTER): eventhandler='v-on:mouseenter="'+methodName+'()"'
+    return eventhandler
 
 def getAnimationVarFunction():
     function = """        setAnimationName(name){
