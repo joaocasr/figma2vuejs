@@ -1,4 +1,3 @@
-server/tests/prototype* 
 !server/tests/.gitkeep 
 server/.env
 .vscode
