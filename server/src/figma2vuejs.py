@@ -25,15 +25,18 @@ FIGMA_API_KEY = ""
 FILE_KEY = ""
 headers = {}
 project_name = ""
-
+nr_rows=None
+nr_columns=None
 
 prototype = None
 data = None
 
-def set_variables(filekey,token):
-  global FIGMA_API_KEY, FILE_KEY, headers
+def set_variables(filekey,token,rows,columns):
+  global FIGMA_API_KEY, FILE_KEY,nr_rows,nr_columns, headers
   FIGMA_API_KEY = token
   FILE_KEY = filekey
+  nr_rows = rows
+  nr_columns = columns
   headers = {"content-type": "application/json", "Accept-Charset": "UTF-8", 'X-FIGMA-TOKEN': FIGMA_API_KEY}
 
 def load_variables():
@@ -83,7 +86,7 @@ def convert_prototype(testfile=None):
                        "pageElements":allpages[page].elements}
 
   mypages = allpages
-  if(len(sys.argv)==4): mypages = generateGridTemplate(allpages,sys.argv[2],sys.argv[3])
+  if(nr_rows!=None and nr_columns!=None): mypages = generateGridTemplate(allpages,nr_rows,nr_columns)
   if(mypages!=None):
     allcomponents=[]
     for page in pagesInfo:
@@ -141,12 +144,14 @@ app.add_middleware(
 class UserInfo(BaseModel):
   apikey: Optional[str] = None
   filekey: Optional[str] = None
+  nrRows: Optional[str] = None
+  nrColumns: Optional[str] = None
 
 @app.post("/")
 async def convert_figma2vue(userinfo: UserInfo = None):
   global FIGMA_API_KEY, FILE_KEY, project_name
   if(userinfo != None and userinfo.apikey!=None and userinfo.filekey!=None):
-    set_variables(userinfo.filekey,userinfo.apikey)
+    set_variables(userinfo.filekey,userinfo.apikey,userinfo.nrRows,userinfo.nrColumns)
   if(FIGMA_API_KEY=="" and FILE_KEY==""):
     return "Missing token and prototype url!"
   else:
@@ -163,7 +168,7 @@ async def convert_figma2vue(userinfo: UserInfo = None):
 async def convert_figma2vue(userinfo: UserInfo = None):
   global FIGMA_API_KEY, FILE_KEY, project_name
   if(userinfo != None and userinfo.apikey!=None and userinfo.filekey!=None):
-    set_variables(userinfo.filekey,userinfo.apikey)
+    set_variables(userinfo.filekey,userinfo.apikey,userinfo.nrRows,userinfo.nrColumns)
   if(FIGMA_API_KEY=="" and FILE_KEY==""):
     return "Missing token and prototype url!"
   else:
@@ -175,7 +180,7 @@ async def convert_figma2vue(userinfo: UserInfo = None):
 def convert_figma2vue(nr:int,userinfo: UserInfo = None):
   global FIGMA_API_KEY, FILE_KEY
   if(userinfo != None and userinfo.apikey!=None and userinfo.filekey!=None):
-    set_variables(userinfo.filekey,userinfo.apikey)
+    set_variables(userinfo.filekey,userinfo.apikey,userinfo.nrRows,userinfo.nrColumns)
   if(FIGMA_API_KEY=="" and FILE_KEY==""):
     return "Missing token and prototype url!"
   else:

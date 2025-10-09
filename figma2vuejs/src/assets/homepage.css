@@ -27,14 +27,14 @@
 .text31635 {
 	font-style: Medium;
 	font-weight: 500;
-	font-size: 2.1967049425861207vw;
+	font-size: 1.4967049425861207vw;
 	font-family: Inter;
 	text-align: center;
 	line-height: 53px;
 	color: rgba(54.43268336355686,54.43268336355686,54.43268336355686,1.0);
-	grid-column-start: 22;
+	grid-column-start: 24;
 	grid-column-end: 46;
-	grid-row-start: 16;
+	grid-row-start: 12;
 	grid-row-end: 19;
 	display: flex;
 	overflow-wrap: break-word;
@@ -48,7 +48,7 @@
 .text31637 {
 	font-style: Extra Bold;
 	font-weight: 800;
-	font-size: 3.844233649525711vw;
+	font-size: 3.044233649525711vw;
 	font-family: Inter;
 	text-align: center;
 	line-height: 93px;
@@ -67,12 +67,54 @@
 
 
 .form316457 {
-	grid-column-start: 24;
+	grid-column-start: 23;
 	grid-column-end: 51;
-	grid-row-start: 22;
+	grid-row-start: 18;
 	grid-row-end: 50;
   }
- 
+.gridformoption{
+	grid-column-start: 50;
+	grid-column-end: 62;
+
+	grid-row-start: 7;
+	grid-row-end: 10;
+	
+}
+
+.menuburger{
+	grid-column-start: 1;
+	grid-column-end: 11;
+	grid-row-start: 5;
+	grid-row-end: 8;
+	z-index: 10;
+
+}
+.gridformoptiona{
+
+	font-style: Medium;
+	font-weight: 500;
+	font-family: Inter;
+	text-align: center;
+	color: white;
+	font-size: 20px;
+	padding: 10px;
+	width: 350px;
+	margin-top: 20px;
+}
+aside{  
+	grid-column-start: 1;
+	grid-column-end: 18;
+	background-color: #555;
+	grid-row-start: 4;
+	grid-row-end: 129;
+	padding: 10px;
+}
+.gridform {	
+	grid-column-start: 50;
+	grid-column-end: 62;	grid-row-start: 7;
+	grid-row-end: 10;
+
+  }
   .submitbtnform316457 {
     background-color: rgba(75.02882078289986,75.02882078289986,75.02882078289986,1.0);
     border-radius: 8px;
@@ -80,7 +122,7 @@
     height:50px;
     margin-top: 10px;
     position: relative;
-    left:  131.9230769230769px;
+    left:  161.9230769230769px;
   }
 .inputform316457 .p-inputtext{ 
   --p-inputtext-background:rgba(245.00000059604645,245.00000059604645,245.00000059604645,1.0);

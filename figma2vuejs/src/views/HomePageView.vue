@@ -9,8 +9,8 @@
   Figma2Vuejs
  </p>
  <div v-if="showprogressbar" class="progressbarcard">
-    <p class="progresstxt">{{progressMsg}}</p>
-    <ProgressBar class="progressbar" :value="progress" />
+    <p class="progresstxt">{{progressMsg}}...{{ progress }}%</p>
+    <ProgressBar class="progressbar" v-model="progress" :value="progress" ></ProgressBar>
  </div>
 
  <div class="form316457">
@@ -25,7 +25,7 @@
    </div>
    <br/>
    <div class="inputform316457">
-    <InputText  fluid  name="input2316457" placeholder="Figma Prototype url" type="text">
+    <InputText  fluid  name="input2316457" placeholder="Figma Prototype URL" type="text">
     </InputText>
     <Message severity="error" size="small" v-if="$form316457.input2316457?.invalid" variant="simple">
      {{$form316457.input2316457?.error.message}}
@@ -37,7 +37,42 @@
    <br>
   <a v-show="showlink" ref="downloadLink" :href="fileUrl" :download="fileName">Download File</a>
   </Form>
+  
  </div>
+ <img src="/burger-menu.svg" @click="isExpanded=!isExpanded"  width="40px" class="menuburger"/>
+    <aside v-show="isExpanded">
+ 
+ <div class="gridformoption">
+    
+    <p class="gridformoptiona">Grid System Dimensions</p>
+    
+        <div class="gridform">
+  <Form :initialValues="initialGridValues"  :resolver="resolverGridValues" :validateOnBlur="true" v-slot="$gridform">
+   <br/>
+   <div class="inputGridValuesColumns">
+    <InputText v-model="nr_columns" fluid  name="inputColumns" placeholder="Number of Columns" min=1 type="number">
+    </InputText>
+    <Message severity="error" size="small" v-if="$gridform.inputColumns?.invalid" variant="simple">
+     {{$gridform.inputColumns?.error.message}}
+    </Message>
+   </div>
+   <br/>
+   <div class="inputGridValuesRows">
+    <InputText  v-model="nr_rows" fluid  name="inputRows" placeholder="Number of Rows"  min=1 type="number">
+    </InputText>
+    <Message severity="error" size="small" v-if="$gridform.inputRows?.invalid" variant="simple">
+     {{$gridform.inputRows?.error.message}}
+    </Message>
+   </div>
+   <br>
+  </Form>
+  
+ </div>
+</div>       
+    </aside> 
+
+
+
  <Navigationbar class="grid-item-316718 component316718"></Navigationbar>
 </div>
 
@@ -47,7 +82,7 @@
 import axios from 'axios';
 import Navigationbar from '@/components/Navigationbar.vue';
 import { useToastStore } from "@/stores/toast";;
-import { ref } from "vue";
+import { ref, onMounted  } from "vue";
 
 const fileUrl = ref(null)
 const fileName = ref('')
@@ -59,15 +94,24 @@ export default {
         return {
             showlink:false,
             showprogressbar:false,
-            progress:10,
-            progressMsg:'Generating Vue project...'
+            progressMsg:'Generating Vue project...',
+            progress:0,
+            nr_rows:'',
+            nr_columns:'',
+            progress:0,
+            isExpanded:false
         }
     },
-            setup(){
+    setup(){
 
         const initialValues316457 = ref({
            input1316457: '',
            input2316457: '',
+        });
+
+        const initialGridValues = ref({
+            inputColumns: '',
+            inputRows: '',
         });
     
         const resolver316457 = ({ values }) => {
@@ -91,10 +135,26 @@ export default {
             };
         };
     
+        const resolverGridValues = ({ values }) => {
+            const errors = {};
+           
+            if(values.inputColumns!="" && values.inputRows==""){
+                errors.inputColumns = [{ message: 'Your missing some grid values.'}];
+            }
+         
+            if(values.inputRows!="" && values.inputColumns=="") {
+                errors.inputRows = [{ message: 'Your missing some grid values.'}];
+            }
+            return {
+                errors
+            };
+        };
 
         return {
             initialValues316457,
+            initialGridValues,
             resolver316457,
+            resolverGridValues
           }
 	},methods:{
     async onFormSubmit316457(data) {
@@ -115,16 +175,31 @@ export default {
                 const result = await axios.post('http://localhost:8000/',
             {
                 'apikey':data.states.input1316457.value,
-                'filekey':filekey
-            }
+                'filekey':filekey,
+                'nrRows':this.nr_rows,
+                'nrColumns':this.nr_columns,
+            },
+            {
+                    responseType: 'blob',
+                    onDownloadProgress: function(progressEvent){
+                        let percentageComplete = Math.floor((progressEvent.loaded/progressEvent.total)*100)
+                        //console.log(percentageComplete+"%")
+                        self.progress = percentageComplete
+                    }
+                }
                 )
-                this.progress = 60
-                this.progressMsg = "Vue project generated. Compressing and sending..."
                 const filename = result.data
+                const self = this
+                this.progressMsg = "Getting Vue zip file from project..."
+                this.progress = 0
                 const resp = await axios.get(`http://localhost:8000/download?path=${filename}`, {
-                    responseType: 'blob'
+                    responseType: 'blob',
+                    onDownloadProgress: function(progressEvent){
+                        let percentageComplete = Math.floor((progressEvent.loaded/progressEvent.total)*100)
+                        //console.log(percentageComplete+"%")
+                        self.progress = percentageComplete
+                    }
                 });
-                this.progress = 80
                 const blob = new Blob([resp.data], { type: 'application/zip' });
                 fileUrl.value = URL.createObjectURL(blob);
                 fileName.value = filename + ".zip";
@@ -133,7 +208,6 @@ export default {
                 link.href = fileUrl.value
                 link.download = fileName.value
                 link.click();
-                this.progress = 100
                 setTimeout(() => {
                     URL.revokeObjectURL(fileUrl.value);
                 }, 1000);
@@ -144,7 +218,7 @@ export default {
                 console.log(err)
             }        
             if(data.valid==false){
-                message = "Error in form submission!"            
+                message = "Error while downloading the Vue project generated!"            
                 toastStore.showError(message);
             }
         }
