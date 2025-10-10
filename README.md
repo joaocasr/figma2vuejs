@@ -18,6 +18,22 @@ After importing you can modify the properties and structure of these design syst
 
 <img src="tool-overview/figmadesignsystem.png" width="450" />
 
+## Design and Generatation Flexibility
+
+The tool supports a wide variety of design elements from Figma, as well as their structural organization and behavioral interactions between them. <i>figma2vuejs</i> can map to Vue code the following elements from Figma: 
+<ul>
+<li>Frames</li>
+<li>Groups</li>
+<li>Text</li>
+<li>Image</li>
+<li>Shape Nodes (Rectangle,Line,Star,Ellipse,Pollygon,Arrows)</li>
+<li>Icons & Vectors</li>
+<li>Prototype Components</li>
+<li>Components from the design system presented</li>
+<li>Variants</li>
+<li>Pen & Pencil</li>
+</ul>
+
 ## Setup
 Setup commands to run the backend
 ```bash
@@ -93,7 +109,7 @@ Here are some imagens showing the structural differences between the generated i
 
 ## Aditional Resources
 
-For an in-depth analysis of the evaluation, including metrics visualizations, image comparisons, and details on the ResNet models and parameters, check the <a href="/evaluation/eval.ipynb">evaluation</a> jupyter notebook.
+For an in-depth analysis of the evaluation, including metrics visualizations, prototype and web UI comparisons, and details on the ResNet models and parameters used, check the <a href="/evaluation/eval.ipynb">evaluation</a> jupyter notebook. For an analysis of the Vue code generated for the test prototypes, consult the following <a href="https://github.com/joaocasr/vue-generated">github repo</a>.
 
 
 ## Publication 
