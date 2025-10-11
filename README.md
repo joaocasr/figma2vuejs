@@ -115,3 +115,9 @@ For an in-depth analysis of the evaluation, including metrics visualizations, pr
 ## Publication 
 
 >*João Castro and José Creissac Campos* (October, 2025). **Automating Code Generation from User Interface Prototypes**. In 2025. International Conference on Graphics and Interaction (ICGI) (pp. 1-8). IEEE.
+
+## 🧾 License 
+
+This project is released under a custom Non-Commercial, No-Redistribution License.
+
+Check the [LICENSE](./LICENSE) file for details.
