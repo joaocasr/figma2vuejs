@@ -96,15 +96,15 @@ A visual validation step was implemented to qualitatively inspect for fidelity d
 | :--- | :---: | :---: |
 | Cosine Similarity | $0.97$ | $0.96$ |
 | Euclidean Distance | $0.23$ | $0.27$ |
-| SSIM | $0.79$ | $0.81$ |
+| SSIM | $0.80$ | $0.81$ |
 
 Here are some imagens showing the structural differences between the generated interfaces and the prototypes. In the following imagens are visible the black deviation regions, showing some spacing errors, some aproximation allocations on the grid and some element size deviations.
 <div style="display:flex; gap:10px">
-<img src="evaluation/diff/diff-captureA.png" width="200" />
+<img src="evaluation/diff/diff-movies1.png" width="200" />
 
-<img src="evaluation/diff/diff-captureF.png" width="200" />
+<img src="evaluation/diff/diff-ecommerce1.png" width="200" />
 
-<img src="evaluation/diff/diff-captureG.png" width="200" />
+<img src="evaluation/diff/diff-ecommerce2.png" width="200" />
 </div>
 
 ## Aditional Resources

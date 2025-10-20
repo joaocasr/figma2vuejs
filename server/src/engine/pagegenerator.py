@@ -280,6 +280,7 @@ def writeVue(name,page,content):
     global allhooks, components, pageMethods
     pageMethods[page.getPagename()] = []
     componentsimports="\n"
+    components[page.getPagename()] = filter(lambda x: x!="", components[page.getPagename()])
     for comp in components[page.getPagename()]:
         componentsimports += "import "+getFormatedName(str(comp).capitalize())+" from '@/components/"+getFormatedName(str(comp).capitalize())+".vue';\n" 
     for auximports in auxiliarImports[page.getPagename()]:
@@ -373,7 +374,7 @@ def handleClipPathOverlaping(elementos):
     repeatedElements = []
     for i, elem2 in enumerate(elementos):
         for j, elem1 in enumerate(elementos):
-            if j>i:
+            if j>i and elem1!=None and elem2!=None and elem1.style!=None and elem2.style!=None:
                 if (getValue(elem1.style.gridcolumnStart) >= getValue(elem2.style.gridcolumnStart) and
                     getValue(elem1.style.gridcolumnEnd) <= getValue(elem2.style.gridcolumnEnd) and
                     getValue(elem1.style.gridrowStart) >= getValue(elem2.style.gridrowStart) and
@@ -393,7 +394,7 @@ def handleClipPathOverlaping(elementos):
         del elementos[index]
 
     for c in elementos:
-        if(len(c.getChildren())>0):
+        if(c!=None and len(c.getChildren())>0):
             handleClipPathOverlaping(c.getChildren())
 
 def getValue(value):
@@ -407,7 +408,7 @@ def getValue(value):
 def flatTree(elementos):
     for node in elementos:
         yield node
-        if node.getChildren():
+        if node!=None and node.getChildren():
             yield from flatTree(node.getChildren())
 
 def anyShapes(elementos):

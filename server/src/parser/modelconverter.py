@@ -455,7 +455,10 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         if("#" in data["name"]): name = data["name"].split("#")[0]
         imgpath = re.sub(r"[\s,@\.-]","",name)
         allimages.append({"id":data["id"],"name":name})
-        mimagelement = ImageElement(data["id"],tag,data["name"],data["fills"][0]["imageRef"],style)
+        imgsrc=""
+        for fill in data["fills"]:
+            if("imageRef" in fill): imgsrc=fill["imageRef"]
+        mimagelement = ImageElement(data["id"],tag,data["name"],imgsrc,style)
         mimagelement.setimgpath("/"+getFormatedName(imgpath)+getElemId(data["id"])+".png")
         melement = mimagelement
 
@@ -521,6 +524,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         if("individualStrokeWeights" in data): shapestyle.setIndividualStrokeWeights(data["individualStrokeWeights"])
 
         if(data["type"]=="RECTANGLE" and "rectangleCornerRadii" in data): setCornerRadius(shapestyle,data["rectangleCornerRadii"])
+        if("cornerRadius" in data and "rectangleCornerRadii" not in data): shapestyle.setborderRadius(str(data["cornerRadius"]))
         if("visible" in data and data["visible"]==False): shapestyle.setDisplay("none")
         if("opacity" in data): shapestyle.setOpacity(str(data["opacity"]*100)+"%")
         if(shapestyle.getDisplay()==None and elementheight>100 and elementwidth>100):
@@ -540,7 +544,8 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             fontsize = str(data["style"]["fontSize"]/1.1) + "px"
             #pageWidth = firstlevelelem["absoluteRenderBounds"]["width"] * 4
         lineheight = (round(data["style"]["lineHeightPx"])) 
-        color = data["fills"][0]["color"]
+        color = {"r":"255","g":"255","b":"255","a":"1"}
+        if("color" in data["fills"][0]): color = data["fills"][0]["color"]
         rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"])
         autoresize = None
         if("textAutoResize" in data["style"]):
@@ -598,7 +603,9 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
 
             if("color" in background):
                 color = data["background"][0]["color"]
-                rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"])
+                a = color["a"]
+                if("opacity" in background): a = color["a"]*background["opacity"]
+                rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , a)
             elif(background["type"] == "GRADIENT_LINEAR"):
                 gradient = calculate_lineargradientDegree(background["gradientHandlePositions"],background["gradientStops"])
             elif(background["type"] == "GRADIENT_RADIAL"):
@@ -655,7 +662,10 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                 style.setBoxShadow(boxshadow)
 
         for stroke in data["strokes"]:
-            rgba_stroke = (stroke["color"]["r"]*255, stroke["color"]["g"]*255, stroke["color"]["b"]*255, stroke["color"]["a"])
+            rgba_stroke=(0,0,0,0)
+            if("color" in stroke):
+                rgba_stroke = (stroke["color"]["r"]*255, stroke["color"]["g"]*255, stroke["color"]["b"]*255, stroke["color"]["a"])
+            
             stroketype = str(stroke["type"]).lower()
             strokeWeight = str(data["strokeWeight"])+"px "
 

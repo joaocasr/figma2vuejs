@@ -775,7 +775,7 @@ def generateShapeCSS(projectname,pagename,cssclass,type,elem):
     height: 1px;
     padding: 0;
     """
-  if(elem.style.getBackground()!=None): css+="background:"+elem.style.getBackground()+"\n\t"
+  if(elem.style.getBackground()!=None): css+="background:"+elem.style.getBackground()+";\n\t"
   if(elem.style.getBackgroundColor()!=None): css+="background-color:"+elem.style.getBackgroundColor()+";\n\t"
   if(elem.style.getborderRadius()!=None): css+="border-radius:"+elem.style.getborderRadius()+"px;\n\t"
   if(elem.style.transform!=None): css+="transform: rotate("+elem.style.getTransform()+");\n\t"
