@@ -4,6 +4,7 @@ def writeVariantComponent(variantcomponent,name,project_name,variants):
     linger = []
     priorDefaultId = ""
     for (index,c) in enumerate(variants):
+      #print(getFormatedName(str(c.getNameComponent()).lower())+"=?variant"+getFormatedName(str(name).lower()))
       if(getFormatedName(str(c.getNameComponent()).lower())=="variant"+getFormatedName(str(name).lower())): 
         priorDefaultId = c.getIdComponent()
         variants[index]=variantcomponent.getDefaultInsideComponent()

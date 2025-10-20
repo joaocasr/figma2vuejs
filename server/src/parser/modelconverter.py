@@ -54,12 +54,13 @@ overlayTriggers = []
 transition_nodeIds = []
 logicDependentComponents = {}
 figmadata = {}
+componentVariants=[]
 
 batchi=0
 batchf=50
 
 def getFigmaData(data):
-    global allpages, allcomponents,pageComponents, figmadata, refs, overlayInsideInstances, pageOverlays, overlayTriggers, variants, scrollElements, allimages, allsvgs, event_EmissionPaths, closeIds, logicDependentComponents
+    global allpages, allcomponents,pageComponents, figmadata, refs, overlayInsideInstances, pageOverlays, overlayTriggers, variants, scrollElements, allimages, allsvgs, event_EmissionPaths, closeIds, logicDependentComponents,componentVariants
     if(data!=None):
         figmadata=data
     figmadata["name"] = getFormatedName(figmadata["name"])
@@ -119,6 +120,8 @@ def getFigmaData(data):
         for p in pageComponents:
             filtered = list(map(lambda x : x.getNameComponent(),pageComponents[p]))
             l.extend(filtered)
+            for lc in pageComponents[p]:
+                if(lc.getIdComponent() in componentVariants): orphanComponents.append(lc)
         if(allcomponents[id].getNameComponent() not in l and allcomponents[id] not in orphanComponents):
             orphanComponents.append(allcomponents[id])
 
@@ -1230,7 +1233,7 @@ def getPageoftrigger(id):
                 return el["name"]
             
 def updateDefaultVariants(data,firstlevelelem,melement,componentId,variants):
-    global figmadata,allpages
+    global figmadata,allpages,componentVariants
     found = False
     for v in variants:
         for (index,c) in enumerate(v.variantComponents):
@@ -1244,6 +1247,8 @@ def updateDefaultVariants(data,firstlevelelem,melement,componentId,variants):
                 v.setDefaultInsideComponent(c)
                 if(firstlevelelem!=None): 
                     v.setParentName(firstlevelelem["name"])
+                    componentVariants.append(melement.getIdComponent())
+
     if(found==False):
         id = data["componentId"]
         componentsetid=""

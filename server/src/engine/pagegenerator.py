@@ -280,9 +280,9 @@ def writeVue(name,page,content):
     global allhooks, components, pageMethods
     pageMethods[page.getPagename()] = []
     componentsimports="\n"
-    components[page.getPagename()] = filter(lambda x: x!="", components[page.getPagename()])
     for comp in components[page.getPagename()]:
-        componentsimports += "import "+getFormatedName(str(comp).capitalize())+" from '@/components/"+getFormatedName(str(comp).capitalize())+".vue';\n" 
+        if(comp!=""):
+            componentsimports += "import "+getFormatedName(str(comp).capitalize())+" from '@/components/"+getFormatedName(str(comp).capitalize())+".vue';\n" 
     for auximports in auxiliarImports[page.getPagename()]:
         componentsimports += auximports+";\n"
     cssimport = "@import '../assets/"+getFormatedName(page.getPagename().lower())+".css';"

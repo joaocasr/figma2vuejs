@@ -188,4 +188,4 @@ class Mcomponent(PageItem):
 		self.interactions.extend(interactions)
 
 	def __str__(self):
-		return "(id: " + str(self.getIdComponent()) + ",name: "+  str(self.componentName) + ",type: "+  str(self.type) + ",tag: "+  str(self.gettag()) + "; interactions: ["+ ";".join(str(val) for val in self.interactions)  +"]" + ", children: [" + ";".join(str(val) for val in self.getChildren()) + "],"+ "data: ["+ ";".join(str(val) for val in self.data)  +"])" 
+		return "(id: " + str(self.getIdComponent()) + ",name: "+  str(self.getNameComponent()) + ",type: "+  str(self.type) + ",tag: "+  str(self.gettag()) + "; interactions: ["+ ";".join(str(val) for val in self.interactions)  +"]" + ", children: [" + ";".join(str(val) for val in self.getChildren()) + "],"+ "data: ["+ ";".join(str(val) for val in self.data)  +"])" 

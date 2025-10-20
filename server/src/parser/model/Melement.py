@@ -101,5 +101,5 @@ class Melement(PageItem):
 		self.interactions.extend(interactions)
 
 	def __str__(self):
-		return "(id: " + str(self.idElement) + "; tag: " + str(self.gettag()) + "; children : ["+ ''.join(str(c) for c in self.getChildren()) + "]" + "; interactions : ["+ ''.join(str(c) for c in self.interactions) + "])"
+		return "(id: " + str(self.getIdElement()) + "; tag: " + str(self.gettag()) + "; children : ["+ ''.join(str(c) for c in self.getChildren()) + "]" + "; interactions : ["+ ''.join(str(c) for c in self.interactions) + "])"
 

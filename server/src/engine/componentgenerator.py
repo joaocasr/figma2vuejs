@@ -247,9 +247,9 @@ def writeVueComponent(name,project_name,content,component,pagesInfo):
     global allhooks, componentMethods,currentComponent,allvariants
     componentMethods[name] = []
     componentsimports="\n"
-    currentComponent.nestedComponents = filter(lambda x: x.getNameComponent()!="", currentComponent.nestedComponents)
     for comp in currentComponent.nestedComponents:
-        componentsimports += "import "+getFormatedName(str(comp.getNameComponent()).capitalize())+" from '@/components/"+getFormatedName(str(comp.getNameComponent()).capitalize())+".vue';\n" 
+        if(comp.getNameComponent()!=""):
+            componentsimports += "import "+getFormatedName(str(comp.getNameComponent()).capitalize())+" from '@/components/"+getFormatedName(str(comp.getNameComponent()).capitalize())+".vue';\n" 
     for auximports in auxiliarImports[name]:
         componentsimports += auximports+";\n"
     cssimport = "@import '../assets/"+getFormatedName(name.lower())+".css';"
