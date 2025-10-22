@@ -548,8 +548,15 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
             #pageWidth = firstlevelelem["absoluteRenderBounds"]["width"] * 4
         lineheight = (round(data["style"]["lineHeightPx"])) 
         color = {"r":"255","g":"255","b":"255","a":"1"}
-        if("color" in data["fills"][0]): color = data["fills"][0]["color"]
-        rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"])
+        colortxt = "rgba("+color["r"]+","+color["g"]+","+color["b"]+","+color["a"]+")"
+        backgroundtxt=None
+        if(data["fills"][0]["type"]=="SOLID"): 
+            color = data["fills"][0]["color"]
+            rgba = (color["r"] * 255 , color["g"] * 255 , color["b"] * 255 , color["a"])
+            colortxt = "rgba("+','.join(str(val) for val in rgba)+")"
+        if(data["fills"][0]["type"]=="GRADIENT_LINEAR"): 
+            rgba = calculate_lineargradientDegree(data["fills"][0]["gradientHandlePositions"],data["fills"][0]["gradientStops"])
+            backgroundtxt = rgba
         autoresize = None
         if("textAutoResize" in data["style"]):
             autoresize = data["style"]["textAutoResize"]
@@ -564,7 +571,8 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                         data["style"]["fontWeight"],
                         fontsize,
                         data["style"]["fontFamily"],
-                        "rgba("+','.join(str(val) for val in rgba)+")",
+                        colortxt,
+                        backgroundtxt,
                         nr_columnstart,
                         nr_columnend,
                         nr_rowstart,

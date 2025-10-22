@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
 class TextStyle(object):
-	def __init__(self,x,y,width,height,horizontalalign,lineheight,autoresize,font,weight,size,family,color,gridcolumnStart,gridcolumnEnd,gridrowStart,gridrowEnd):
+	def __init__(self,x,y,width,height,horizontalalign,lineheight,autoresize,font,weight,size,family,color,background,gridcolumnStart,gridcolumnEnd,gridrowStart,gridrowEnd):
 		self.x = x
 		self.y = y
 		self.width = width
@@ -16,6 +16,7 @@ class TextStyle(object):
 		self.fontFamily = family
 		self.lineHeight = lineheight
 		self.color = color
+		self.background = background
 		self.textAutoResize = autoresize
 		self.letterSpacing = None
 		self.cursor = None
@@ -163,6 +164,15 @@ class TextStyle(object):
 		"""@ParamType color String
 		@ReturnType void"""
 		self.color = color
+  
+	def getBackground(self):
+		"""@ReturnType String"""
+		return self.background
+
+	def setBackground(self, background):
+		"""@ParamType background String
+		@ReturnType void"""
+		self.background = background
 
 	def getLetterSpacing(self):
 		"""@ReturnType String"""

@@ -832,6 +832,9 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
   css = ""
   newline = '\n\t'
   if isinstance(elem,TextElement) : 
+    if elem.style.background !=None: 
+      elem.style.setColor("transparent")
+      csskeyvalues+=f"background: {elem.style.background};{newline}background-clip: text;{newline}"
     if elem.style.fontStyle != None: csskeyvalues+=f"font-style: {elem.style.fontStyle};{newline}"
     if elem.style.fontWeight != None: csskeyvalues+=f"font-weight: {elem.style.fontWeight};{newline}"
     if elem.style.fontSize != None: csskeyvalues+=f"font-size: {elem.style.fontSize};{newline}"
@@ -926,6 +929,8 @@ def generateElemCssProperties(projectname,pagename,cssclass,elem):
     if elem.style.gridtemplatecolumns != None: csskeyvalues+=f"grid-template-columns: {str(elem.style.gridtemplatecolumns)};{newline}"
     if elem.style.gridtemplaterows != None: csskeyvalues+=f"grid-template-rows: {str(elem.style.gridtemplaterows)};{newline}"
     csskeyvalues +=f"padding: 0;{newline}"
+    #csskeyvalues +=f"overflow: hidden;{newline}"
+  
     gridareacss = ""
     if(elem.style.getgridArea()!=None):
       gridareacss = "#"+cssclass+" {\n\t"+ "grid-area:"+getName(elem)+";\n}\n\n"
