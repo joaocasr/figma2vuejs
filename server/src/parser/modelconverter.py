@@ -410,8 +410,8 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         else:
             allpages[pagename].addVariable({f"tablevalues{tableid}":[]})
         return melement
-    # handling VectorElements
-    elif(data["type"]=="VECTOR"):
+    # handling VectorElements and vector operations
+    elif(data["type"]=="VECTOR" or data["type"]=="REGULAR_POLYGON" or data["type"]=="BOOLEAN_OPERATION"):
         style = VectorStyle(xielem,
                         yielem,
                         elementwidth,
@@ -420,6 +420,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
                         nr_columnend,
                         nr_rowstart,
                         nr_rowend)
+        if(data["type"]=="BOOLEAN_OPERATION"): data["children"]=[]
         name = data["name"]
         if("#" in data["name"]): name = data["name"].split("#")[0]
         svgpath = re.sub(r"[\s,@\.-]","",name)
@@ -466,7 +467,7 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
         melement = mimagelement
 
     # handles shape elements
-    elif(data["type"]=="STAR" or data["type"]=="REGULAR_POLYGON" or data["type"]=="RECTANGLE" or data["type"]=="ELLIPSE" or data["type"]=="LINE"):
+    elif(data["type"]=="STAR" or data["type"]=="RECTANGLE" or data["type"]=="ELLIPSE" or data["type"]=="LINE"):
         rotation = None
         if("rotation" in data):
             rotation = str(data["rotation"])+"rad"
@@ -513,7 +514,9 @@ def processElement(pagename,name,data,page_width,page_height,pageX,pageY,firstle
 
                 boxshadow = shadowX+"px " + shadowY+"px " + shadowRadius + spread + "rgba("+','.join(str(val) for val in rgba_shadow)+")"
                 shapestyle.setBoxShadow(boxshadow)
-
+            if effect["type"] == "BACKGROUND_BLUR":
+                shapestyle.setBackgroundblur(effect["radius"])
+                
         if("strokes" in data):
             for s in data["strokes"]:
                 if("color" in s):

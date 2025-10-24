@@ -22,6 +22,7 @@ class ShapeStyle(object):
 		self.gridtemplaterows = None
 		self.hashover = False
 		self.opacity = None
+		self.backgroundblur = None
 		self.borderTopLeftRadius = None
 		self.borderTopRightRadius = None
 		self.borderBottomLeftRadius = None
@@ -138,7 +139,16 @@ class ShapeStyle(object):
 		"""@ParamType boxShadow String
 		@ReturnType void"""
 		self.boxShadow = boxShadow
+  
+	def getBackgroundblur(self):
+		"""@ReturnType String"""
+		return self.backgroundblur
 
+	def setBackgroundblur(self, backgroundblur):
+		"""@ParamType backgroundblur String
+		@ReturnType void"""
+		self.backgroundblur = backgroundblur
+  
 	def getBorderColor(self):
 		"""@ReturnType String"""
 		return self.borderColor
