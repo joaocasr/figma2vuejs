@@ -401,7 +401,7 @@ def buildDependenciesScript(name):
   if(len(primevuedependencies)>0):
     setup = "npm install primevue\nnpm install primeicons\nnpm install @primevue/themes\nnpm install @primevue/themes\n" + setup
   scriptsetup = "../output/"+name+"/"+name+".sh"
-  setup = "# Install project dependencies packages\n" + setup
+  setup = "# Remove old node_modules and package-lock.json and create vite.config with mjs extension\nrm -rf node_modules\nrm -f package-lock.json\ncp vite.config.js vite.config.mjs\n\n# Install project dependencies packages\n" + setup
   setup+="\n\n#Run Vue project\nnpm run build\nnpm run preview"
   with open(scriptsetup,"w") as f:
     f.write(setup)

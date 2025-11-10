@@ -86,7 +86,7 @@ def convert_prototype(testfile=None):
                        "pageElements":allpages[page].elements}
 
   mypages = allpages
-  if(nr_rows!=None and nr_columns!=None): mypages = generateGridTemplate(allpages,nr_rows,nr_columns)
+  if((nr_rows!=None and nr_columns!=None) and (nr_rows!="" and nr_columns!="")): mypages = generateGridTemplate(allpages,nr_rows,nr_columns)
   if(mypages!=None):
     allcomponents=[]
     for page in pagesInfo:
@@ -158,8 +158,9 @@ async def convert_figma2vue(userinfo: UserInfo = None):
     try:
       convert_prototype()
     except Exception as e:
+      print(e)
       raise HTTPException(status_code=404, detail=repr(e))
-    shutil.make_archive('../output/'+project_name, format='zip', root_dir='../output')
+    shutil.make_archive('../output/'+project_name, format='zip', root_dir='../output/'+project_name)
     return project_name
 
 

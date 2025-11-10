@@ -345,7 +345,8 @@ def convertToForm(data,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend,id,name
         style.setY(yielem)
         form =  Form(id,"",formname,"COMPONENT_ASSET",inputs,buttontxt,style)
         return form
-    except:
+    except Exception as e:
+        style = FormStyle(inputbackgroundcolor,btnbackgroundcolor,widthInput,labelSizeText,labelColorText,placeholderTextColor,nr_columnstart,nr_columnend,nr_rowstart,nr_rowend)
         style.setHeight(elementheight)
         style.setWidth(elementwidth)
         style.setX(xielem)

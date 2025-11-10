@@ -95,9 +95,9 @@ export default {
             showlink:false,
             showprogressbar:false,
             progressMsg:'Generating Vue project...',
-            progress:0,
             nr_rows:'',
             nr_columns:'',
+            prototypename:'',
             progress:0,
             isExpanded:false
         }
@@ -166,12 +166,18 @@ export default {
             if(filekey.length<5){
                 return
             }else{
+
+                this.prototypename = filekey[5]
+                this.prototypename = this.prototypename.split("?")[0]
+                //console.log(this.prototypename)
                 filekey = filekey[4]
+
             }
 
 
             try{
                 
+                const self = this
                 const result = await axios.post('http://localhost:8000/',
             {
                 'apikey':data.states.input1316457.value,
@@ -188,8 +194,7 @@ export default {
                     }
                 }
                 )
-                const filename = result.data
-                const self = this
+                const filename = self.prototypename
                 this.progressMsg = "Getting Vue zip file from project..."
                 this.progress = 0
                 const resp = await axios.get(`http://localhost:8000/download?path=${filename}`, {
